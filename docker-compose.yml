@@ -7,70 +7,74 @@ volumes:
   pg_data:
   solr_data:
 
+secrets:
+  db_secret:
+    file: ./${CKAN_DB_SECRET_FILE:-/dev/null}
+  ckan_config:
+    file: ./${CKAN_CONFIG_FILE:-/dev/null}
+
+networks:
+  ckan-internal:
+    external: true
+  db-inspect:
+    external: true
+
 services:
   ckan:
     container_name: ckan
+    image: "reg.dev.localhost/ckan:${CKAN_VERSION}"
     build:
-      context: ../../
+      context: .
       args:
-          - CKAN_SITE_URL=${CKAN_SITE_URL}
-    links:
-      - db
-      - solr
-      - redis
+        - CKAN_VERSION=${CKAN_VERSION}
+        - MAINTAINER=${MAINTAINER}
     depends_on:
       - db
     ports:
-      - "0.0.0.0:${CKAN_PORT}:5000"
-    environment:
-      # Defaults work with linked containers, change to use own Postgres, SolR, Redis or Datapusher
-      - CKAN_SQLALCHEMY_URL=postgresql://ckan:${POSTGRES_PASSWORD}@db/ckan
-      - CKAN_DATASTORE_WRITE_URL=postgresql://ckan:${POSTGRES_PASSWORD}@db/datastore
-      - CKAN_DATASTORE_READ_URL=postgresql://datastore_ro:${DATASTORE_READONLY_PASSWORD}@db/datastore
-      - CKAN_SOLR_URL=http://solr:8983/solr/ckan
-      - CKAN_REDIS_URL=redis://redis:6379/1
-      - CKAN_DATAPUSHER_URL=http://datapusher:8800
-      - CKAN_SITE_URL=${CKAN_SITE_URL}
-      - CKAN_MAX_UPLOAD_SIZE_MB=${CKAN_MAX_UPLOAD_SIZE_MB}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - DS_RO_PASS=${DATASTORE_READONLY_PASSWORD}
-
+      - "8989:5000"
+    env_file:
+      - .env
+    secrets:
+      - db_secret
+      - ckan_config
     volumes:
       - ckan_config:/etc/ckan
       - ckan_home:/usr/lib/ckan
       - ckan_storage:/var/lib/ckan
-
-  datapusher:
-    container_name: datapusher
-    image: clementmouchet/datapusher
-    ports:
-      - "8800:8800"
+    networks:
+      - ckan-internal
 
   db:
-    container_name: db
-    build:
-      context: ../../
-      dockerfile: contrib/docker/postgresql/Dockerfile
-      args:
-        - DS_RO_PASS=${DATASTORE_READONLY_PASSWORD}
-        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    container_name: ckan_db
+    image: "reg.dev.localhost/ckan-db:latest"
+    build: ./postgresql
+    env_file:
+      - .db.secret
     environment:
-      - DS_RO_PASS=${DATASTORE_READONLY_PASSWORD}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - PGDATA=/var/lib/postgresql/data/db
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ./${CKAN_DB_DUMP_FILE:-/dev/null}:/docker-entrypoint-initdb.d/ckan.dump
+      - ./${DOI_DB_DUMP_FILE:-/dev/null}:/docker-entrypoint-initdb.d/doi.dump
+    networks:
+      - ckan-internal
+      - db-inspect
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "ckan"]
+      test: ["CMD", "pg_isready", "-U", "ckan_default"]
 
   solr:
-    container_name: solr
-    build:
-      context: ../../
-      dockerfile: contrib/docker/solr/Dockerfile
+    container_name: ckan_solr
+    image: "reg.dev.localhost/ckan-solr:latest"
+    build: ./solr
     volumes:
-      - solr_data:/opt/solr/server/solr/ckan/data
-
+      - solr_data:/opt/solr/server/solr
+    networks:
+      - ckan-internal
+    ports:
+      - 8983:8983
 
   redis:
-    container_name: redis
-    image: redis:latest
+    container_name: ckan_redis
+    image: redis:6.2
+    networks:
+      - ckan-internal

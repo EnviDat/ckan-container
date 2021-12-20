@@ -1,5 +1,0 @@
-RUN /bin/sh -c mkdir -p /docker-entrypoint-initdb.d
-COPY file:76bd441e221ac1acdd58e9412d0cc4ff810fb9c32520f87e4144545d018f4a1d in /docker-entrypoint-initdb.d/10_postgis.sh
-COPY file:ac9e9890b9099e802b2b391049687555b8f22a663d84bd67629f1455d0430e02 in /usr/local/bin
-RUN RUN /bin/sh -c echo "host all all 0.0.0.0/0 md5" >> /var/lib/postgresql/data/pg_hba.conf # buildkit
-RUN ADD ./docker-entrypoint-initdb.d /docker-entrypoint-initdb.d # buildkit
