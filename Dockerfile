@@ -83,6 +83,7 @@ RUN set -ex \
         libpcre3 \
         postgresql-client \
         libgeos-c1v5 \
+        libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/python
