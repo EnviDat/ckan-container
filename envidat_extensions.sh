@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-while read -r repo_url; do
+while IFS=+ read -r _ repo_url; do
     mkdir ./ckanext
     git clone --depth 1 "$repo_url" ./ckanext
     if [ -f ./ckanext/requirements.txt ]; then
