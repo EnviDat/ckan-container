@@ -23,13 +23,8 @@ else
     abort "ERROR: No CKAN config file provided."
 fi
 
-# Extract credentials from CKAN_SQLALCHEMY_URL
-IFS=@ read -r CREDENTIALS CONNECTION <<< "$CKAN_SQLALCHEMY_URL"
-IFS=/ read -r PG_DB _ <<< "$CREDENTIALS"
-IFS=// read -r _ PG_CREDS <<< "$CONNECTION"
-IFS=: read -r PG_USER _ <<< "$PG_CREDS"
 # Wait for PostgreSQL
-while ! pg_isready -h "$PG_DB" -U "$PG_USER"; do
+while ! pg_isready -d "$CKAN_SQLALCHEMY_URL"; do
     sleep 1;
 done
 
