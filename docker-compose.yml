@@ -20,7 +20,7 @@ networks:
 services:
   ckan:
     container_name: ckan
-    image: "reg.dev.localhost/ckan:${CKAN_VERSION}"
+    image: "${INTERNAL_REG}/ckan:${CKAN_VERSION}"
     build:
       context: .
       args:
@@ -45,7 +45,7 @@ services:
 
   db:
     container_name: ckan_db
-    image: "reg.dev.localhost/ckan-db:latest"
+    image: "${INTERNAL_REG}/ckan-db:latest"
     build:
       context: ./postgresql
       args:
@@ -67,7 +67,7 @@ services:
 
   solr:
     container_name: ckan_solr
-    image: "reg.dev.localhost/ckan-solr:latest"
+    image: "${INTERNAL_REG}/ckan-solr:latest"
     build:
       context: ./solr
       args:
