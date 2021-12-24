@@ -1,65 +1,110 @@
-# See CKAN docs on installation from Docker Compose on usage
-FROM debian:stretch
-MAINTAINER Open Knowledge
+ARG EXTERNAL_REG
+ARG PYTHON_VERSION
 
-# Install required system packages
-RUN apt-get -q -y update \
-    && DEBIAN_FRONTEND=noninteractive apt-get -q -y upgrade \
-    && apt-get -q -y install \
-        python-dev \
-        python-pip \
-        python-virtualenv \
-        python-wheel \
-        python3-dev \
-        python3-pip \
-        python3-virtualenv \
-        python3-wheel \
+FROM ${EXTERNAL_REG}/python:${PYTHON_VERSION}-slim-bullseye as base
+
+RUN set -ex \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install \
+       -y --no-install-recommends locales \
+    && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set locale
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
+    locale-gen
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
+
+
+FROM base as build
+
+RUN set -ex \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install \
+    -y --no-install-recommends \
+        build-essential \
+        gcc \
         libpq-dev \
+        git \
         libxml2-dev \
         libxslt-dev \
         libgeos-dev \
         libssl-dev \
         libffi-dev \
-        postgresql-client \
-        build-essential \
-        git-core \
-        vim \
-        wget \
-    && apt-get -q clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Define environment variables
+WORKDIR /opt/repos
+ARG CKAN_VERSION
+RUN git clone -b "$CKAN_VERSION" --depth 1 \
+    https://github.com/EnviDat/ckan-forked.git
+
+WORKDIR /opt/python
+# Requirements
+RUN pip install --no-cache-dir pipenv==11.9.0 \
+    # workarounds for python 3.9 + require setuptools <44
+    && sed -i -E "/zope\.interface/s/==.*/==5.2.0/" \
+       /opt/repos/ckan-forked/requirements.txt \
+    && sed -i -E "/markdown/s/==.*/==3.3.3/" \
+       /opt/repos/ckan-forked/requirements.txt \
+    && PIPENV_VENV_IN_PROJECT=1 pipenv install \
+       -r /opt/repos/ckan-forked/requirements.txt
+# CKAN
+RUN pipenv run python -m pip install -e \
+       "/opt/repos/ckan-forked"
+# Additional plugins
+COPY envidat_extensions.* /opt/repos/
+RUN chmod +x /opt/repos/envidat_extensions.sh \
+    && /opt/repos/envidat_extensions.sh
+
+RUN rm /opt/python/Pipfile /opt/python/Pipfile.lock
+
+
+
+FROM base as runtime
+
+ARG PYTHON_VERSION
+ARG CKAN_VERSION
+ARG MAINTAINER
+LABEL envidat.com.python-img-tag="${PYTHON_VERSION}" \
+      envidat.com.ckan-version="${CKAN_VERSION}" \
+      envidat.com.maintainer="${MAINTAINER}"
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONFAULTHANDLER=1
+
+RUN set -ex \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install \
+    -y --no-install-recommends \
+        libpcre3 \
+        postgresql-client \
+        libgeos-c1v5 \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /opt/python
+
+COPY --from=build \
+    /opt/python/ \
+    /opt/python/
+
+ENV PATH="/opt/python/.venv/bin:$PATH"
 ENV CKAN_HOME /usr/lib/ckan
-ENV CKAN_VENV $CKAN_HOME/venv
 ENV CKAN_CONFIG /etc/ckan
-ENV CKAN_STORAGE_PATH=/var/lib/ckan
 
-# Build-time variables specified by docker-compose.yml / .env
-ARG CKAN_SITE_URL
+COPY config/who.ini $CKAN_CONFIG/
+COPY ckan-entrypoint.sh /ckan-entrypoint.sh
 
-# Create ckan user
-RUN useradd -r -u 900 -m -c "ckan account" -d $CKAN_HOME -s /bin/false ckan
-
-# Setup virtual environment for CKAN
-RUN mkdir -p $CKAN_VENV $CKAN_CONFIG $CKAN_STORAGE_PATH && \
-    virtualenv $CKAN_VENV && \
-    ln -s $CKAN_VENV/bin/pip /usr/local/bin/ckan-pip &&\
-    ln -s $CKAN_VENV/bin/paster /usr/local/bin/ckan-paster
-
-# Setup CKAN
-ADD . $CKAN_VENV/src/ckan/
-RUN ckan-pip install -U pip && \
-    ckan-pip install --upgrade --no-cache-dir -r $CKAN_VENV/src/ckan/requirement-setuptools.txt && \
-    ckan-pip install --upgrade --no-cache-dir -r $CKAN_VENV/src/ckan/requirements-py2.txt && \
-    ckan-pip install -e $CKAN_VENV/src/ckan/ && \
-    ln -s $CKAN_VENV/src/ckan/ckan/config/who.ini $CKAN_CONFIG/who.ini && \
-    cp -v $CKAN_VENV/src/ckan/contrib/docker/ckan-entrypoint.sh /ckan-entrypoint.sh && \
-    chmod +x /ckan-entrypoint.sh && \
-    chown -R ckan:ckan $CKAN_HOME $CKAN_VENV $CKAN_CONFIG $CKAN_STORAGE_PATH
+# Upgrade pip & pre-compile deps to .pyc, add ckan user, permissions
+RUN /opt/python/.venv/bin/python -m pip install --no-cache --upgrade pip \
+    && python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)" \
+    && useradd -r -u 900 -m -c "ckan account" -d $CKAN_HOME -s /bin/false ckan \
+    && chmod +x /ckan-entrypoint.sh \
+    && chown -R ckan:ckan $CKAN_HOME $CKAN_CONFIG
 
 ENTRYPOINT ["/ckan-entrypoint.sh"]
-
 USER ckan
 EXPOSE 5000
-
-CMD ["ckan-paster","serve","/etc/ckan/production.ini"]
+CMD ["ckan", "-c", "/etc/ckan/production.ini", "run", "--host", "0.0.0.0"]

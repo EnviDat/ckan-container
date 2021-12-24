@@ -8,8 +8,6 @@ volumes:
   solr_data:
 
 secrets:
-  db_secret:
-    file: ./${CKAN_DB_SECRET_FILE:-/dev/null}
   ckan_config:
     file: ./${CKAN_CONFIG_FILE:-/dev/null}
 
@@ -26,6 +24,8 @@ services:
     build:
       context: .
       args:
+        - EXTERNAL_REG=${EXTERNAL_REG}
+        - PYTHON_VERSION=${PYTHON_VERSION}
         - CKAN_VERSION=${CKAN_VERSION}
         - MAINTAINER=${MAINTAINER}
     depends_on:
@@ -35,7 +35,6 @@ services:
     env_file:
       - .env
     secrets:
-      - db_secret
       - ckan_config
     volumes:
       - ckan_config:/etc/ckan
@@ -47,7 +46,11 @@ services:
   db:
     container_name: ckan_db
     image: "reg.dev.localhost/ckan-db:latest"
-    build: ./postgresql
+    build:
+      context: ./postgresql
+      args:
+        - EXTERNAL_REG=${EXTERNAL_REG}
+        - MAINTAINER=${MAINTAINER}
     env_file:
       - .db.secret
     environment:
@@ -65,7 +68,11 @@ services:
   solr:
     container_name: ckan_solr
     image: "reg.dev.localhost/ckan-solr:latest"
-    build: ./solr
+    build:
+      context: ./solr
+      args:
+        - EXTERNAL_REG=${EXTERNAL_REG}
+        - MAINTAINER=${MAINTAINER}
     volumes:
       - solr_data:/opt/solr/server/solr
     networks:

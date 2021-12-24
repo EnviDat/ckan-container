@@ -1,0 +1,3 @@
+*.secret
+ckan.ini
+production.ini
