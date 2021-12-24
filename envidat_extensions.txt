@@ -1,6 +1,6 @@
 git+https://github.com/EnviDat/ckanext-datacite_publication.git
-git+https://github.com/EnviDat/ckanext-scheming.git
 git+https://github.com/EnviDat/ckanext-repeating.git
+git+https://github.com/EnviDat/ckanext-scheming.git
 git+https://github.com/EnviDat/ckanext-composite.git
 git+https://github.com/EnviDat/ckanext-cloudstorage.git
 git+https://github.com/EnviDat/ckanext-package_converter.git
