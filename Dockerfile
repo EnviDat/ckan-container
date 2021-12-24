@@ -52,14 +52,15 @@ RUN pip install --no-cache-dir pipenv==11.9.0 \
     && PIPENV_VENV_IN_PROJECT=1 pipenv install \
        -r /opt/repos/ckan-forked/requirements.txt
 # CKAN
-RUN pipenv run python -m pip install -e \
-       "/opt/repos/ckan-forked"
+RUN PIPENV_VENV_IN_PROJECT=1 pipenv run \
+        python -m pip install -e "/opt/repos/ckan-forked"
 # Additional plugins
 COPY envidat_extensions.* /opt/repos/
 RUN chmod +x /opt/repos/envidat_extensions.sh \
     && /opt/repos/envidat_extensions.sh
-
-RUN rm /opt/python/Pipfile /opt/python/Pipfile.lock
+RUN PIPENV_VENV_IN_PROJECT=1 pipenv run \
+        python -m pip install -r "/opt/repos/envidat_extensions.txt" \
+    && rm /opt/python/Pipfile /opt/python/Pipfile.lock
 
 
 
