@@ -5,3 +5,5 @@
 !envidat_extensions.*
 !ckan-entrypoint.sh
 !config/who.ini
+!solr/*.xml
+!solr/*.txt

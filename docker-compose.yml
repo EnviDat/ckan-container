@@ -30,6 +30,8 @@ services:
         - MAINTAINER=${MAINTAINER}
     depends_on:
       - db
+      - solr
+      - redis
     ports:
       - "8989:5000"
     env_file:
