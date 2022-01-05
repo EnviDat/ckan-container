@@ -105,7 +105,8 @@ RUN /opt/python/.venv/bin/python -m pip install --no-cache --upgrade pip \
     && python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)" \
     && useradd -r -u 900 -m -c "ckan account" -d $CKAN_HOME -s /bin/false ckan \
     && chmod +x /ckan-entrypoint.sh \
-    && chown -R ckan:ckan $CKAN_HOME $CKAN_CONFIG /opt/python
+    && mkdir -p $CKAN_HOME $CKAN_CONFIG /var/lib/ckan \
+    && chown -R ckan:ckan $CKAN_HOME $CKAN_CONFIG /var/lib/ckan /opt/python
 
 ENTRYPOINT ["/ckan-entrypoint.sh"]
 USER ckan
