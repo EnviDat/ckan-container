@@ -12,7 +12,10 @@ RUN mkdir -p /opt/solr/server/solr/$SOLR_CORE/conf \
     && mkdir -p /opt/solr/server/solr/$SOLR_CORE/data
 
 # Add Config Files
-COPY . /opt/solr/server/solr/$SOLR_CORE/conf/
+COPY --chown=solr:solr *.txt *.xml /opt/solr/server/solr/$SOLR_CORE/conf/
+# Check location of security.json
+COPY --chown=solr:solr security.json /opt/solr/server/solr/security.json
+COPY --chown=solr:solr jts-core-1.14.0.jar /opt/solr/server/solr-webapp/webapp/WEB-INF/lib/
 
 # Create Core.properties
 RUN echo name=$SOLR_CORE > /opt/solr/server/solr/$SOLR_CORE/core.properties
