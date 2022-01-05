@@ -10,6 +10,12 @@ volumes:
 secrets:
   ckan_config:
     file: ./${CKAN_CONFIG_FILE:-/dev/null}
+  db_init_pass:
+    file: ./${CKAN_DB_INIT_PASS_FILE:-/dev/null}
+  db_env_secret:
+    file: ./${CKAN_DB_SECRET_FILE:-/dev/null}
+  solr_creds:
+    file: ./${CKAN_SOLR_CREDS_FILE:-/dev/null}
 
 networks:
   ckan-internal:
@@ -53,14 +59,14 @@ services:
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
         - MAINTAINER=${MAINTAINER}
-    env_file:
-      - .db.secret
     environment:
       - PGDATA=/var/lib/postgresql/data/db
+      - POSTGRES_PASSWORD_FILE=/run/secrets/db_init_pass
+    secrets:
+      - db_init_pass
+      - db_env_secret
     volumes:
       - pg_data:/var/lib/postgresql/data
-      - ./${CKAN_DB_DUMP_FILE:-/dev/null}:/docker-entrypoint-initdb.d/ckan.dump
-      - ./${DOI_DB_DUMP_FILE:-/dev/null}:/docker-entrypoint-initdb.d/doi.dump
     networks:
       - ckan-internal
       - db-inspect
@@ -79,8 +85,21 @@ services:
       - solr_data:/opt/solr/server/solr
     networks:
       - ckan-internal
-    ports:
-      - 8983:8983
+
+  init-solr:
+    container_name: ckan_init_solr
+    image: "${INTERNAL_REG}/ckan-init-solr:latest"
+    build:
+      context: ./init_solr
+      args:
+        - EXTERNAL_REG=${EXTERNAL_REG}
+        - MAINTAINER=${MAINTAINER}
+    secrets:
+      - solr_creds
+    networks:
+      - ckan-internal
+    depends_on:
+      - solr
 
   redis:
     container_name: ckan_redis
