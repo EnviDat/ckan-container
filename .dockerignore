@@ -4,4 +4,4 @@
 # Allow files and directories
 !envidat_extensions.*
 !ckan-entrypoint.sh
-!config/who.ini
+!who.ini
