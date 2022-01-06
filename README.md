@@ -9,6 +9,8 @@ Use cases:
 
 ## Add secrets before running
 
+_ckan.ini_ contains the config for CKAN, including connection urls
+
 _.postgres.secret_ contains the password for postgres superuser only
 
 _.db.secret_ contains the postgres connection credentials for
@@ -24,6 +26,11 @@ connecting as users for Solr, in format:
 SOLR_ADMIN_PASS=xxxxxx
 SOLR_CKAN_PASS=xxxxxx
 
+## Modify .env for environment
+
+- Change the _INTERNAL_REG_ variable to match the desired container registry.
+
 ## Running
 
-- Once the secrets are set, run with `docker compose up -d`
+- Once the .env is configured, build the images with `docker compose build`
+- Then once the secrets are set, run with `docker compose up -d`
