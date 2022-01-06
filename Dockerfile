@@ -3,6 +3,13 @@ ARG PYTHON_VERSION
 
 FROM ${EXTERNAL_REG}/python:${PYTHON_VERSION}-slim-bullseye as base
 
+ARG PYTHON_VERSION
+ARG CKAN_VERSION
+ARG MAINTAINER
+LABEL envidat.com.python-img-tag="${PYTHON_VERSION}" \
+      envidat.com.ckan-version="${CKAN_VERSION}" \
+      envidat.com.maintainer="${MAINTAINER}"
+
 RUN set -ex \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install \
@@ -66,12 +73,6 @@ RUN PIPENV_VENV_IN_PROJECT=1 pipenv run \
 
 FROM base as runtime
 
-ARG PYTHON_VERSION
-ARG CKAN_VERSION
-ARG MAINTAINER
-LABEL envidat.com.python-img-tag="${PYTHON_VERSION}" \
-      envidat.com.ckan-version="${CKAN_VERSION}" \
-      envidat.com.maintainer="${MAINTAINER}"
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONFAULTHANDLER=1
