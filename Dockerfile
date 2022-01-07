@@ -99,7 +99,7 @@ ENV PATH="/opt/python/.venv/bin:$PATH"
 ENV CKAN_HOME /usr/lib/ckan
 ENV CKAN_CONFIG /etc/ckan
 
-COPY who.ini envidat_licences.json $CKAN_CONFIG/
+COPY who.ini envidat_licenses.json $CKAN_CONFIG/
 COPY ckan-entrypoint.sh /ckan-entrypoint.sh
 
 # Upgrade pip & pre-compile deps to .pyc, add ckan user, permissions
