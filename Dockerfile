@@ -65,6 +65,7 @@ RUN PIPENV_VENV_IN_PROJECT=1 pipenv run \
 COPY envidat_extensions.* /opt/repos/
 RUN chmod +x /opt/repos/envidat_extensions.sh \
     && /opt/repos/envidat_extensions.sh
+ADD https://google.com cache_bust
 RUN PIPENV_VENV_IN_PROJECT=1 pipenv run \
         python -m pip install -r "/opt/repos/envidat_extensions.txt" \
     && rm /opt/python/Pipfile /opt/python/Pipfile.lock

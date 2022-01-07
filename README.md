@@ -34,3 +34,18 @@ SOLR_CKAN_PASS=xxxxxx
 
 - Once the .env is configured, build the images with `docker compose build`
 - Then once the secrets are set, run with `docker compose up -d`
+
+## Reinstalling ckanext_xxx after editing
+
+```bash
+GIT_REPO=https://github.com/EnviDat/ckanext-cloudstorage.git
+GIT_BRANCH=main
+
+docker exec -it -u root:root ckan \
+    bash -c 'apt update \
+    && apt install git -y --no-install-recommends'
+
+docker exec -it -u root:root ckan \
+    pip install --upgrade --no-deps --force-reinstall \
+    "git+${GIT_REPO}@${GIT_BRANCH}"
+```
