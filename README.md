@@ -9,11 +9,11 @@ Use cases:
 
 ## Add secrets before running
 
-_ckan.ini_ contains the config for CKAN, including connection urls
+**ckan.ini** contains the config for CKAN, including connection urls
 
-_.postgres.secret_ contains the password for postgres superuser only
+**.postgres.secret** contains the password for postgres superuser only
 
-_.db.secret_ contains the postgres connection credentials for
+**.db.secret** contains the postgres connection credentials for
 the remote database (for replication), in format:
 CKAN_DB_HOST=xxxxxx.wsl.ch
 CKAN_DB_NAME=ckan_default
@@ -21,7 +21,7 @@ CKAN_DB_USER=ckan_default
 CKAN_DB_PASS=xxxxxx
 CKAN_DOI_DB_NAME=envidat_doi
 
-_.solr.secret_ contains the credentials for setting and
+**.solr.secret** contains the credentials for setting and
 connecting as users for Solr, in format:
 SOLR_ADMIN_PASS=xxxxxx
 SOLR_CKAN_PASS=xxxxxx
