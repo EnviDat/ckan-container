@@ -15,16 +15,20 @@ Use cases:
 
 **.db.secret** contains the postgres connection credentials for
 the remote database (for replication), in format:
+```
 CKAN_DB_HOST=xxxxxx.wsl.ch
 CKAN_DB_NAME=envidat
 CKAN_DB_USER=xxenvidat
 CKAN_DB_PASS=xxxxxx
 CKAN_DOI_DB_NAME=envidat_doi
+```
 
 **.solr.secret** contains the credentials for setting and
 connecting as users for Solr, in format:
+```
 SOLR_ADMIN_PASS=xxxxxx
 SOLR_CKAN_PASS=xxxxxx
+```
 
 ## Modify .env for environment
 
