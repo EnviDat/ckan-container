@@ -18,8 +18,6 @@ secrets:
 networks:
   ckan-internal:
     external: true
-  db-inspect:
-    external: true
 
 services:
   ckan:
@@ -65,7 +63,6 @@ services:
       - pg_data:/var/lib/postgresql/data
     networks:
       - ckan-internal
-      - db-inspect
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "$CKAN_DB_USER"]
 
