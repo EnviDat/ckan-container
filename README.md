@@ -8,10 +8,14 @@ Use cases:
 - Running production CKAN with an existing database.
 
 ## Add secrets before running
+- Create four secret files in the root of the repo:
 
 **ckan.ini** contains the config for CKAN, including connection urls
 
 **.postgres.secret** contains the password for postgres superuser only
+```
+PASSWORDHERE
+```
 
 **.db.secret** contains the postgres connection credentials for
 the remote database (for replication), in format:

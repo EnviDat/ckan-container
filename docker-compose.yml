@@ -64,7 +64,7 @@ services:
     networks:
       - ckan-internal
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "$CKAN_DB_USER"]
+      test: ["CMD", "pg_isready", "-U", "dbenvidat"]
 
   solr:
     container_name: ckan_solr
