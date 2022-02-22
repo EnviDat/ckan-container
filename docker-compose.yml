@@ -67,7 +67,7 @@ services:
       - ckan-internal
       - db-inspect
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "ckan_default"]
+      test: ["CMD", "pg_isready", "-U", "$CKAN_DB_USER"]
 
   solr:
     container_name: ckan_solr
