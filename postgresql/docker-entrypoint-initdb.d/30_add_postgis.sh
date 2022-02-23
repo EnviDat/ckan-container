@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-psql -v ON_ERROR_STOP=1 --username postgres --dbname postgres <<-EOSQL
+psql -v ON_ERROR_STOP=1 --username postgres --dbname "$DB_CKAN_NAME" <<-EOSQL
     CREATE EXTENSION IF NOT EXISTS postgis;
     CREATE EXTENSION IF NOT EXISTS postgis_topology;
     CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
