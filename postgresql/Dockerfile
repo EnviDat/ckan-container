@@ -1,5 +1,5 @@
 ARG EXTERNAL_REG
-FROM ${EXTERNAL_REG}/postgis/postgis:12-3.1
+FROM ${EXTERNAL_REG}/postgis/postgis:14-3.2
 
 ARG MAINTAINER
 LABEL maintainer="${MAINTAINER}" 

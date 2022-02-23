@@ -20,11 +20,11 @@ PASSWORDHERE
 **.db.secret** contains the postgres connection credentials for
 the remote database (for replication), in format:
 ```
-CKAN_DB_HOST=xxxxxx.wsl.ch
-CKAN_DB_NAME=envidat
-CKAN_DB_USER=xxenvidat
-CKAN_DB_PASS=xxxxxx
-CKAN_DOI_DB_NAME=envidat_doi
+DB_HOST=xxxxxx.wsl.ch
+DB_CKAN_NAME=envidat
+DB_USER=xxenvidat
+DB_PASS=xxxxxx
+DB_DOI_NAME=envidat_doi
 ```
 
 **.solr.secret** contains the credentials for setting and

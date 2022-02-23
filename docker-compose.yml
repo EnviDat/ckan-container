@@ -61,10 +61,13 @@ services:
       - db_env_secret
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - /etc/hosts:/etc/hosts:ro
     networks:
       - ckan-internal
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "dbenvidat"]
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+    ports:
+      - 9432:5432
 
   solr:
     container_name: ckan_solr
