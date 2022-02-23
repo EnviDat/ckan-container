@@ -66,8 +66,6 @@ services:
       - ckan-internal
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres"]
-    ports:
-      - 9432:5432
 
   solr:
     container_name: ckan_solr
