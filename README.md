@@ -7,19 +7,26 @@ Use cases:
 - Replicating an existing database, then running a dev CKAN server.
 - Running production CKAN with an existing database.
 
-## Add secrets before running
-- Create four secret files in the root of the repo:
+## Production
 
-**ckan.ini** contains the config for CKAN, including connection urls
+- Helm deploy from chart dir.
 
-**.postgres.secret** contains the password for postgres superuser only
-```
-PASSWORDHERE
-```
+## Development
 
-**.db.secret** contains the postgres connection credentials for
-the remote database (for replication), in format:
+#### Modify .env for environment
+
+- Optional: change versions, registry connections.
+
+#### Add secrets before running
+- Create three files in the root of the repo:
+
+**ckan.ini** contains the config for CKAN, including connection urls.
+
+**.db.env** contains:
+- Postgres password for local database.
+- Credentials the remote database to replicate:
 ```
+POSTGRES_PASSWORD=xxxxxx
 DB_HOST=xxxxxx.wsl.ch
 DB_CKAN_NAME=envidat
 DB_USER=xxenvidat
@@ -27,23 +34,19 @@ DB_PASS=xxxxxx
 DB_DOI_NAME=envidat_doi
 ```
 
-**.solr.secret** contains the credentials for setting and
-connecting as users for Solr, in format:
+**.solr.env** contains:
+- Credentials for setting and connecting as users for Solr:
 ```
 SOLR_ADMIN_PASS=xxxxxx
 SOLR_CKAN_PASS=xxxxxx
 ```
 
-## Modify .env for environment
-
-- Change the _INTERNAL_REG_ variable to match the desired container registry.
-
-## Running
+#### Running
 
 - Once the .env is configured, build the images with `docker compose build`
 - Then once the secrets are set, run with `docker compose up -d`
 
-## Reinstalling ckanext_xxx after editing
+#### Reinstalling ckanext_xxx after editing
 
 ```bash
 GIT_REPO=https://github.com/EnviDat/ckanext-cloudstorage.git
