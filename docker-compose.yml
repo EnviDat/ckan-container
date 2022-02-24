@@ -5,16 +5,6 @@ volumes:
   pg_data:
   solr_data:
 
-secrets:
-  ckan_config:
-    file: ./${CKAN_CONFIG_FILE:-/dev/null}
-  db_init_pass:
-    file: ./${CKAN_DB_INIT_PASS_FILE:-/dev/null}
-  db_env_secret:
-    file: ./${CKAN_DB_SECRET_FILE:-/dev/null}
-  solr_creds:
-    file: ./${CKAN_SOLR_CREDS_FILE:-/dev/null}
-
 networks:
   ckan-internal:
     external: true
@@ -38,10 +28,9 @@ services:
       - "8989:5000"
     env_file:
       - .env
-    secrets:
-      - ckan_config
     volumes:
       - ckan_storage:/var/lib/ckan
+      - ./ckan.ini:/home/ckan/ckan.ini
     networks:
       - ckan-internal
 
@@ -55,10 +44,8 @@ services:
         - MAINTAINER=${MAINTAINER}
     environment:
       - PGDATA=/var/lib/postgresql/data/db
-      - POSTGRES_PASSWORD_FILE=/run/secrets/db_init_pass
-    secrets:
-      - db_init_pass
-      - db_env_secret
+    env_file:
+      - .db.env
     volumes:
       - pg_data:/var/lib/postgresql/data
       - /etc/hosts:/etc/hosts:ro
@@ -88,8 +75,8 @@ services:
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
         - MAINTAINER=${MAINTAINER}
-    secrets:
-      - solr_creds
+    env_file:
+      - .solr.env
     networks:
       - ckan-internal
     depends_on:

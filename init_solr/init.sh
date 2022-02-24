@@ -5,11 +5,8 @@ abort () {
     exit 1
 }
 
-if [ -f "/run/secrets/solr_creds" ]; then
-    echo "Found solr credentials secret, sourcing..."
-    . "/run/secrets/solr_creds"
-else
-    abort "ERROR: Solr credentials secret not found."
+if [ -z "$SOLR_CKAN_PASS" ]; then
+    abort "ERROR: Solr passwords not set in environment."
 fi
 
 echo "Sleeping 5 seconds."

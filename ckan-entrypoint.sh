@@ -9,20 +9,15 @@ abort () {
     exit 1
 }
 
-if [ -z "$CKAN_CONFIG_PATH" ]; then
-    if [ -f "/run/secrets/ckan_config" ]; then
-        echo "Linking existing config to $CONFIG"
-        ln -sf /run/secrets/ckan_config "$CONFIG"
-        echo "Extracting CKAN_SQLALCHEMY_URL"
-        CKAN_SQLALCHEMY_URL=$(awk -F " = " '/sqlalchemy.url/ {print $2;exit;}' "$CONFIG")
-        SOLR_USER=$(awk -F " = " '/solr_user/ {print $2;exit;}' "$CONFIG")
-        SOLR_PASS=$(awk -F " = " '/solr_password/ {print $2;exit;}' "$CONFIG")
-    else
-        abort "ERROR: CKAN_CONFIG_PATH specified, but file doesn't exist."
-    fi
-
+if [ -f "/home/ckan/ckan.ini" ]; then
+    echo "Linking existing config to $CONFIG"
+    ln -sf /home/ckan/ckan.ini "$CONFIG"
+    echo "Extracting CKAN_SQLALCHEMY_URL"
+    CKAN_SQLALCHEMY_URL=$(awk -F " = " '/sqlalchemy.url/ {print $2;exit;}' "$CONFIG")
+    SOLR_USER=$(awk -F " = " '/solr_user/ {print $2;exit;}' "$CONFIG")
+    SOLR_PASS=$(awk -F " = " '/solr_password/ {print $2;exit;}' "$CONFIG")
 else
-    abort "ERROR: No CKAN config file provided."
+    abort "ERROR: No ckan.ini file found."
 fi
 
 # Wait for PostgreSQL

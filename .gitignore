@@ -1,3 +1,4 @@
-*.secret
+.db.env
+.solr.env
 ckan.ini
 production.ini
