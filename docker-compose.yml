@@ -12,7 +12,7 @@ networks:
 services:
   ckan:
     container_name: ckan
-    image: "${INTERNAL_REG}/ckan:${CKAN_VERSION}"
+    image: "${INTERNAL_REG}/ckan:${CKAN_VERSION}-main"
     build:
       context: .
       args:
@@ -36,11 +36,13 @@ services:
 
   db:
     container_name: ckan_db
-    image: "${INTERNAL_REG}/ckan-db:latest"
+    image: "${INTERNAL_REG}/ckan-db:${POSTGRES_VERSION}-${POSTGIS_VERSION}-main"
     build:
       context: ./postgresql
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
+        - POSTGRES_VERSION=${POSTGRES_VERSION}
+        - POSTGIS_VERSION=${POSTGIS_VERSION}
         - MAINTAINER=${MAINTAINER}
     environment:
       - PGDATA=/var/lib/postgresql/data/db
@@ -56,11 +58,12 @@ services:
 
   solr:
     container_name: ckan_solr
-    image: "${INTERNAL_REG}/ckan-solr:latest"
+    image: "${INTERNAL_REG}/ckan-solr:${SOLR_VERSION}-main"
     build:
       context: ./solr
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
+        - SOLR_VERSION=${SOLR_VERSION}
         - MAINTAINER=${MAINTAINER}
     volumes:
       - solr_data:/opt/solr/server/solr
@@ -69,7 +72,7 @@ services:
 
   init-solr:
     container_name: ckan_init_solr
-    image: "${INTERNAL_REG}/ckan-init-solr:latest"
+    image: "${INTERNAL_REG}/ckan-init-solr:${SOLR_VERSION}-main"
     build:
       context: ./init_solr
       args:
@@ -84,6 +87,6 @@ services:
 
   redis:
     container_name: ckan_redis
-    image: redis:6.2
+    image: redis:${REDIS_VERSION}
     networks:
       - ckan-internal
