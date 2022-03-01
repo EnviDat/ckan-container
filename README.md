@@ -31,6 +31,7 @@ ckanext.cloudstorage.container_name = envidat-dev
 ckanext.cloudstorage.driver_options = {"key": "xxx", "secret": "xxx", "host": "minio-s3.minio.svc.cluster.local:9000"}
 ckanext.cloudstorage.use_secure_urls = 0
 ```
+- Refer to other secrets in chart/README.md
 
 ## Development
 
