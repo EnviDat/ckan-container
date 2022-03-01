@@ -11,7 +11,7 @@ if [ -z "$SOLR_HOST" ]; then
 fi
 if [ -z "$SOLR_ADMIN_PASS" ]; then
     abort "ERROR: Solr admin password not set in environment."
-    fi
+fi
 if [ -z "$SOLR_CKAN_PASS" ]; then
     abort "ERROR: Solr user password not set in environment."
 fi
