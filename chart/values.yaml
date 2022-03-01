@@ -196,3 +196,16 @@ solr:
   passwordInit:
     image: registry.envidat.ch/envidat/ckan-init-solr:6.6.5-main
     credentialsSecret: solr-ckan-creds
+
+redis:
+  enabled: true
+  master:
+    resources:
+      limits:
+        cpu: 500m
+        memory: 500Mi
+      requests:
+        cpu: 100m
+        memory: 100Mi
+  replica:
+    replicaCount: 0
