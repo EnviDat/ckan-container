@@ -2,3 +2,4 @@
 .solr.env
 **/**ckan.ini
 production.ini
+chart/charts/*

@@ -1,0 +1,19 @@
+{{- if .Values.solr.enabled }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "chart.fullname" . }}
+  labels:
+    {{- include "chart.labels" . | nindent 4 }}
+spec:
+  template:
+    spec:
+      containers:
+      - name: solr-init-passwords
+        image: "{{ .Values.image.repository }}-init-solr:{{ .Values.solr.image.tag }}"
+        imagePullPolicy: IfNotPresent
+        envFrom:
+        - secretRef:
+            name: {{ .Values.solr.passwordInit.credentialsSecret }}
+      restartPolicy: OnFailure
+    {{- end }}

@@ -10,6 +10,27 @@ Use cases:
 ## Production
 
 - Helm deploy from chart dir.
+- Modify Helm values:
+```yaml
+ingress.hosts: xxx
+```
+- Modify ckan.ini secret
+```ini
+ckan.site_url = ingress_host_url
+sqlalchemy.url = SERVICE_NAME.NAMESPACE.svc.cluster.local:5432
+solr_url = SERVICE_NAME.NAMESPACE.svc.cluster.local:8983
+solr_password = xxx
+ckan.redis.url = SERVICE_NAME.NAMESPACE.svc.cluster.local:6379
+datacite_publication.sqlalchemy.url = SERVICE_NAME.NAMESPACE.svc.cluster.local:5432
+datacite_publication.site_id = xxx
+datacite_publication.url_prefix = https://ingress_host_url/dataset/
+datacite_publication.datacite_url = https://api.test.datacite.org/dois
+datacite_publication.account_name = xxx
+datacite_publication.account_password = xxx
+ckanext.cloudstorage.container_name = envidat-dev
+ckanext.cloudstorage.driver_options = {"key": "xxx", "secret": "xxx", "host": "minio-s3.minio.svc.cluster.local:9000"}
+ckanext.cloudstorage.use_secure_urls = 0
+```
 
 ## Development
 
@@ -37,6 +58,7 @@ DB_DOI_NAME=envidat_doi
 **.solr.env** contains:
 - Credentials for setting and connecting as users for Solr:
 ```
+SOLR_HOST=http://solr:8983
 SOLR_ADMIN_PASS=xxxxxx
 SOLR_CKAN_PASS=xxxxxx
 ```

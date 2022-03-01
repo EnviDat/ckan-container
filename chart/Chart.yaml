@@ -1,0 +1,22 @@
+apiVersion: v2
+type: application
+name: ckan
+description: CKAN backend for envidat.ch.
+version: 0.1.0
+appVersion: "2.9-master"
+maintainers:
+- email: samuel.woodcock@wsl.ch
+  name: Sam Woodcock
+home: https://github.com/EnviDat/ckan-container/tree/master/chart
+icon: https://ckan.org/static/img/ckan.ico
+dependencies:
+  - name: postgresql
+    version: 11.1.3
+    repository: https://charts.bitnami.com/bitnami
+    condition: db.enabled
+    alias: db
+  - name: solr
+    version: 3.0.6
+    repository: https://charts.bitnami.com/bitnami
+    condition: solr.enabled
+    alias: solr
