@@ -69,29 +69,29 @@ ckan-build:
   extends:
     - .build
   variables:
-    - IMAGE_NAME=${CKAN_IMAGE}
-    - CONTEXT_DIR="${CI_PROJECT_DIR}"
+    IMAGE_NAME: ${CKAN_IMAGE}
+    CONTEXT_DIR: "${CI_PROJECT_DIR}"
 
 db-build:
   extends:
     - .build
   variables:
-    - IMAGE_NAME=${DB_IMAGE}
-    - CONTEXT_DIR="${CI_PROJECT_DIR}/postgresql"
+    IMAGE_NAME: ${DB_IMAGE}
+    CONTEXT_DIR: "${CI_PROJECT_DIR}/postgresql"
 
 solr-build:
   extends:
     - .build
   variables:
-    - IMAGE_NAME=${SOLR_IMAGE}
-    - CONTEXT_DIR="${CI_PROJECT_DIR}"/solr
+    IMAGE_NAME: ${SOLR_IMAGE}
+    CONTEXT_DIR: "${CI_PROJECT_DIR}/solr"
 
 solr-init-build:
   extends:
     - .build
   variables:
-    - IMAGE_NAME=${SOLR_INIT_IMAGE}
-    - CONTEXT_DIR="${CI_PROJECT_DIR}"/init_solr
+    IMAGE_NAME: ${SOLR_INIT_IMAGE}
+    CONTEXT_DIR: "${CI_PROJECT_DIR}/init_solr"
 
 .scan:
   stage: scan
@@ -136,29 +136,29 @@ ckan-scan:
   extends:
     - .scan
   variables:
-    - IMAGE_NAME=${CKAN_IMAGE}
-    - SHORT_NAME="ckan"
+    IMAGE_NAME: ${CKAN_IMAGE}
+    SHORT_NAME: "ckan"
 
 db-scan:
   extends:
     - .scan
   variables:
-    - IMAGE_NAME=${DB_IMAGE}
-    - SHORT_NAME="postgresql"
+    IMAGE_NAME: ${DB_IMAGE}
+    SHORT_NAME: "postgresql"
 
 solr-scan:
   extends:
     - .scan
   variables:
-    - IMAGE_NAME=${SOLR_IMAGE}
-    - SHORT_NAME="solr
+    IMAGE_NAME: ${SOLR_IMAGE}
+    SHORT_NAME: "solr"
 
 solr-init-scan:
   extends:
     - .scan
   variables:
-    - IMAGE_NAME=${SOLR_INIT_IMAGE}
-    - SHORT_NAME="init_solr
+    IMAGE_NAME: ${SOLR_INIT_IMAGE}
+    SHORT_NAME: "init_solr"
 
 .retag:
   stage: retag
@@ -183,22 +183,22 @@ ckan-retag:
   extends:
     - .retag
   variables:
-    - IMAGE_NAME=${CKAN_IMAGE}
+    IMAGE_NAME: ${CKAN_IMAGE}
 
 db-retag:
   extends:
     - .retag
   variables:
-    - IMAGE_NAME=${DB_IMAGE}
+    IMAGE_NAME: ${DB_IMAGE}
 
 solr-retag:
   extends:
     - .retag
   variables:
-    - IMAGE_NAME=${SOLR_IMAGE}
+    IMAGE_NAME: ${SOLR_IMAGE}
 
 solr-init-retag:
   extends:
     - .retag
   variables:
-    - IMAGE_NAME=${SOLR_INIT_IMAGE}
+    IMAGE_NAME: ${SOLR_INIT_IMAGE}
