@@ -1,9 +1,0 @@
-dependencies:
-- name: postgresql
-  repository: https://charts.bitnami.com/bitnami
-  version: 11.1.3
-- name: solr
-  repository: https://charts.bitnami.com/bitnami
-  version: 3.0.6
-digest: sha256:28ed8da4302f9a88075f506e88aeab06d31fd6560f1add7ab962c2d6204f7a2f
-generated: "2022-03-01T21:29:26.844270438+01:00"

@@ -180,6 +180,10 @@ solr:
       traefik.ingress.kubernetes.io/router.tls: "true"
     hostname: solr.envidat.ch
     tls: true
+  readinessProbe:
+    enabled: false
+  livenessProbe:
+    enabled: false
   zookeeper:
     enabled: false
   resources:

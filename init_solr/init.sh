@@ -9,15 +9,18 @@ abort () {
 if [ -z "$SOLR_HOST" ]; then
     abort "ERROR: Solr host url not set in environment."
 fi
+if [ -z "$SOLR_ADMIN_PASS" ]; then
+    abort "ERROR: Solr admin password not set in environment."
+    fi
 if [ -z "$SOLR_CKAN_PASS" ]; then
-    abort "ERROR: Solr password not set in environment."
+    abort "ERROR: Solr user password not set in environment."
 fi
 
 # Wait for Solr
 while [[ $response != "200" ]]; do
-    response=$(curl --user "$SOLR_USER:$SOLR_PASS" \
+    response=$(curl --user "solr:$SOLR_ADMIN_PASS" \
         -s -o /dev/null -I -w '%{http_code}' \
-        "$SOLR_HOST/solr/admin/cores?action=STATUS)"
+        "$SOLR_HOST/solr/admin/cores?action=STATUS")
     if [[ $response != "200" ]]; then
         echo "No response from Solr. Is it running?"
         sleep 5;
