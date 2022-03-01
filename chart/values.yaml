@@ -199,6 +199,8 @@ solr:
 
 redis:
   enabled: true
+  auth:
+    enabled: false
   master:
     resources:
       limits:
