@@ -1,4 +1,4 @@
 .db.env
 .solr.env
-ckan.ini
+**/**ckan.ini
 production.ini
