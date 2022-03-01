@@ -54,6 +54,7 @@ spec:
           volumeMounts:
           - name: ckan-config
             mountPath: /home/ckan/ckan.ini
+            subPath: ckan.ini
             readOnly: true
       volumes:
       - name: ckan-config
