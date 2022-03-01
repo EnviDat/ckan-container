@@ -14,9 +14,11 @@ if [ -f "/home/ckan/ckan.ini" ]; then
     ln -sf /home/ckan/ckan.ini "$CONFIG"
     echo "Extracting CKAN_SQLALCHEMY_URL"
     CKAN_SQLALCHEMY_URL=$(awk -F " = " '/sqlalchemy.url/ {print $2;exit;}' "$CONFIG")
-    SOLR_HOST=$(awk -F " = " '/solr_url/ {print $2;exit;}' "$CONFIG" | sed -e 's/\/s
-    olr\/ckan$//')
+    echo "Extracting SOLR_HOST"
+    SOLR_HOST=$(awk -F " = " '/solr_url/ {print $2;exit;}' "$CONFIG" | sed -e 's/\/solr\/ckan$//')
+    echo "Extracting SOLR_USER"
     SOLR_USER=$(awk -F " = " '/solr_user/ {print $2;exit;}' "$CONFIG")
+    echo "Extracting SOLR_PASS"
     SOLR_PASS=$(awk -F " = " '/solr_password/ {print $2;exit;}' "$CONFIG")
 else
     abort "ERROR: No ckan.ini file found."

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 abort () {
     echo "$@" >&2
@@ -8,17 +8,15 @@ abort () {
 # Check env vars
 if [ -z "$SOLR_HOST" ]; then
     abort "ERROR: Solr host url not set in environment."
-fi
-if [ -z "$SOLR_ADMIN_PASS" ]; then
+elif [ -z "$SOLR_ADMIN_PASS" ]; then
     abort "ERROR: Solr admin password not set in environment."
-fi
-if [ -z "$SOLR_CKAN_PASS" ]; then
+elif [ -z "$SOLR_CKAN_PASS" ]; then
     abort "ERROR: Solr user password not set in environment."
 fi
 
 # Wait for Solr
 while [[ $response != "200" ]]; do
-    response=$(curl --user "solr:$SOLR_ADMIN_PASS" \
+    response=$(curl --user "solr:SolrRocks" \
         -s -o /dev/null -I -w '%{http_code}' \
         "$SOLR_HOST/solr/admin/cores?action=STATUS")
     if [[ $response != "200" ]]; then
@@ -29,7 +27,7 @@ while [[ $response != "200" ]]; do
     fi
 done
 
-curl --user solr:SolrRocks \
+curl --user "solr:SolrRocks" \
     "$SOLR_HOST/solr/admin/authentication" \
     -H 'Content-type:application/json' \
     -d '{"set-user": {"solr" : "'"${SOLR_ADMIN_PASS}"'" }}'
