@@ -56,6 +56,10 @@ RUN pip install --no-cache-dir pipenv==11.9.0 \
        /opt/repos/ckan-forked/requirements.txt \
     && sed -i -E "/markdown/s/==.*/==3.3.3/" \
        /opt/repos/ckan-forked/requirements.txt \
+    # add flask-debugtoolbar to enable debug mode
+    && cat /opt/repos/ckan-forked/dev-requirements.txt \
+      | grep Flask-DebugToolbar \
+      >> /opt/repos/ckan-forked/requirements.txt \
     && PIPENV_VENV_IN_PROJECT=1 pipenv install \
        -r /opt/repos/ckan-forked/requirements.txt
 # CKAN
