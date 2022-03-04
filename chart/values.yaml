@@ -6,7 +6,7 @@ replicaCount: 1
 
 image:
   repository: registry.envidat.ch/envidat/ckan
-  pullPolicy: Always
+  pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
@@ -103,7 +103,7 @@ db:
         value: envidat
       - name: DB_DOI_NAME
         value: envidat_doi
-    extraEnvVarsSecret: db-ckan-backup-creds
+    extraEnvVarsSecret: db-ckan-backup-vars
     pgHbaConfiguration: |
       local all all trust
       host all all 127.0.0.1/32 trust
@@ -195,7 +195,8 @@ solr:
       memory: 500Mi
   passwordInit:
     image: registry.envidat.ch/envidat/ckan-init-solr:6.6.5-main
-    credentialsSecret: solr-ckan-creds
+    pullPolicy: IfNotPresent
+    credentialsSecret: solr-ckan-vars
 
 redis:
   enabled: true
