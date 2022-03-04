@@ -50,6 +50,6 @@ done
 ckan --config /etc/ckan/production.ini search-index rebuild --only-missing
 
 # Re-init cloudstorage db tables
-ckan --config /etc/ckan/production.ini cloudstorage dbinit
+ckan --config /etc/ckan/production.ini cloudstorage initdb
 
 exec "$@"
