@@ -37,8 +37,9 @@ while [[ $response != "200" ]]; do
     response=$(curl --user "$SOLR_USER:$SOLR_PASS" \
         -s -o /dev/null -I -w '%{http_code}' \
         "$SOLR_HOST/solr/admin/cores?action=STATUS")
+    echo "Response: $response"
     if [[ $response != "200" ]]; then
-        echo "No response from Solr. Is it running?"
+        echo "No status from Solr. Is it running or errored?"
         sleep 5;
     else
         echo "Successfully connected to Solr at $SOLR_HOST"
