@@ -52,6 +52,9 @@ ckan --config /etc/ckan/production.ini search-index rebuild --only-missing
 # Build web assets
 ckan --config /etc/ckan/production.ini asset build
 
+# Build frontend (compile js and css)
+ckan --config /etc/ckan/production.ini front-end-build
+
 # Re-init cloudstorage db tables
 ckan --config /etc/ckan/production.ini cloudstorage initdb
 
