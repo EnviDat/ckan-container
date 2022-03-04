@@ -17,6 +17,9 @@ fullnameOverride: ""
 
 configIniSecret: ckan-config-ini
 
+s3GroupImgs:
+  mountPath: /opt/ckan/data/storage/uploads/group
+
 extraEnv: []
 
 extraEnvFrom:

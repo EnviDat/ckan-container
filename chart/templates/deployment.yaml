@@ -29,8 +29,20 @@ spec:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       hostAliases:
         {{- toYaml .Values.hostAliases | nindent 8 }}
+      initContainers:
+        - name: copy-ckan-group-img
+          image: docker.io/rclone/rclone
+          imagePullPolicy: IfNotPresent
+          volumeMounts:
+            - name: rclone-config
+              mountPath: /config/rclone/rclone.conf
+              subPath: rclone.conf
+          command:
+            - sh
+            - -c
+            - rclone --verbose sync minio:ckan-group-img {{ .Values.s3GroupImgs.mountPath }}
       containers:
-        - name: {{ .Chart.Name }}-ckan
+        - name: {{ .Chart.Name }}
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
@@ -73,7 +85,10 @@ spec:
       volumes:
       - name: ckan-config
         secret:
-          secretName: {{ .Values.configIniSecret }}      
+          secretName: {{ .Values.configIniSecret }}
+      - name: rclone-config
+        secret:
+          secretName: minio-rclone-config     
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

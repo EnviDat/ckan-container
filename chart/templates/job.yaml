@@ -2,7 +2,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: {{ include "chart.fullname" . }}
+  name: {{ include "chart.fullname" . }}-solr-init
   labels:
     {{- include "chart.labels" . | nindent 4 }}
 spec:
