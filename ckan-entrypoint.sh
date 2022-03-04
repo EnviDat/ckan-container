@@ -31,6 +31,7 @@ while ! pg_isready -d "$CKAN_SQLALCHEMY_URL"; do
     sleep 1;
 done
 
+echo "Attempting connection to Solr, please wait..."
 # Wait for Solr
 while [[ $response != "200" ]]; do
     response=$(curl --user "$SOLR_USER:$SOLR_PASS" \
