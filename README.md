@@ -44,11 +44,8 @@ ckanext.cloudstorage.use_secure_urls = 0
 
 **ckan.ini** contains the config for CKAN, including connection urls.
 
-**.db.env** contains:
-- Postgres password for local database.
-- Credentials the remote database to replicate:
+**.db.env** contains credentials of the remote database to replicate.
 ```
-POSTGRES_PASSWORD=xxxxxx
 DB_HOST=xxxxxx.wsl.ch
 DB_CKAN_NAME=envidat
 DB_USER=xxenvidat
@@ -56,13 +53,6 @@ DB_PASS=xxxxxx
 DB_DOI_NAME=envidat_doi
 ```
 
-**.solr.env** contains:
-- Credentials for setting and connecting as users for Solr:
-```
-SOLR_HOST=http://solr:8983
-SOLR_ADMIN_PASS=xxxxxx
-SOLR_CKAN_PASS=xxxxxx
-```
 
 #### Running
 

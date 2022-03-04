@@ -12,6 +12,8 @@ abort () {
 if [ -f "/home/ckan/ckan.ini" ]; then
     echo "Linking existing config to $CONFIG"
     ln -sf /home/ckan/ckan.ini "$CONFIG"
+fi
+if [ -f "$CONFIG" ]; then
     echo "Extracting CKAN_SQLALCHEMY_URL"
     CKAN_SQLALCHEMY_URL=$(awk -F " = " '/sqlalchemy.url/ {print $2;exit;}' "$CONFIG")
     echo "Extracting SOLR_HOST"
@@ -38,7 +40,7 @@ while [[ $response != "200" ]]; do
         echo "No response from Solr. Is it running?"
         sleep 5;
     else
-        echo "Successfully connected to Solr."
+        echo "Successfully connected to Solr at $SOLR_HOST"
     fi
 done
 
