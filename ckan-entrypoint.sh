@@ -2,7 +2,7 @@
 set -eo pipefail
 
 CONFIG="${CKAN_CONFIG}/production.ini"
-export CKAN_STORAGE_PATH=/var/lib/ckan
+export CKAN_STORAGE_PATH=/opt/ckan/data
 
 abort () {
     echo "$@" >&2
@@ -48,6 +48,9 @@ done
 
 # Rebuild Solr search index
 ckan --config /etc/ckan/production.ini search-index rebuild --only-missing
+
+# Build web assets
+ckan --config /etc/ckan/production.ini asset build
 
 # Re-init cloudstorage db tables
 ckan --config /etc/ckan/production.ini cloudstorage initdb
