@@ -21,7 +21,7 @@ extraEnv: []
 
 extraEnvFrom:
   - secretRef:
-      name: solr-ckan-creds
+      name: solr-ckan-vars
 
 serviceAccount:
   # Specifies whether a service account should be created
