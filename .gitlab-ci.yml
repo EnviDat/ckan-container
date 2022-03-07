@@ -148,6 +148,7 @@ solr-scan:
   variables:
     IMAGE_NAME: ${SOLR_IMAGE}
     SHORT_NAME: "solr"
+  allow_failure: true
 
 solr-init-scan:
   extends:
