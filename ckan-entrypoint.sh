@@ -47,12 +47,15 @@ while [[ $response != "200" ]]; do
 done
 
 # Rebuild Solr search index
+echo "Rebuilding Solr search index..."
 ckan --config /etc/ckan/production.ini search-index rebuild --only-missing
 
 # Build web assets
+echo "Building web assets..."
 ckan --config /etc/ckan/production.ini asset build
 
 # Re-init cloudstorage db tables
+echo "Initialising cloudstorage database tables..."
 ckan --config /etc/ckan/production.ini cloudstorage initdb
 
 exec "$@"

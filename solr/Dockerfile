@@ -1,30 +1,45 @@
 ARG EXTERNAL_REG
 ARG SOLR_VERSION
 
-FROM ${EXTERNAL_REG}/solr:${SOLR_VERSION}
 
-ARG MAINTAINER
-LABEL maintainer="${MAINTAINER}" 
 
-# Enviroment
+FROM debian:bullseye as core-builder
+# Stage required due to /var/solr VOLUME directive in Solr img
+
 ENV SOLR_CORE ckan
 
-# Create Directories
-RUN mkdir -p /opt/solr/server/solr/$SOLR_CORE/conf \
-    && mkdir -p /opt/solr/server/solr/$SOLR_CORE/data
+# Create core directories
+RUN mkdir -p "/var/solr/data/$SOLR_CORE/conf" \
+    "/var/solr/data/$SOLR_CORE/data"
 
-# Add Config Files
-COPY --chown=solr:solr *.txt *.xml /opt/solr/server/solr/$SOLR_CORE/conf/
-# Check location of security.json
-COPY --chown=solr:solr security.json /opt/solr/server/solr/security.json
-COPY --chown=solr:solr jts-core-1.14.0.jar /opt/solr/server/solr-webapp/webapp/WEB-INF/lib/
+# Add config files
+COPY *.txt *.xml /var/solr/data/$SOLR_CORE/conf/
 
-# Create Core.properties
-RUN echo name=$SOLR_CORE > /opt/solr/server/solr/$SOLR_CORE/core.properties
+# Create core.properties
+RUN echo "name=$SOLR_CORE" > "/var/solr/data/$SOLR_CORE/core.properties"
 
-# Giving ownership to Solr
+
+
+FROM ${EXTERNAL_REG}/solr:${SOLR_VERSION}-slim
+
+ARG MAINTAINER
+LABEL maintainer="${MAINTAINER}"
+
 USER root
-RUN chown -R "$SOLR_USER:$SOLR_USER" "/opt/solr/server/solr/$SOLR_CORE"
 
-# User
+ENV SOLR_CORE ckan
+
+# Add Java Topology Suite (geometry handling)
+COPY --chown=solr:solr jts-core-1.18.2.jar /opt/solr/server/solr-webapp/webapp/WEB-INF/lib/
+
+# Add security.json for BasicAuth
+COPY --chown=solr:solr security.json /var/solr/data/security.json
+
+# Copy core from multistage
+COPY --chown=solr:solr --from=core-builder \
+    "/var/solr/data/$SOLR_CORE" "/var/solr/data/$SOLR_CORE"
+
+# Giving ownership to user Solr
+# RUN chown -R "$SOLR_USER:$SOLR_USER" "/var/solr/data/$SOLR_CORE"
+
 USER $SOLR_USER:$SOLR_USER

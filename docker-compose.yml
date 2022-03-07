@@ -71,9 +71,11 @@ services:
         - SOLR_VERSION=${SOLR_VERSION}
         - MAINTAINER=${MAINTAINER}
     volumes:
-      - solr_data:/opt/solr/server/solr
+      - solr_data:/var/solr/data
     networks:
       - ckan-internal
+    ports:
+      - "8988:8983"
 
   init-solr:
     container_name: ckan_init_solr

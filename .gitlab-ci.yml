@@ -20,22 +20,14 @@ set-vars:
   script:
     - cat .env >> build.env
     - source build.env
-    - >
-      echo "CKAN_IMAGE=${INTERNAL_REG}/ckan:
-      ${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
-      >> build.env
-    - >
-      echo "DB_IMAGE=${INTERNAL_REG}/ckan-db:
-      ${POSTGRES_VERSION}-${POSTGIS_VERSION}-${CI_COMMIT_REF_NAME}"
-      >> build.env
-    - >
-      echo "SOLR_IMAGE=${INTERNAL_REG}/ckan-solr:
-      ${SOLR_VERSION}-${CI_COMMIT_REF_NAME}"
-      >> build.env
-    - >
-      echo "SOLR_INIT_IMAGE=${INTERNAL_REG}/ckan-init-solr:
-      ${SOLR_VERSION}-${CI_COMMIT_REF_NAME}"
-      >> build.env
+    - "echo CKAN_IMAGE=${INTERNAL_REG}/ckan:\
+      ${CKAN_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
+    - "echo DB_IMAGE=${INTERNAL_REG}/ckan-db:\
+      ${POSTGRES_VERSION}-${POSTGIS_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
+    - "echo SOLR_IMAGE=${INTERNAL_REG}/ckan-solr:\
+      ${SOLR_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
+    - "echo SOLR_INIT_IMAGE=${INTERNAL_REG}/ckan-init-solr:\
+      ${SOLR_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
   artifacts:
     reports:
       dotenv: build.env
@@ -61,9 +53,13 @@ set-vars:
       --dockerfile "${CONTEXT_DIR}/Dockerfile"
       --cache=true
       --destination "${IMAGE_NAME}-unverified"
-      --build-arg MAINTAINER_APP="${MAINTAINER_APP}"
-      --build-arg MAINTAINER_CD="${MAINTAINER_CD}"
+      --build-arg MAINTAINER="${MAINTAINER}"
       --build-arg EXTERNAL_REG="${EXTERNAL_REG}"
+      --build-arg PYTHON_VERSION="${PYTHON_VERSION}"
+      --build-arg CKAN_VERSION="${CKAN_VERSION}"
+      --build-arg POSTGRES_VERSION="${POSTGRES_VERSION}"
+      --build-arg POSTGIS_VERSION="${POSTGIS_VERSION}"
+      --build-arg SOLR_VERSION="${SOLR_VERSION}"
 
 ckan-build:
   extends:
