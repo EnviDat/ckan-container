@@ -181,7 +181,7 @@ solr:
   image:
     registry: registry.envidat.ch
     repository: envidat/ckan-solr
-    tag: 6.6.5-main
+    tag: 8.11.1-main
   command: ""
   containerSecurityContext:
     runAsUser: 8983
@@ -211,7 +211,7 @@ solr:
       cpu: 500m
       memory: 500Mi
   passwordInit:
-    image: registry.envidat.ch/envidat/ckan-init-solr:6.6.5-main
+    image: registry.envidat.ch/envidat/ckan-init-solr:8.11.1-main
     pullPolicy: IfNotPresent
     credentialsSecret: solr-ckan-vars
 
