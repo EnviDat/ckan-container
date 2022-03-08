@@ -1,7 +1,7 @@
 stages:
   - build
   - scan
-  - retag
+  - package
 
 variables:
   ARTIFACT_COMPRESSION_LEVEL: "fast"
@@ -158,7 +158,7 @@ solr-init-scan:
     SHORT_NAME: "init_solr"
 
 .retag:
-  stage: retag
+  stage: package
   image: docker.io/regclient/regctl:v0.3-alpine
   variables:
     GIT_STRATEGY: none
@@ -199,3 +199,31 @@ solr-init-retag:
     - .retag
   variables:
     IMAGE_NAME: ${SOLR_INIT_IMAGE}
+
+create-helm-chart:
+  stage: package
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "main"
+      when: always
+  image:
+    name: docker.io/alpine/helm:3.8.0
+    entrypoint: [""]
+  before_script:
+    - > 
+      apk add yq --no-cache 
+      --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+    - >
+      echo "${IMAGE_REGISTRY_CA_CERT}"
+      | base64 -d >> /etc/ssl/certs/ca-certificates.crt
+    - mkdir -p /root/.config/helm/registry
+    - >
+      echo "{\"auths\":{\"${INTERNAL_REG}\":{\"auth\":\"$(printf "%s:%s"
+      "${IMAGE_REGISTRY_USER}" "${IMAGE_REGISTRY_PASS}" | base64
+      | tr -d '\n')\"}}}" > /root/.config/helm/registry/config.json
+    - export HELM_APP_VERSION="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
+  script:
+    - helm dependencies build chart
+    - yq -i '.appVersion = strenv(HELM_APP_VERSION)' chart/Chart.yaml
+    - helm package chart
+    - CHART_VER=$(yq '.version' chart/Chart.yaml)
+    - helm push "ckan-${CHART_VER}.tgz" oci://registry.envidat.ch/envidat
