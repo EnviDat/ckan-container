@@ -2,6 +2,7 @@ stages:
   - build
   - scan
   - package
+  - deploy
 
 variables:
   ARTIFACT_COMPRESSION_LEVEL: "fast"
@@ -11,15 +12,24 @@ workflow:
   rules:
     - if: $CI_COMMIT_REF_NAME == "main"
       when: always
+    - if: $CI_COMMIT_REF_NAME == "dev"
+      when: always
     - if: '$CI_PIPELINE_SOURCE == "web"'
       when: always
 
 set-vars:
   stage: .pre
   image: docker.io/alpine:3.15
+  before_script:
+    - >
+      apk add jq yq --no-cache
+      --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
   script:
     - cat .env >> build.env
     - source build.env
+    - echo "NAMESPACE=ckan" >> build.env
+    - echo "APP_NAME=ckan-${CI_COMMIT_REF_NAME}" >> build.env
+    - echo CHART_VERSION=$(yq '.version' chart/Chart.yaml) >> build.env    
     - "echo CKAN_IMAGE=${INTERNAL_REG}/ckan:\
       ${CKAN_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
     - "echo DB_IMAGE=${INTERNAL_REG}/ckan-db:\
@@ -200,18 +210,12 @@ solr-init-retag:
   variables:
     IMAGE_NAME: ${SOLR_INIT_IMAGE}
 
-create-helm-chart:
-  stage: package
-  rules:
-    - if: $CI_COMMIT_REF_NAME == "main"
-      when: always
+.helm:
+  stage: deploy
   image:
     name: docker.io/alpine/helm:3.8.0
     entrypoint: [""]
   before_script:
-    - > 
-      apk add yq --no-cache 
-      --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
     - >
       echo "${IMAGE_REGISTRY_CA_CERT}"
       | base64 -d >> /etc/ssl/certs/ca-certificates.crt
@@ -220,10 +224,66 @@ create-helm-chart:
       echo "{\"auths\":{\"${INTERNAL_REG}\":{\"auth\":\"$(printf "%s:%s"
       "${IMAGE_REGISTRY_USER}" "${IMAGE_REGISTRY_PASS}" | base64
       | tr -d '\n')\"}}}" > /root/.config/helm/registry/config.json
-    - export HELM_APP_VERSION="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
+    - export HELM_APP_VERSION="${VERSION}-${CI_COMMIT_REF_NAME}"
+
+create-helm-chart:
+  extends:
+    - .helm
+  stage: package
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "main"
+      when: always
   script:
+    - >
+      apk add yq --no-cache
+      --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
     - helm dependencies build chart
     - yq -i '.appVersion = strenv(HELM_APP_VERSION)' chart/Chart.yaml
     - helm package chart
     - CHART_VER=$(yq '.version' chart/Chart.yaml)
     - helm push "ckan-${CHART_VER}.tgz" oci://registry.envidat.ch/envidat
+
+helm-deploy:
+  extends:
+    - .helm
+  rules:
+    - if: $CI_COMMIT_REF_NAME != "main"
+      when: always
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - >
+      helm upgrade --install --create-namespace "${APP_NAME}"
+      oci://registry.envidat.ch/envidat/ckan
+      --namespace "${NAMESPACE}"
+      --version "${CHART_VERSION}"
+      --set image.pullPolicy="Always"
+      --set configIniSecret="${APP_NAME}-config-ini"
+      --set extraEnvFrom[0].secretRef.name="solr-${APP_NAME}-vars"
+      --set ingress.hosts[0].host="${APP_NAME}.envidat.ch"
+      --set ingress.hosts[0].paths[0].path="/"
+      --set ingress.hosts[0].paths[0].pathType="ImplementationSpecific"
+      --set ingress.tls[0].secretName="envidat-star"
+      --set ingress.tls[0].hosts[0]="${APP_NAME}.envidat.ch"
+      --set db.auth.existingSecret="db-${APP_NAME}-creds"
+      --set db.primary.resources.requests.cpu="100m"
+      --set db.primary.resources.requests.memory="100Mi"
+      --set solr.ingress.hostname="solr-${CI_COMMIT_REF_NAME}.envidat.ch"
+      --set solr.passwordInit.credentialsSecret="solr-${APP_NAME}-vars"
+      --set solr.passwordInit.pullPolicy="Always"
+      --set autoscaling.enabled=false
+
+helm-deploy-prod:
+  extends:
+    - .helm
+  rules:
+    - if: $CI_COMMIT_REF_NAME == "main"
+      when: always
+  variables:
+    GIT_STRATEGY: none
+  script:
+    - >
+      helm upgrade --install "${APP_NAME}"
+      oci://registry.envidat.ch/envidat/ckan
+      --namespace "${NAMESPACE}" --create-namespace
+      --version "${CHART_VERSION}"
