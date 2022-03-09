@@ -44,7 +44,10 @@ spec:
           command:
             - sh
             - -c
-            - rclone --verbose sync minio:ckan-group-img {{ .Values.s3GroupImgs.mountPath }}
+            - >
+              rclone --verbose sync
+              minio:{{ .Values.s3GroupImgs.bucketName }}
+              {{ .Values.s3GroupImgs.mountPath }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
