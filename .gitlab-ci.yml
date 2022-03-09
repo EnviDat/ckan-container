@@ -257,6 +257,7 @@ helm-deploy:
       oci://registry.envidat.ch/envidat/ckan
       --namespace "${NAMESPACE}"
       --version "${CHART_VERSION}"
+      --set image.tag="${HELM_APP_VERSION}"
       --set image.pullPolicy="Always"
       --set configIniSecret="${APP_NAME}-config-ini"
       --set extraEnvFrom[0].secretRef.name="solr-${APP_NAME}-vars"
