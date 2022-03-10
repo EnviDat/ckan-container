@@ -224,7 +224,6 @@ solr-init-retag:
       echo "{\"auths\":{\"${INTERNAL_REG}\":{\"auth\":\"$(printf "%s:%s"
       "${IMAGE_REGISTRY_USER}" "${IMAGE_REGISTRY_PASS}" | base64
       | tr -d '\n')\"}}}" > /root/.config/helm/registry/config.json
-    - export HELM_APP_VERSION="${VERSION}-${CI_COMMIT_REF_NAME}"
 
 create-helm-chart:
   extends:
@@ -238,7 +237,7 @@ create-helm-chart:
       apk add yq --no-cache
       --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
     - helm dependencies build chart
-    - yq -i '.appVersion = strenv(HELM_APP_VERSION)' chart/Chart.yaml
+    - yq -i '.appVersion = strenv(CKAN_VERSION)' chart/Chart.yaml
     - helm package chart
     - CHART_VER=$(yq '.version' chart/Chart.yaml)
     - helm push "ckan-${CHART_VER}.tgz" oci://registry.envidat.ch/envidat
@@ -257,7 +256,7 @@ helm-deploy:
       oci://registry.envidat.ch/envidat/ckan
       --namespace "${NAMESPACE}" --create-namespace 
       --version "${CHART_VERSION}"
-      --set image.tag="${HELM_APP_VERSION}"
+      --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
       --set image.pullPolicy="Always"
       --set configIniSecret="${APP_NAME}-config-ini"
       --set extraEnvFrom[0].secretRef.name="solr-${APP_NAME}-vars"
