@@ -287,3 +287,4 @@ helm-deploy-prod:
       oci://registry.envidat.ch/envidat/ckan
       --namespace "${NAMESPACE}" --create-namespace
       --version "${CHART_VERSION}"
+      --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
