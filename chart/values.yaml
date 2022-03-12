@@ -51,11 +51,11 @@ securityContext: {}
 
 probes:
   livenessProbe:
-    enabled: false
+    enabled: true
   readinessProbe:
-    enabled: false
+    enabled: true
   startupProbe:
-    enabled: false
+    enabled: true
 
 
 hostAliases:
