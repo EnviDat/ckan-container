@@ -252,7 +252,7 @@ helm-deploy:
     GIT_STRATEGY: none
   script:
     - >
-      helm upgrade --install "${APP_NAME}"
+      helm upgrade --install --force "${APP_NAME}"
       oci://registry.envidat.ch/envidat/ckan
       --namespace "${NAMESPACE}" --create-namespace 
       --version "${CHART_VERSION}"
