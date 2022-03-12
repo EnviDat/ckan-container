@@ -16,5 +16,6 @@ spec:
         envFrom:
         - secretRef:
             name: {{ .Values.solr.passwordInit.credentialsSecret }}
-      restartPolicy: OnFailure
+      restartPolicy: Never
+      activeDeadlineSeconds: 180
     {{- end }}
