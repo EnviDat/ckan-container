@@ -5,8 +5,9 @@ Chart for WSL EnviDat CKAN Backend.
 
 ## Secrets
 Requires secrets to be pre-populated.
+- Note: production variables. For another branch add a suffix, e.g. db-ckan-**dev**-vars.
 
-- **db-ckan-creds** for local database
+- **db-ckan-creds** for postgres database (required by helm chart)
   - key: postgres-password
   - key: password (for user dbenvidat)
   ```bash
@@ -15,12 +16,18 @@ Requires secrets to be pre-populated.
     --from-literal=postgres-password=xxxxxxx
   ```
 
+- **db-ckan-vars** restore db (postgres user) credentials for replication
+  ```bash
+  kubectl create secret generic db-ckan-vars \
+  --from-literal=RESTORE_DB_HOST=ckan-db.ckan.svc.cluster.local \
+  --from-literal=RESTORE_DB_PG_PASS=xxxxxxx
+  ```
+
 - **db-ckan-backup-vars** backup db credentials for replication
   ```bash
   kubectl create secret generic db-ckan-backup-vars \
-    --from-literal=DB_HOST=db-ckan-backup-postgresql.ckan.svc.cluster.local \
-    --from-literal=DB_PASS=xxxxxxx \
-    --from-literal=DB_USER=dbenvidat
+    --from-literal=BACKUP_DB_HOST=db-ckan-backup-postgresql.ckan.svc.cluster.local \
+    --from-literal=BACKUP_DB_PASS=xxxxxxx
   ```
 
 - **solr-ckan-vars** for local solr and ckan var injection

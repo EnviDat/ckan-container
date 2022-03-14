@@ -18,4 +18,5 @@ spec:
             name: {{ .Values.solr.passwordInit.credentialsSecret }}
       restartPolicy: Never
       activeDeadlineSeconds: 180
-    {{- end }}
+      backoffLimit: 1
+{{- end }}

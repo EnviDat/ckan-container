@@ -252,7 +252,7 @@ helm-deploy:
     GIT_STRATEGY: none
   script:
     - >
-      helm upgrade --install --force "${APP_NAME}"
+      helm upgrade --install "${APP_NAME}"
       oci://registry.envidat.ch/envidat/ckan
       --namespace "${NAMESPACE}" --create-namespace 
       --version "${CHART_VERSION}"
@@ -268,6 +268,7 @@ helm-deploy:
       --set db.auth.existingSecret="db-${APP_NAME}-creds"
       --set db.primary.resources.requests.cpu="100m"
       --set db.primary.resources.requests.memory="100Mi"
+      --set db.syncData.restoreDbSecret="db-${APP_NAME}-vars"
       --set solr.ingress.hostname="solr-${CI_COMMIT_REF_NAME}.envidat.ch"
       --set solr.passwordInit.credentialsSecret="solr-${APP_NAME}-vars"
       --set solr.passwordInit.pullPolicy="Always"
