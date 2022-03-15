@@ -1,5 +1,9 @@
 ARG EXTERNAL_REG
+ARG INTERNAL_REG
 ARG PYTHON_VERSION
+FROM ${INTERNAL_REG}/debian:bullseye as certs
+
+
 
 FROM ${EXTERNAL_REG}/python:${PYTHON_VERSION}-slim-bullseye as base
 
@@ -9,6 +13,12 @@ ARG MAINTAINER
 LABEL envidat.com.python-img-tag="${PYTHON_VERSION}" \
       envidat.com.ckan-version="${CKAN_VERSION}" \
       envidat.com.maintainer="${MAINTAINER}"
+
+# CA-Certs
+COPY --from=certs \
+    /etc/ssl/certs/ca-certificates.crt \
+    /etc/ssl/certs/ca-certificates.crt
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 
 RUN set -ex \
     && apt-get update \
