@@ -67,11 +67,12 @@ RUN pip install --no-cache-dir pipenv==11.9.0 \
     && sed -i -E "/markdown/s/==.*/==3.3.3/" \
        /opt/repos/ckan-forked/requirements.txt \
     # add flask-debugtoolbar to enable debug mode
-    && cat /opt/repos/ckan-forked/dev-requirements.txt \
-      | grep Flask-DebugToolbar \
+    && grep Flask-DebugToolbar \
+      < /opt/repos/ckan-forked/dev-requirements.txt \
       >> /opt/repos/ckan-forked/requirements.txt \
     && PIPENV_VENV_IN_PROJECT=1 pipenv install \
        -r /opt/repos/ckan-forked/requirements.txt
+
 # CKAN
 RUN PIPENV_VENV_IN_PROJECT=1 pipenv run \
         python -m pip install "/opt/repos/ckan-forked"
@@ -79,7 +80,6 @@ RUN PIPENV_VENV_IN_PROJECT=1 pipenv run \
 COPY envidat_extensions.* /opt/repos/
 RUN chmod +x /opt/repos/envidat_extensions.sh \
     && /opt/repos/envidat_extensions.sh
-ADD https://google.com cache_bust
 RUN PIPENV_VENV_IN_PROJECT=1 pipenv run \
         python -m pip install -r "/opt/repos/envidat_extensions.txt" \
     && rm /opt/python/Pipfile /opt/python/Pipfile.lock
