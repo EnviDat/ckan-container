@@ -65,7 +65,7 @@ spec:
               port: http
             failureThreshold: 1
             periodSeconds: 120
-            initialDelaySeconds: 120
+            initialDelaySeconds: 60
             timeoutSeconds: 10
           {{- end }}
           {{- if .Values.probes.readinessProbe.enabled }}
@@ -73,9 +73,9 @@ spec:
             httpGet:
               path: /api/3/action/status_show
               port: http
-            failureThreshold: 5
-            initialDelaySeconds: 60
-            periodSeconds: 20
+            failureThreshold: 30
+            initialDelaySeconds: 20
+            periodSeconds: 10
             timeoutSeconds:  10
           {{- end }}
           {{- if .Values.probes.startupProbe.enabled }}
@@ -85,7 +85,7 @@ spec:
               port: http
             failureThreshold: 30
             periodSeconds: 10
-            initialDelaySeconds: 60
+            initialDelaySeconds: 20
             timeoutSeconds: 10
           {{- end }}
           resources:

@@ -62,7 +62,9 @@ Requires secrets to be pre-populated.
   ```
 
 - **envidat-star** for https / tls certs
+
   - Standard Kubernetes TLS secret for \*.envidat.ch
+
 - **solr.envidat.ch-tls**
 
   - A copy of the envidat-star cert (name required for Solr).

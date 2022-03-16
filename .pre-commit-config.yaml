@@ -18,6 +18,8 @@ repos:
     rev: v2.5.0
     hooks:
       - id: prettier
+        args:
+          ["--ignore-unknown", "--no-error-on-unmatched-pattern", "!chart/**"]
 
   # Lint: Dockerfile
   - repo: https://github.com/hadolint/hadolint.git
@@ -32,7 +34,11 @@ repos:
     rev: v1.26.3
     hooks:
       - id: yamllint
-        args: ["-d {extends: relaxed, rules: {line-length: disable}}", "-s"]
+        args:
+          [
+            "-d {extends: relaxed, rules: {line-length: disable}, ignore: chart}",
+            "-s",
+          ]
         files: \.(yaml|yml)$
 
   # Lint: Bash scripts
