@@ -44,6 +44,8 @@ set-vars:
 
 .build:
   stage: build
+  tags:
+    - high_memory
   image:
     name: gcr.io/kaniko-project/executor:debug
     entrypoint: [""]
