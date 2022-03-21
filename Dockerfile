@@ -10,9 +10,9 @@ FROM ${EXTERNAL_REG}/python:${PYTHON_VERSION}-slim-bullseye as base
 ARG PYTHON_VERSION
 ARG CKAN_VERSION
 ARG MAINTAINER
-LABEL envidat.com.python-img-tag="${PYTHON_VERSION}" \
-      envidat.com.ckan-version="${CKAN_VERSION}" \
-      envidat.com.maintainer="${MAINTAINER}"
+LABEL envidat.ch.python-img-tag="${PYTHON_VERSION}" \
+      envidat.ch.ckan-version="${CKAN_VERSION}" \
+      envidat.ch.maintainer="${MAINTAINER}"
 
 # CA-Certs
 COPY --from=certs \
@@ -28,8 +28,7 @@ RUN set -ex \
     && rm -rf /var/lib/apt/lists/*
 
 # Set locale
-RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
-    locale-gen
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
