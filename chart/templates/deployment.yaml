@@ -132,7 +132,7 @@ spec:
           {{- if .Values.probes.livenessProbe.enabled }}
           livenessProbe:
             httpGet:
-              path: /dataset/
+              path: /api/3/action/status_show
               port: http
             failureThreshold: 1
             periodSeconds: 120
@@ -141,9 +141,13 @@ spec:
           {{- end }}
           {{- if .Values.probes.readinessProbe.enabled }}
           readinessProbe:
-            httpGet:
-              path: /api/3/action/status_show
-              port: http
+            exec:
+              command:
+                - "curl"
+                - "--fail"
+                - "-o"
+                - "/dev/null"
+                - "http://localhost:5000/api/action/package_list"
             failureThreshold: 30
             initialDelaySeconds: 20
             periodSeconds: 10
@@ -157,7 +161,7 @@ spec:
             failureThreshold: 30
             periodSeconds: 10
             initialDelaySeconds: 20
-            timeoutSeconds: 10
+            timeoutSeconds: 5
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
