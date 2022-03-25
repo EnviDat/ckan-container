@@ -36,7 +36,8 @@ Requires secrets to be pre-populated.
   kubectl create secret generic db-ckan-backup-vars \
     --from-literal=BACKUP_DB_HOST=db-ckan-backup-postgresql.ckan.svc.
     cluster.local \
-    --from-literal=BACKUP_DB_PASS=xxxxxxx
+    --from-literal=BACKUP_DB_PASS=xxxxxxx \
+    --from-literal
   ```
 
 - **solr-ckan-vars** for local solr and ckan var injection
@@ -85,4 +86,16 @@ envidat-frontend --namespace ckan
 ```
 
 For staging/develop versions, change release name & override values with  
-`--values values.yaml`.
+`--values values.yaml` or with `--set parameters`:
+
+```shell
+helm upgrade --install frontend-dev . \
+  --set image.tag=0.7.0-dev \
+  --set image.pullPolicy="Always" \
+  --set ingress.hosts[0].host="frontend-dev.envidat.ch" \
+  --set ingress.hosts[0].paths[0].path="/" \
+  --set ingress.hosts[0].paths[0].pathType="ImplementationSpecific" \
+  --set ingress.tls[0].secretName="envidat-star" \
+  --set ingress.tls[0].hosts[0]="frontend-dev.envidat.ch" \
+  --set autoscaling.enabled=false
+```
