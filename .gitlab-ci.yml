@@ -1,4 +1,5 @@
 stages:
+  - config
   - build
   - scan
   - package
@@ -32,6 +33,8 @@ set-vars:
     - echo CHART_VERSION=$(yq '.version' chart/Chart.yaml) >> build.env
     - "echo CKAN_IMAGE=${INTERNAL_REG}/ckan:\
       ${CKAN_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
+    - "echo PROXY_IMAGE=${INTERNAL_REG}/ckan-proxy:\
+      ${NGINX_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
     - "echo DB_IMAGE=${INTERNAL_REG}/ckan-db:\
       ${POSTGRES_VERSION}-${POSTGIS_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
     - "echo SOLR_IMAGE=${INTERNAL_REG}/ckan-solr:\
@@ -41,6 +44,28 @@ set-vars:
   artifacts:
     reports:
       dotenv: build.env
+
+set-proxy-backend:
+  stage: config
+  image: docker.io/python:3.9-alpine
+  cache:
+    key: nginx-config
+    paths:
+      - nginx/conf.d/ckan.conf
+    policy: push
+  before_script:
+    - pip install --upgrade pip
+    - pip install python-dotenv==0.19.*
+  script:
+    - 'python -c
+      "import os;
+      import dotenv;
+      file = ''.env.production'';
+      key = ''VUE_APP_ENVIDAT_PROXY'';
+      branch = os.getenv(''CI_COMMIT_REF_NAME'');
+      value = f''https://ckan-{branch}.envidat.ch'';
+      dotenv.set_key(file, key, value, quote_mode=''never'')"
+      '
 
 .build:
   stage: build
@@ -71,6 +96,7 @@ set-vars:
       --build-arg POSTGRES_VERSION="${POSTGRES_VERSION}"
       --build-arg POSTGIS_VERSION="${POSTGIS_VERSION}"
       --build-arg SOLR_VERSION="${SOLR_VERSION}"
+      --build-arg NGINX_VERSION="${NGINX_VERSION}"
 
 ckan-build:
   extends:
@@ -78,6 +104,18 @@ ckan-build:
   variables:
     IMAGE_NAME: ${CKAN_IMAGE}
     CONTEXT_DIR: "${CI_PROJECT_DIR}"
+
+proxy-build:
+  extends:
+    - .build
+  cache:
+    key: nginx-config
+    paths:
+      - nginx/conf.d/ckan.conf
+    policy: pull
+  variables:
+    IMAGE_NAME: ${PROXY_IMAGE}
+    CONTEXT_DIR: "${CI_PROJECT_DIR}/nginx"
 
 db-build:
   extends:
@@ -146,6 +184,13 @@ ckan-scan:
     IMAGE_NAME: ${CKAN_IMAGE}
     SHORT_NAME: "ckan"
 
+proxy-scan:
+  extends:
+    - .scan
+  variables:
+    IMAGE_NAME: ${PROXY_IMAGE}
+    SHORT_NAME: "proxy"
+
 db-scan:
   extends:
     - .scan
@@ -192,6 +237,12 @@ ckan-retag:
     - .retag
   variables:
     IMAGE_NAME: ${CKAN_IMAGE}
+
+proxy-retag:
+  extends:
+    - .retag
+  variables:
+    IMAGE_NAME: ${PROXY_IMAGE}
 
 db-retag:
   extends:
