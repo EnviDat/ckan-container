@@ -47,6 +47,8 @@ services:
         - MAINTAINER=${MAINTAINER}
     depends_on:
       - ckan
+    environment:
+      - CKAN_HOST=http://ckan:5000
     ports:
       - "8989:80"
     volumes:

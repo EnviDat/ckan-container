@@ -1,5 +1,4 @@
 stages:
-  - config
   - build
   - scan
   - package
@@ -44,28 +43,6 @@ set-vars:
   artifacts:
     reports:
       dotenv: build.env
-
-set-proxy-backend:
-  stage: config
-  image: docker.io/python:3.9-alpine
-  cache:
-    key: nginx-config
-    paths:
-      - nginx/conf.d/ckan.conf
-    policy: push
-  before_script:
-    - pip install --upgrade pip
-    - pip install python-dotenv==0.19.*
-  script:
-    - 'python -c
-      "import os;
-      import dotenv;
-      file = ''.env.production'';
-      key = ''VUE_APP_ENVIDAT_PROXY'';
-      branch = os.getenv(''CI_COMMIT_REF_NAME'');
-      value = f''https://ckan-{branch}.envidat.ch'';
-      dotenv.set_key(file, key, value, quote_mode=''never'')"
-      '
 
 .build:
   stage: build

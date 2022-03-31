@@ -16,5 +16,3 @@ WORKDIR /etc/nginx
 RUN rm -rf ./conf.d/default.conf ./nginx.conf
 COPY . .
 EXPOSE 80
-# Containers run nginx with global directives and daemon off
-ENTRYPOINT ["nginx", "-g", "daemon off;"]
