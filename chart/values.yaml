@@ -104,13 +104,26 @@ tolerations: []
 
 affinity: {}
 
-### bitnami/postgresql chart
+# Nginx Proxy (Official Image)
+proxy:
+  enabled: true
+  version: 1.21
+  port: 80
+  resources:
+    limits:
+      cpu: 500m
+      memory: 500Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+
+# bitnami/postgresql chart
 db:
   enabled: true
   auth:
     username: dbenvidat
     database: envidat
-    ## Must contain keys postgres-password and password
+    # Must contain keys postgres-password and password
     existingSecret: db-ckan-creds
   image:
     debug: true
@@ -170,6 +183,7 @@ solr:
     pullPolicy: IfNotPresent
     credentialsSecret: solr-ckan-vars
 
+# bitnami/redis chart
 redis:
   enabled: true
   auth:

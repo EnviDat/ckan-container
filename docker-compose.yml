@@ -51,8 +51,6 @@ services:
       - CKAN_HOST=ckan:5000
     ports:
       - "8989:80"
-    volumes:
-      - ckan_storage:/opt/ckan/data
     networks:
       - ckan-internal
 

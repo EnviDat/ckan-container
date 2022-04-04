@@ -286,6 +286,7 @@ helm-deploy:
       --namespace "${NAMESPACE}" --create-namespace
       --version "${CHART_VERSION}"
       --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
+      --set proxy.version="${NGINX_VERSION}-${CI_COMMIT_REF_NAME}"
       --set image.pullPolicy="Always"
       --set configIniSecret="${APP_NAME}-config-ini"
       --set extraEnvFrom[0].secretRef.name="solr-${APP_NAME}-vars"
@@ -318,3 +319,4 @@ helm-deploy-prod:
       --namespace "${NAMESPACE}" --create-namespace
       --version "${CHART_VERSION}"
       --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
+      --set proxy.version="${NGINX_VERSION}-${CI_COMMIT_REF_NAME}"

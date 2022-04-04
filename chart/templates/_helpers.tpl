@@ -51,6 +51,14 @@ app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end }}
 
 {{/*
+Proxy selector labels
+*/}}
+{{- define "chart.proxySelectorLabels" -}}
+app.kubernetes.io/name: {{ include "chart.name" . }}-proxy
+app.kubernetes.io/instance: {{ .Release.Name }}-proxy
+{{- end }}
+
+{{/*
 Create the name of the service account to use
 */}}
 {{- define "chart.serviceAccountName" -}}

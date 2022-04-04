@@ -176,6 +176,22 @@ spec:
             readOnly: true
           - name: ckan-group-imgs
             mountPath: {{ .Values.s3GroupImgs.mountPath }}
+        {{- if .Values.proxy.enabled }}
+        - name: {{ .Chart.Name }}-proxy
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}-proxy:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.proxy.resources | nindent 12 }}
+          env:
+          - name: CKAN_HOST
+            value: "{{ .Chart.Name }}.{{ .Release.Namespace }}.svc.cluster.local:5000"
+        {{- end }}
       volumes:
       - name: ckan-config
         secret:
