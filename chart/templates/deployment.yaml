@@ -180,7 +180,7 @@ spec:
         - name: {{ .Chart.Name }}-proxy
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: "{{ .Values.image.repository }}-proxy:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          image: "{{ .Values.image.repository }}-proxy:{{ .Values.proxy.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           ports:
             - name: http
@@ -190,7 +190,7 @@ spec:
             {{- toYaml .Values.proxy.resources | nindent 12 }}
           env:
           - name: CKAN_HOST
-            value: "{{ .Chart.Name }}.{{ .Release.Namespace }}.svc.cluster.local:5000"
+            value: "{{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local:5000"
         {{- end }}
       volumes:
       - name: ckan-config

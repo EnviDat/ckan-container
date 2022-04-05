@@ -107,7 +107,8 @@ affinity: {}
 # Nginx Proxy (Official Image)
 proxy:
   enabled: true
-  version: 1.21
+  image:
+    tag: 1.21
   port: 80
   resources:
     limits:
