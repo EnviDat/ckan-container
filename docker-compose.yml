@@ -49,6 +49,7 @@ services:
       - ckan
     environment:
       - CKAN_HOST=ckan:5000
+      - REDIS_HOST=redis:6379
     ports:
       - "8989:80"
     networks:

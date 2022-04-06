@@ -1,5 +1,3 @@
-proxy_cache_path /etc/nginx/cache levels=1:2 keys_zone=ckan_cache:30m max_size=250m inactive=90m use_temp_path=off;
-
 server {
 
     listen 80 default_server;
@@ -14,6 +12,16 @@ server {
     add_header 'Access-Control-Allow-Credentials' 'true';
 
     location / {
+        set $redis_key $uri;
+
+        redis_pass     ${REDIS_HOST};
+        default_type   text/html;
+        error_page     404 = @app;
+
+        try_files $uri @app;
+    }
+
+    location @app {
         proxy_pass http://${CKAN_HOST};
 
         proxy_set_header Host                $http_host;
@@ -24,15 +32,9 @@ server {
         proxy_set_header X-Forwarded-Server  $http_host;
         proxy_set_header X-Forwarded-Port    $server_port;
 
-        proxy_cache ckan_cache;
-        proxy_max_temp_file_size 0;
         proxy_cache_bypass $cookie_auth_tkt;
         proxy_no_cache $cookie_auth_tkt;
-        proxy_cache_valid 30m;
-        proxy_cache_key $host$scheme$proxy_host$request_uri;
-        proxy_buffer_size 1024k;
-        proxy_buffers 4 1024k;
-        proxy_busy_buffers_size 1024k;
+
         proxy_cookie_flags ~ secure samesite=lax;
         # In emergency comment out line to force caching
         #proxy_ignore_headers X-Accel-Expires Expires Cache-Control;
