@@ -18,6 +18,7 @@ fullnameOverride: ""
 configIniSecret: ckan-config-ini
 
 s3GroupImgs:
+  bucketName: ckan-group-img
   mountPath: /opt/ckan/data/storage/uploads/group
 
 extraEnv: []
@@ -52,9 +53,9 @@ probes:
   livenessProbe:
     enabled: false
   readinessProbe:
-    enabled: false
+    enabled: true
   startupProbe:
-    enabled: false
+    enabled: true
 
 
 hostAliases:
@@ -91,7 +92,7 @@ resources:
     memory: 500Mi
 
 autoscaling:
-  enabled: true
+  enabled: false
   minReplicas: 2
   maxReplicas: 6
   targetCPUUtilizationPercentage: 80
@@ -103,76 +104,44 @@ tolerations: []
 
 affinity: {}
 
-### bitnami/postgresql chart
+# Nginx Proxy (Official Image)
+proxy:
+  enabled: true
+  image:
+    tag: 1.21
+  port: 80
+  resources:
+    limits:
+      cpu: 500m
+      memory: 500Mi
+    requests:
+      cpu: 100m
+      memory: 100Mi
+
+# bitnami/postgresql chart
 db:
   enabled: true
   auth:
     username: dbenvidat
     database: envidat
-    ## Must contain keys postgres-password and password
+    # Must contain keys postgres-password and password
     existingSecret: db-ckan-creds
   image:
     debug: true
-
   primary:
-    extraEnvVars:
-      - name: DB_CKAN_NAME
-        value: envidat
-      - name: DB_DOI_NAME
-        value: envidat_doi
-    extraEnvVarsSecret: db-ckan-backup-vars
-    pgHbaConfiguration: |
-      local all all trust
-      host all all 127.0.0.1/32 trust
-      host all all ::1/128 trust
-      local replication all trust
-      host replication all 127.0.0.1/32 trust
-      host replication all ::1/128 trust
-      host all all all md5
-    initdb:
-      scripts:
-        05_init_db.sh: |
-          #!/bin/bash
-          set -e
-
-          psql -v ON_ERROR_STOP=1 --username postgres --dbname "$POSTGRES_DB" <<-EOSQL
-            DROP DATABASE IF EXISTS "$DB_DOI_NAME" WITH (FORCE);
-            CREATE DATABASE $DB_DOI_NAME WITH OWNER=$POSTGRES_USER;
-          EOSQL
-        20_restore_db.sh: |
-          #!/bin/bash
-          set -e
-
-          echo "Backup and restoring $DB_CKAN_NAME via pipe to new host."
-          PGPASSWORD="$DB_PASS" pg_dump --verbose --format c \
-              --host "$DB_HOST" --username "$DB_USER" "$DB_CKAN_NAME" \
-              | pg_restore --verbose --create --clean --exit-on-error \
-              --username postgres --dbname postgres
-
-          echo "Backup and restoring $DB_DOI_NAME via pipe to new host."
-          PGPASSWORD="$DB_PASS" pg_dump --verbose --format c \
-              --host "$DB_HOST" --username "$DB_USER" "$DB_DOI_NAME" \
-              | pg_restore --verbose --create --clean --exit-on-error \
-              --username postgres --dbname postgres
-        30_add_postgis.sh: |
-          #!/bin/bash
-          set -e
-
-          psql -v ON_ERROR_STOP=1 --username postgres --dbname "$POSTGRES_DB" <<-EOSQL
-            CREATE EXTENSION IF NOT EXISTS postgis;
-            CREATE EXTENSION IF NOT EXISTS postgis_topology;
-            CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
-            CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;
-            ALTER VIEW geometry_columns OWNER TO "$POSTGRES_USER";
-            ALTER TABLE spatial_ref_sys OWNER TO "$POSTGRES_USER";
-          EOSQL
     resources:
       limits:
         cpu: 2000m
-        memory: 2000Mi
+        memory: 2Gi
       requests:
         cpu: 500m
         memory: 500Mi
+  syncData:
+    dbUser: dbenvidat
+    dbCkanName: envidat
+    dbDoiName: envidat_doi
+    backupDbSecret: db-ckan-backup-vars
+    restoreDbSecret: db-ckan-vars
 
 # bitnami/solr chart
 solr:
@@ -215,6 +184,7 @@ solr:
     pullPolicy: IfNotPresent
     credentialsSecret: solr-ckan-vars
 
+# bitnami/redis chart
 redis:
   enabled: true
   auth:

@@ -29,9 +29,11 @@ set-vars:
     - source build.env
     - echo "NAMESPACE=ckan" >> build.env
     - echo "APP_NAME=ckan-${CI_COMMIT_REF_NAME}" >> build.env
-    - echo CHART_VERSION=$(yq '.version' chart/Chart.yaml) >> build.env    
+    - echo CHART_VERSION=$(yq '.version' chart/Chart.yaml) >> build.env
     - "echo CKAN_IMAGE=${INTERNAL_REG}/ckan:\
       ${CKAN_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
+    - "echo PROXY_IMAGE=${INTERNAL_REG}/ckan-proxy:\
+      ${NGINX_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
     - "echo DB_IMAGE=${INTERNAL_REG}/ckan-db:\
       ${POSTGRES_VERSION}-${POSTGIS_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
     - "echo SOLR_IMAGE=${INTERNAL_REG}/ckan-solr:\
@@ -65,11 +67,13 @@ set-vars:
       --destination "${IMAGE_NAME}-unverified"
       --build-arg MAINTAINER="${MAINTAINER}"
       --build-arg EXTERNAL_REG="${EXTERNAL_REG}"
+      --build-arg INTERNAL_REG="${INTERNAL_REG}"
       --build-arg PYTHON_VERSION="${PYTHON_VERSION}"
       --build-arg CKAN_VERSION="${CKAN_VERSION}"
       --build-arg POSTGRES_VERSION="${POSTGRES_VERSION}"
       --build-arg POSTGIS_VERSION="${POSTGIS_VERSION}"
       --build-arg SOLR_VERSION="${SOLR_VERSION}"
+      --build-arg NGINX_VERSION="${NGINX_VERSION}"
 
 ckan-build:
   extends:
@@ -77,6 +81,18 @@ ckan-build:
   variables:
     IMAGE_NAME: ${CKAN_IMAGE}
     CONTEXT_DIR: "${CI_PROJECT_DIR}"
+
+proxy-build:
+  extends:
+    - .build
+  cache:
+    key: nginx-config
+    paths:
+      - nginx/conf.d/ckan.conf
+    policy: pull
+  variables:
+    IMAGE_NAME: ${PROXY_IMAGE}
+    CONTEXT_DIR: "${CI_PROJECT_DIR}/nginx"
 
 db-build:
   extends:
@@ -145,6 +161,13 @@ ckan-scan:
     IMAGE_NAME: ${CKAN_IMAGE}
     SHORT_NAME: "ckan"
 
+proxy-scan:
+  extends:
+    - .scan
+  variables:
+    IMAGE_NAME: ${PROXY_IMAGE}
+    SHORT_NAME: "proxy"
+
 db-scan:
   extends:
     - .scan
@@ -192,6 +215,12 @@ ckan-retag:
   variables:
     IMAGE_NAME: ${CKAN_IMAGE}
 
+proxy-retag:
+  extends:
+    - .retag
+  variables:
+    IMAGE_NAME: ${PROXY_IMAGE}
+
 db-retag:
   extends:
     - .retag
@@ -224,7 +253,6 @@ solr-init-retag:
       echo "{\"auths\":{\"${INTERNAL_REG}\":{\"auth\":\"$(printf "%s:%s"
       "${IMAGE_REGISTRY_USER}" "${IMAGE_REGISTRY_PASS}" | base64
       | tr -d '\n')\"}}}" > /root/.config/helm/registry/config.json
-    - export HELM_APP_VERSION="${VERSION}-${CI_COMMIT_REF_NAME}"
 
 create-helm-chart:
   extends:
@@ -238,7 +266,7 @@ create-helm-chart:
       apk add yq --no-cache
       --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
     - helm dependencies build chart
-    - yq -i '.appVersion = strenv(HELM_APP_VERSION)' chart/Chart.yaml
+    - yq -i '.appVersion = strenv(CKAN_VERSION)' chart/Chart.yaml
     - helm package chart
     - CHART_VER=$(yq '.version' chart/Chart.yaml)
     - helm push "ckan-${CHART_VER}.tgz" oci://registry.envidat.ch/envidat
@@ -253,10 +281,12 @@ helm-deploy:
     GIT_STRATEGY: none
   script:
     - >
-      helm upgrade --install --create-namespace "${APP_NAME}"
+      helm upgrade --install "${APP_NAME}"
       oci://registry.envidat.ch/envidat/ckan
-      --namespace "${NAMESPACE}"
+      --namespace "${NAMESPACE}" --create-namespace
       --version "${CHART_VERSION}"
+      --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
+      --set proxy.image.tag="${NGINX_VERSION}-${CI_COMMIT_REF_NAME}"
       --set image.pullPolicy="Always"
       --set configIniSecret="${APP_NAME}-config-ini"
       --set extraEnvFrom[0].secretRef.name="solr-${APP_NAME}-vars"
@@ -268,6 +298,7 @@ helm-deploy:
       --set db.auth.existingSecret="db-${APP_NAME}-creds"
       --set db.primary.resources.requests.cpu="100m"
       --set db.primary.resources.requests.memory="100Mi"
+      --set db.syncData.restoreDbSecret="db-${APP_NAME}-vars"
       --set solr.ingress.hostname="solr-${CI_COMMIT_REF_NAME}.envidat.ch"
       --set solr.passwordInit.credentialsSecret="solr-${APP_NAME}-vars"
       --set solr.passwordInit.pullPolicy="Always"
@@ -287,3 +318,5 @@ helm-deploy-prod:
       oci://registry.envidat.ch/envidat/ckan
       --namespace "${NAMESPACE}" --create-namespace
       --version "${CHART_VERSION}"
+      --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
+      --set proxy.image.tag="${NGINX_VERSION}-${CI_COMMIT_REF_NAME}"

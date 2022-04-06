@@ -30,7 +30,78 @@ spec:
       hostAliases:
         {{- toYaml .Values.hostAliases | nindent 8 }}
       initContainers:
-        - name: copy-ckan-group-img
+        {{- if .Values.db.enabled }}
+        - name: check-db-ready
+          image: docker.io/postgis/postgis:14-3.2
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: {{ .Values.db.syncData.restoreDbSecret }}
+            - secretRef:
+                name: {{ .Values.db.syncData.backupDbSecret }}
+          command:
+            - /bin/bash
+            - -c
+            - |
+              until pg_isready -h "$BACKUP_DB_HOST"; do
+                  echo "waiting for replication database to be ready";
+                  sleep 2;
+              done;
+              until pg_isready -h "$RESTORE_DB_HOST"; do
+                echo "waiting for restore database to be ready";
+                sleep 2;
+              done;
+        - name: sync-db
+          image: docker.io/postgis/postgis:14-3.2
+          imagePullPolicy: IfNotPresent
+          envFrom:
+            - secretRef:
+                name: {{ .Values.db.syncData.restoreDbSecret }}
+            - secretRef:
+                name: {{ .Values.db.syncData.backupDbSecret }}
+          env:
+            - name: DB_USER
+              value: {{ .Values.db.syncData.dbUser }}
+            - name: DB_CKAN_NAME
+              value: {{ .Values.db.syncData.dbCkanName }}
+            - name: DB_DOI_NAME
+              value: {{ .Values.db.syncData.dbDoiName }}
+          command:
+            - /bin/bash
+            - -c
+            - |
+              echo "Re-creating databases on $RESTORE_DB_HOST"
+              PGPASSWORD="$RESTORE_DB_PG_PASS" psql -v ON_ERROR_STOP=1 \
+                  --host "$RESTORE_DB_HOST" --username postgres --dbname postgres <<-EOSQL
+                  DROP DATABASE IF EXISTS "$DB_CKAN_NAME" WITH (FORCE);
+                  CREATE DATABASE "$DB_CKAN_NAME" WITH OWNER="$DB_USER";
+                  DROP DATABASE IF EXISTS "$DB_DOI_NAME" WITH (FORCE);
+                  CREATE DATABASE "$DB_DOI_NAME" WITH OWNER="$DB_USER";
+              EOSQL
+              echo "Backup and restoring $DB_CKAN_NAME via pipe to new host."
+              PGPASSWORD="$BACKUP_DB_PASS" pg_dump --verbose --format c \
+                  --host "$BACKUP_DB_HOST" --username "$DB_USER" "$DB_CKAN_NAME" \
+                  | PGPASSWORD="$RESTORE_DB_PG_PASS" pg_restore --verbose \
+                  --create --clean --exit-on-error \
+                  --host "$RESTORE_DB_HOST" --username postgres --dbname postgres
+              echo "Backup and restoring $DB_DOI_NAME via pipe to new host."
+              PGPASSWORD="$BACKUP_DB_PASS" pg_dump --verbose --format c \
+                  --host "$BACKUP_DB_HOST" --username "$DB_USER" "$DB_DOI_NAME" \
+                  | PGPASSWORD="$RESTORE_DB_PG_PASS" pg_restore --verbose \
+                  --create --clean --exit-on-error \
+                  --host "$RESTORE_DB_HOST" --username postgres --dbname postgres
+              echo "Adding Postgis extension if does not exist."
+              PGPASSWORD="$RESTORE_DB_PG_PASS" psql -v ON_ERROR_STOP=1 \
+                  --host "$RESTORE_DB_HOST" --username postgres --dbname postgres <<-EOSQL
+                  CREATE EXTENSION IF NOT EXISTS postgis;
+                  CREATE EXTENSION IF NOT EXISTS postgis_topology;
+                  CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
+                  CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;
+                  ALTER VIEW geometry_columns OWNER TO "$DB_USER";
+                  ALTER TABLE spatial_ref_sys OWNER TO "$DB_USER";
+              EOSQL
+        {{- end }}
+        - name: copy-group-img
           image: docker.io/rclone/rclone
           imagePullPolicy: IfNotPresent
           securityContext:
@@ -44,7 +115,10 @@ spec:
           command:
             - sh
             - -c
-            - rclone --verbose sync minio:ckan-group-img {{ .Values.s3GroupImgs.mountPath }}
+            - >
+              rclone --verbose sync
+              minio:{{ .Values.s3GroupImgs.bucketName }}
+              {{ .Values.s3GroupImgs.mountPath }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -58,30 +132,36 @@ spec:
           {{- if .Values.probes.livenessProbe.enabled }}
           livenessProbe:
             httpGet:
-              path: /
+              path: /api/3/action/status_show
               port: http
             failureThreshold: 1
-            periodSeconds: 20
-            initialDelaySeconds: 120
+            periodSeconds: 120
+            initialDelaySeconds: 60
+            timeoutSeconds: 10
           {{- end }}
           {{- if .Values.probes.readinessProbe.enabled }}
           readinessProbe:
-            httpGet:
-              path: /
-              port: http
-            failureThreshold: 5
-            successThreshold: 1
-            initialDelaySeconds: 60
-            periodSeconds: 20
+            exec:
+              command:
+                - "curl"
+                - "--fail"
+                - "-o"
+                - "/dev/null"
+                - "http://localhost:5000/api/action/package_list"
+            failureThreshold: 30
+            initialDelaySeconds: 20
+            periodSeconds: 10
+            timeoutSeconds:  10
           {{- end }}
           {{- if .Values.probes.startupProbe.enabled }}
           startupProbe:
             httpGet:
-              path: /
+              path: /api/3/action/status_show
               port: http
             failureThreshold: 30
             periodSeconds: 10
-            initialDelaySeconds: 60
+            initialDelaySeconds: 20
+            timeoutSeconds: 5
           {{- end }}
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
@@ -96,6 +176,24 @@ spec:
             readOnly: true
           - name: ckan-group-imgs
             mountPath: {{ .Values.s3GroupImgs.mountPath }}
+        {{- if .Values.proxy.enabled }}
+        - name: {{ .Chart.Name }}-proxy
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}-proxy:{{ .Values.proxy.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          resources:
+            {{- toYaml .Values.proxy.resources | nindent 12 }}
+          env:
+          - name: CKAN_HOST
+            value: "{{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local:5000"
+          - name: REDIS_HOST
+            value: "{{ .Release.Name }}-redis-master.{{ .Release.Namespace }}.svc.cluster.local:6379"
+        {{- end }}
       volumes:
       - name: ckan-config
         secret:

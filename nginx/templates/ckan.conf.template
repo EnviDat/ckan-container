@@ -1,0 +1,47 @@
+server {
+
+    listen 80 default_server;
+    server_name _;
+
+    client_max_body_size 10G;
+
+    # below redirect breaks localhost access
+    # rewrite ^/(.*)/$ /$1 permanent;
+
+    add_header 'Content-Security-Policy' $upgrade_policy;
+    add_header 'Access-Control-Allow-Credentials' 'true';
+
+    location / {
+        set $redis_key $uri;
+
+        redis_pass     ${REDIS_HOST};
+        default_type   text/html;
+        error_page     404 = @app;
+
+        try_files $uri @app;
+    }
+
+    location @app {
+        proxy_pass http://${CKAN_HOST};
+
+        proxy_set_header Host                $http_host;
+        proxy_set_header X-Real-IP           $remote_addr;
+        proxy_set_header X-Forwarded-Proto   $scheme;
+        proxy_set_header X-Forwarded-For     $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Host    $http_host;
+        proxy_set_header X-Forwarded-Server  $http_host;
+        proxy_set_header X-Forwarded-Port    $server_port;
+
+        proxy_cache_bypass $cookie_auth_tkt;
+        proxy_no_cache $cookie_auth_tkt;
+
+        proxy_cookie_flags ~ secure samesite=lax;
+        # In emergency comment out line to force caching
+        #proxy_ignore_headers X-Accel-Expires Expires Cache-Control;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+}

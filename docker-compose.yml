@@ -17,6 +17,7 @@ services:
       context: .
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
+        - INTERNAL_REG=${INTERNAL_REG}
         - PYTHON_VERSION=${PYTHON_VERSION}
         - CKAN_VERSION=${CKAN_VERSION}
         - MAINTAINER=${MAINTAINER}
@@ -26,13 +27,31 @@ services:
       - db
       - solr
       - redis
-    ports:
-      - "8989:5000"
     env_file:
       - .env
     volumes:
       - ckan_storage:/opt/ckan/data
       - ./ckan.ini:/home/ckan/ckan.ini
+    networks:
+      - ckan-internal
+
+  proxy:
+    container_name: ckan_proxy
+    image: "${INTERNAL_REG}/ckan-proxy:${NGINX_VERSION}-main"
+    build:
+      context: ./nginx
+      args:
+        - EXTERNAL_REG=${EXTERNAL_REG}
+        - INTERNAL_REG=${INTERNAL_REG}
+        - NGINX_VERSION=${NGINX_VERSION}
+        - MAINTAINER=${MAINTAINER}
+    depends_on:
+      - ckan
+    environment:
+      - CKAN_HOST=ckan:5000
+      - REDIS_HOST=redis:6379
+    ports:
+      - "8989:80"
     networks:
       - ckan-internal
 

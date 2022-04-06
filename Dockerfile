@@ -1,14 +1,24 @@
 ARG EXTERNAL_REG
+ARG INTERNAL_REG
 ARG PYTHON_VERSION
+FROM ${INTERNAL_REG}/debian:bullseye as certs
+
+
 
 FROM ${EXTERNAL_REG}/python:${PYTHON_VERSION}-slim-bullseye as base
 
 ARG PYTHON_VERSION
 ARG CKAN_VERSION
 ARG MAINTAINER
-LABEL envidat.com.python-img-tag="${PYTHON_VERSION}" \
-      envidat.com.ckan-version="${CKAN_VERSION}" \
-      envidat.com.maintainer="${MAINTAINER}"
+LABEL envidat.ch.python-img-tag="${PYTHON_VERSION}" \
+      envidat.ch.ckan-version="${CKAN_VERSION}" \
+      envidat.ch.maintainer="${MAINTAINER}"
+
+# CA-Certs
+COPY --from=certs \
+    /etc/ssl/certs/ca-certificates.crt \
+    /etc/ssl/certs/ca-certificates.crt
+ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
 
 RUN set -ex \
     && apt-get update \
@@ -18,8 +28,7 @@ RUN set -ex \
     && rm -rf /var/lib/apt/lists/*
 
 # Set locale
-RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && \
-    locale-gen
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
 ENV LANG en_US.UTF-8
 ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
@@ -57,11 +66,12 @@ RUN pip install --no-cache-dir pipenv==11.9.0 \
     && sed -i -E "/markdown/s/==.*/==3.3.3/" \
        /opt/repos/ckan-forked/requirements.txt \
     # add flask-debugtoolbar to enable debug mode
-    && cat /opt/repos/ckan-forked/dev-requirements.txt \
-      | grep Flask-DebugToolbar \
+    && grep Flask-DebugToolbar \
+      < /opt/repos/ckan-forked/dev-requirements.txt \
       >> /opt/repos/ckan-forked/requirements.txt \
     && PIPENV_VENV_IN_PROJECT=1 pipenv install \
        -r /opt/repos/ckan-forked/requirements.txt
+
 # CKAN
 RUN PIPENV_VENV_IN_PROJECT=1 pipenv run \
         python -m pip install "/opt/repos/ckan-forked"
@@ -69,7 +79,6 @@ RUN PIPENV_VENV_IN_PROJECT=1 pipenv run \
 COPY envidat_extensions.* /opt/repos/
 RUN chmod +x /opt/repos/envidat_extensions.sh \
     && /opt/repos/envidat_extensions.sh
-ADD https://google.com cache_bust
 RUN PIPENV_VENV_IN_PROJECT=1 pipenv run \
         python -m pip install -r "/opt/repos/envidat_extensions.txt" \
     && rm /opt/python/Pipfile /opt/python/Pipfile.lock

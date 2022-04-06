@@ -9,14 +9,16 @@ Use cases:
 
 ## Production
 
-- Helm deploy from chart dir.
-- Modify Helm values:
-```yaml
-ingress.hosts: xxx
-```
-- Modify ckan.ini secret
+- Helm deploy (see chart directory README.md with values and secrets).
+- Modify ckan.ini secret (example parameters below):
+
 ```ini
+beaker.session.secret = xxx
+app_instance_uuid = xxx-xxx-xxx-xxx-xxx
 ckan.site_url = ingress_host_url
+ckan.site_description = EnviDat Prod
+ckan.storage_path = /data/ckan/default
+ckan.cors.origin_whitelist = envidat.ch frontend.envidat.ch
 sqlalchemy.url = SERVICE_NAME.NAMESPACE.svc.cluster.local:5432
 solr_url = SERVICE_NAME.NAMESPACE.svc.cluster.local:8983
 solr_password = xxx
@@ -28,24 +30,26 @@ datacite_publication.datacite_url = https://api.test.datacite.org/dois
 datacite_publication.account_name = xxx
 datacite_publication.account_password = xxx
 ckanext.cloudstorage.container_name = envidat-dev
-ckanext.cloudstorage.driver_options = {"key": "xxx", "secret": "xxx", "host": "minio-s3.minio.svc.cluster.local:9000"}
+ckanext.cloudstorage.driver_options = {"key": "xxx", "secret": "xxx", "host": "https://minio.envidat.ch"}
 ckanext.cloudstorage.use_secure_urls = 0
+recaptcha.keys = xxx
 ```
-- Refer to other secrets in chart/README.md
 
 ## Development
 
-#### Modify .env for environment
+### Modify .env for environment
 
 - Optional: change versions, registry connections.
 
-#### Add secrets before running
+### Add secrets before running
+
 - Create three files in the root of the repo:
 
 **ckan.ini** contains the config for CKAN, including connection urls.
 
 **.db.env** contains credentials of the remote database to replicate.
-```
+
+```dotenv
 DB_HOST=xxxxxx.wsl.ch
 DB_CKAN_NAME=envidat
 DB_USER=xxenvidat
@@ -53,13 +57,12 @@ DB_PASS=xxxxxx
 DB_DOI_NAME=envidat_doi
 ```
 
-
-#### Running
+### Running
 
 - Once the .env is configured, build the images with `docker compose build`
 - Then once the secrets are set, run with `docker compose up -d`
 
-#### Reinstalling ckanext_xxx after editing
+### Reinstalling ckanext_xxx after editing
 
 ```bash
 GIT_REPO=https://github.com/EnviDat/ckanext-cloudstorage.git
