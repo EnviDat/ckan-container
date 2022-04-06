@@ -9,9 +9,9 @@ Chart for WSL EnviDat CKAN Backend.
 
 Requires secrets to be pre-populated.
 
-- Note: production variables. For another branch add a suffix, e.g. db-ckan-**dev**-vars.
+- Note: production secrets omit {branch}.
 
-- **db-ckan-creds** for postgres database (required by helm chart)
+- **db-ckan-{branch}-creds** for postgres database (required by helm chart)
 
   - key: postgres-password
   - key: password (for user dbenvidat)
@@ -22,7 +22,10 @@ Requires secrets to be pre-populated.
     --from-literal=postgres-password=xxxxxxx
   ```
 
-- **db-ckan-vars** restore db (postgres user) credentials for replication
+- **db-ckan-{branch}-vars** restore db (postgres user) credentials for replication
+
+  - key: RESTORE_DB_HOST
+  - key: RESTORE_DB_PG_PASS (postgres user password)
 
   ```bash
   kubectl create secret generic db-ckan-vars \
@@ -40,7 +43,7 @@ Requires secrets to be pre-populated.
     --from-literal
   ```
 
-- **solr-ckan-vars** for local solr and ckan var injection
+- **solr-ckan-{branch}-vars** for local solr and ckan var injection
 
   - key: SOLR_HOST (note: port also required)
   - key: SOLR_ADMIN_PASS
@@ -48,12 +51,12 @@ Requires secrets to be pre-populated.
 
   ```bash
   kubectl create secret generic solr-ckan-vars \
-    --from-literal=SOLR_HOST=ckan-dev-solr.ckan.svc.cluster.local:8983 \
+    --from-literal=SOLR_HOST=ckan-solr.ckan.svc.cluster.local:8983 \
     --from-literal=SOLR_ADMIN_PASS=xxxxxxx \
     --from-literal=SOLR_CKAN_PASS=xxxxxxx
   ```
 
-- **ckan-config-ini** for ckan config
+- **ckan-{branch}-config-ini** for ckan config
 
   - file: ckan.ini
     description: CKAN specific config file
@@ -65,18 +68,6 @@ Requires secrets to be pre-populated.
 - **envidat-star** for https / tls certs
 
   - Standard Kubernetes TLS secret for \*.envidat.ch
-
-- **solr.envidat.ch-tls**
-
-  - A copy of the envidat-star cert (name required for Solr).
-  - To copy the secret from envidat-star, use:
-
-  ```bash
-  kubectl get secret envidat-star -o json \
-  | jq 'del(.metadata["namespace","creationTimestamp","resourceVersion",
-  "selfLink","uid","annotations"])' \
-  jq '.metadata.name = "solr.envidat.ch-tls"' | kubectl apply -f -
-  ```
 
 ## Deployment
 
