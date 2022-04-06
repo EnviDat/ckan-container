@@ -1,5 +1,4 @@
-proxy_cache_path /tmp/nginx_cache levels=1:2 keys_zone=cache:30m max_size=250m;
-proxy_temp_path /tmp/nginx_proxy 1 2;
+proxy_cache_path /etc/nginx/cache levels=1:2 keys_zone=ckan_cache:30m max_size=250m inactive=90m use_temp_path=off;
 
 server {
 
@@ -25,7 +24,7 @@ server {
         proxy_set_header X-Forwarded-Server  $http_host;
         proxy_set_header X-Forwarded-Port    $server_port;
 
-        proxy_cache cache;
+        proxy_cache ckan_cache;
         proxy_max_temp_file_size 0;
         proxy_cache_bypass $cookie_auth_tkt;
         proxy_no_cache $cookie_auth_tkt;
@@ -39,4 +38,8 @@ server {
         #proxy_ignore_headers X-Accel-Expires Expires Cache-Control;
     }
 
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
 }
