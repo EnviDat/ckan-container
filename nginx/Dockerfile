@@ -31,8 +31,8 @@ RUN apt-get update\
     && rm -rf /var/lib/apt/lists/*
 
 RUN wget --progress=dot:giga \
-    "https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz" && \
-    tar -C /usr/src -xzvf "nginx-${NGINX_VERSION}.tar.gz"
+    "https://nginx.org/download/nginx-${NGINX_VERSION}.0.tar.gz" && \
+    tar -C /usr/src -xzvf "nginx-${NGINX_VERSION}.0.tar.gz"
 
 WORKDIR /src
 ARG NGINX_REDIS_VERSION=0.3.9
@@ -41,10 +41,11 @@ RUN wget --progress=dot:giga \
     && tar -C /src -xzvf "ngx_http_redis-${NGINX_REDIS_VERSION}.tar.gz"
 
 WORKDIR /usr/src/nginx-${NGINX_VERSION}
+# hadolint ignore=SC2097,SC2098
 RUN NGINX_ARGS=$(nginx -V 2>&1 | sed -n -e 's/^.*arguments: //p') \
     ./configure --with-compat --with-http_ssl_module \
     --add-dynamic-module=/src/ngx_http_redis-"${NGINX_REDIS_VERSION}" \
-    ${NGINX_ARGS} \
+    "${NGINX_ARGS}" \
     && make modules
 
 
