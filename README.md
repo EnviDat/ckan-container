@@ -37,9 +37,9 @@ recaptcha.keys = xxx
 
 ## Development
 
-### Modify .env for environment
+### Modify .env for environment (optional)
 
-- Optional: change versions, registry connections.
+- Change versions, registry connections, etc.
 
 ### Add secrets before running
 
