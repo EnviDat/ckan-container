@@ -7,6 +7,7 @@ FROM ${INTERNAL_REG}/debian:bullseye as certs
 
 FROM ${EXTERNAL_REG}/nginx:${NGINX_IMG_VERSION} as build
 
+ARG NGINX_IMG_VERSION
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 
 RUN apt-get update\
@@ -32,7 +33,8 @@ RUN apt-get update\
 
 RUN wget --progress=dot:giga \
     "https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz" && \
-    tar -C /usr/src -xzvf "nginx-${NGINX_VERSION}.tar.gz"
+    tar -xzvf "nginx-${NGINX_VERSION}.tar.gz" \
+      --directory "/usr/src/nginx-${NGINX_IMG_VERSION}.tar.gz"
 
 WORKDIR /src
 ARG NGINX_REDIS_VERSION=0.3.9
@@ -40,7 +42,6 @@ RUN wget --progress=dot:giga \
     "https://people.freebsd.org/~osa/ngx_http_redis-${NGINX_REDIS_VERSION}.tar.gz" \
     && tar -C /src -xzvf "ngx_http_redis-${NGINX_REDIS_VERSION}.tar.gz"
 
-ARG NGINX_IMG_VERSION
 WORKDIR /usr/src/nginx-${NGINX_IMG_VERSION}
 # hadolint ignore=SC2097,SC2098
 RUN NGINX_ARGS=$(nginx -V 2>&1 | sed -n -e 's/^.*arguments: //p') \
