@@ -191,8 +191,6 @@ spec:
           env:
           - name: CKAN_HOST
             value: "{{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local:5000"
-          - name: REDIS_HOST
-            value: "{{ .Release.Name }}-redis-master.{{ .Release.Namespace }}.svc.cluster.local:6379"
         {{- end }}
       volumes:
       - name: ckan-config
