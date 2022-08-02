@@ -179,10 +179,7 @@ solr:
     requests:
       cpu: 500m
       memory: 500Mi
-  passwordInit:
-    image: registry.envidat.ch/envidat/ckan-init-solr:8.11-main
-    pullPolicy: IfNotPresent
-    credentialsSecret: solr-ckan-vars
+  passwordInitCredsSecret: solr-ckan-vars
 
 # bitnami/redis chart
 redis:

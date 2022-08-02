@@ -12,10 +12,10 @@ spec:
       containers:
       - name: solr-init-passwords
         image: "{{ .Values.image.repository }}-init-solr:{{ .Values.solr.image.tag }}"
-        imagePullPolicy: {{ .Values.solr.passwordInit.pullPolicy }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
         envFrom:
         - secretRef:
-            name: {{ .Values.solr.passwordInit.credentialsSecret }}
+            name: {{ .Values.solr.passwordInitCredsSecret }}
       restartPolicy: Never
       activeDeadlineSeconds: 180
   backoffLimit: 1
