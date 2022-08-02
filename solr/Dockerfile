@@ -1,5 +1,5 @@
 ARG EXTERNAL_REG
-ARG SOLR_IMG_VERSION
+ARG SOLR_IMG_TAG
 
 
 
@@ -20,7 +20,7 @@ RUN echo "name=$SOLR_CORE" > "/var/solr/data/$SOLR_CORE/core.properties"
 
 
 
-FROM ${EXTERNAL_REG}/solr:${SOLR_IMG_VERSION}-slim
+FROM ${EXTERNAL_REG}/solr:${SOLR_IMG_TAG}-slim
 
 ARG MAINTAINER
 LABEL maintainer="${MAINTAINER}"

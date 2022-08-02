@@ -18,7 +18,7 @@ services:
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
         - INTERNAL_REG=${INTERNAL_REG}
-        - PYTHON_IMG_VERSION=${PYTHON_IMG_VERSION}
+        - PYTHON_IMG_TAG=${PYTHON_IMG_TAG}
         - CKAN_VERSION=${CKAN_VERSION}
         - MAINTAINER=${MAINTAINER}
     extra_hosts:
@@ -37,13 +37,13 @@ services:
 
   proxy:
     container_name: ckan_proxy
-    image: "${INTERNAL_REG}/ckan-proxy:${NGINX_IMG_VERSION}-main"
+    image: "${INTERNAL_REG}/ckan-proxy:${NGINX_IMG_TAG}-main"
     build:
       context: ./nginx
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
         - INTERNAL_REG=${INTERNAL_REG}
-        - NGINX_IMG_VERSION=${NGINX_IMG_VERSION}
+        - NGINX_IMG_TAG=${NGINX_IMG_TAG}
         - MAINTAINER=${MAINTAINER}
     depends_on:
       - ckan
@@ -56,13 +56,13 @@ services:
 
   db:
     container_name: ckan_db
-    image: "${INTERNAL_REG}/ckan-db:${POSTGRES_IMG_VERSION}-${POSTGIS_IMG_VERSION}-main"
+    image: "${INTERNAL_REG}/ckan-db:${POSTGRES_IMG_TAG}-${POSTGIS_IMG_TAG}-main"
     build:
       context: ./postgresql
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
-        - POSTGRES_IMG_VERSION=${POSTGRES_IMG_VERSION}
-        - POSTGIS_IMG_VERSION=${POSTGIS_IMG_VERSION}
+        - POSTGRES_IMG_TAG=${POSTGRES_IMG_TAG}
+        - POSTGIS_IMG_TAG=${POSTGIS_IMG_TAG}
         - MAINTAINER=${MAINTAINER}
     environment:
       - POSTGRES_PASSWORD=ai4ncF6GpHokPaNmW25UftzMjM7hrC
@@ -81,12 +81,12 @@ services:
 
   solr:
     container_name: ckan_solr
-    image: "${INTERNAL_REG}/ckan-solr:${SOLR_IMG_VERSION}-main"
+    image: "${INTERNAL_REG}/ckan-solr:${SOLR_IMG_TAG}-main"
     build:
       context: ./solr
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
-        - SOLR_IMG_VERSION=${SOLR_IMG_VERSION}
+        - SOLR_IMG_TAG=${SOLR_IMG_TAG}
         - MAINTAINER=${MAINTAINER}
     volumes:
       - solr_data:/var/solr/data
@@ -97,7 +97,7 @@ services:
 
   init-solr:
     container_name: ckan_init_solr
-    image: "${INTERNAL_REG}/ckan-init-solr:${SOLR_IMG_VERSION}-main"
+    image: "${INTERNAL_REG}/ckan-init-solr:${SOLR_IMG_TAG}-main"
     build:
       context: ./init_solr
       args:
@@ -114,6 +114,6 @@ services:
 
   redis:
     container_name: ckan_redis
-    image: redis:${REDIS_IMG_VERSION}
+    image: redis:${REDIS_IMG_TAG}
     networks:
       - ckan-internal

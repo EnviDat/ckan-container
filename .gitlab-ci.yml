@@ -35,13 +35,13 @@ set-vars:
     - "echo CKAN_IMAGE=${INTERNAL_REG}/ckan:\
       ${CKAN_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
     - "echo PROXY_IMAGE=${INTERNAL_REG}/ckan-proxy:\
-      ${NGINX_IMG_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
+      ${NGINX_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
     - "echo DB_IMAGE=${INTERNAL_REG}/ckan-db:\
-      ${POSTGRES_IMG_VERSION}-${POSTGIS_IMG_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
+      ${POSTGRES_IMG_TAG}-${POSTGIS_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
     - "echo SOLR_IMAGE=${INTERNAL_REG}/ckan-solr:\
-      ${SOLR_IMG_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
+      ${SOLR_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
     - "echo SOLR_INIT_IMAGE=${INTERNAL_REG}/ckan-init-solr:\
-      ${SOLR_IMG_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
+      ${SOLR_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
   artifacts:
     reports:
       dotenv: build.env
@@ -71,12 +71,12 @@ set-vars:
       --build-arg MAINTAINER="${MAINTAINER}"
       --build-arg EXTERNAL_REG="${EXTERNAL_REG}"
       --build-arg INTERNAL_REG="${INTERNAL_REG}"
-      --build-arg PYTHON_IMG_VERSION="${PYTHON_IMG_VERSION}"
+      --build-arg PYTHON_IMG_TAG="${PYTHON_IMG_TAG}"
       --build-arg CKAN_VERSION="${CKAN_VERSION}"
-      --build-arg POSTGRES_IMG_VERSION="${POSTGRES_IMG_VERSION}"
-      --build-arg POSTGIS_IMG_VERSION="${POSTGIS_IMG_VERSION}"
-      --build-arg SOLR_IMG_VERSION="${SOLR_IMG_VERSION}"
-      --build-arg NGINX_IMG_VERSION="${NGINX_IMG_VERSION}"
+      --build-arg POSTGRES_IMG_TAG="${POSTGRES_IMG_TAG}"
+      --build-arg POSTGIS_IMG_TAG="${POSTGIS_IMG_TAG}"
+      --build-arg SOLR_IMG_TAG="${SOLR_IMG_TAG}"
+      --build-arg NGINX_IMG_TAG="${NGINX_IMG_TAG}"
 
 ckan-build:
   extends:
@@ -291,7 +291,7 @@ helm-deploy:
       --namespace "${NAMESPACE}" --create-namespace
       --version "${CHART_VERSION}"
       --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
-      --set proxy.image.tag="${NGINX_IMG_VERSION}-${CI_COMMIT_REF_NAME}"
+      --set proxy.image.tag="${NGINX_IMG_TAG}-${CI_COMMIT_REF_NAME}"
       --set image.pullPolicy="Always"
       --set configIniSecret="${APP_NAME}-config-ini"
       --set extraEnvFrom[0].secretRef.name="solr-${APP_NAME}-vars"
@@ -325,4 +325,4 @@ helm-deploy-prod:
       --namespace "${NAMESPACE}" --create-namespace
       --version "${CHART_VERSION}"
       --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
-      --set proxy.image.tag="${NGINX_IMG_VERSION}-${CI_COMMIT_REF_NAME}"
+      --set proxy.image.tag="${NGINX_IMG_TAG}-${CI_COMMIT_REF_NAME}"
