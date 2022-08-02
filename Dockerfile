@@ -1,16 +1,16 @@
 ARG EXTERNAL_REG
 ARG INTERNAL_REG
-ARG PYTHON_VERSION
+ARG PYTHON_IMG_VERSION
 FROM ${INTERNAL_REG}/debian:bullseye as certs
 
 
 
-FROM ${EXTERNAL_REG}/python:${PYTHON_VERSION}-slim-bullseye as base
+FROM ${EXTERNAL_REG}/python:${PYTHON_IMG_VERSION}-slim-bullseye as base
 
-ARG PYTHON_VERSION
+ARG PYTHON_IMG_VERSION
 ARG CKAN_VERSION
 ARG MAINTAINER
-LABEL envidat.ch.python-img-tag="${PYTHON_VERSION}" \
+LABEL envidat.ch.python-img-tag="${PYTHON_IMG_VERSION}" \
       envidat.ch.ckan-version="${CKAN_VERSION}" \
       envidat.ch.maintainer="${MAINTAINER}"
 
