@@ -304,9 +304,9 @@ helm-deploy:
       --set db.primary.resources.requests.cpu="100m"
       --set db.primary.resources.requests.memory="100Mi"
       --set db.syncData.restoreDbSecret="db-${APP_NAME}-vars"
+      --set solr.image.tag="${SOLR_IMAGE_TAG}-${CI_COMMIT_REF_NAME}"
       --set solr.ingress.hostname="solr-${CI_COMMIT_REF_NAME}.envidat.ch"
-      --set solr.passwordInit.credentialsSecret="solr-${APP_NAME}-vars"
-      --set solr.passwordInit.pullPolicy="Always"
+      --set solr.passwordInitCredsSecret="solr-${APP_NAME}-vars"
       --set autoscaling.enabled=false
 
 helm-deploy-prod:
