@@ -262,8 +262,9 @@ create-helm-chart:
     - .helm
   stage: package
   rules:
-    - if: $CI_COMMIT_REF_NAME == "main"
-      when: always
+    - if: $CI_COMMIT_REF_NAME != "main"
+      when: never
+    - when: always
   script:
     - >
       apk add yq --no-cache
@@ -278,8 +279,9 @@ helm-deploy:
   extends:
     - .helm
   rules:
-    - if: $CI_COMMIT_REF_NAME != "main"
-      when: always
+    - if: $CI_COMMIT_REF_NAME == "main"
+      when: never
+    - when: always
   variables:
     GIT_STRATEGY: none
   script:
@@ -311,8 +313,9 @@ helm-deploy-prod:
   extends:
     - .helm
   rules:
-    - if: $CI_COMMIT_REF_NAME == "main"
-      when: always
+    - if: $CI_COMMIT_REF_NAME != "main"
+      when: never
+    - when: always
   variables:
     GIT_STRATEGY: none
   script:
