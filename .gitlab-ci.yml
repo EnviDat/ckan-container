@@ -63,6 +63,7 @@ set-vars:
   script:
     - >
       /kaniko/executor
+      --force
       --context "${CONTEXT_DIR}"
       --dockerfile "${CONTEXT_DIR}/Dockerfile"
       --cache=true
