@@ -61,7 +61,7 @@ WORKDIR /opt/python
 # Requirements
 RUN pip install --no-cache-dir pipenv==11.9.0 \
     # add flask-debugtoolbar to enable debug mode
-    && grep Flask-DebugToolbar \
+    && grep flask-debugtoolbar \
       < /opt/repos/ckan-forked/dev-requirements.txt \
       >> /opt/repos/ckan-forked/requirements.txt \
     && PIPENV_VENV_IN_PROJECT=1 pipenv install \
