@@ -66,7 +66,6 @@ set-vars:
       --force
       --context "${CONTEXT_DIR}"
       --dockerfile "${CONTEXT_DIR}/Dockerfile"
-      --cache=true
       --destination "${IMAGE_NAME}-unverified"
       --build-arg MAINTAINER="${MAINTAINER}"
       --build-arg EXTERNAL_REG="${EXTERNAL_REG}"
