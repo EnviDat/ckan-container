@@ -281,6 +281,7 @@ helm-deploy:
     - if: $CI_COMMIT_REF_NAME == "main"
       when: never
     - when: always
+  needs: [ckan-retag]
   variables:
     GIT_STRATEGY: none
   script:
