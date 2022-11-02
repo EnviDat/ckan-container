@@ -60,11 +60,6 @@ RUN git clone -b "$CKAN_VERSION" --depth 1 \
 WORKDIR /opt/python
 # Requirements
 RUN pip install --no-cache-dir pipenv==11.9.0 \
-    # workarounds for python 3.9 + require setuptools <44
-    && sed -i -E "/zope\.interface/s/==.*/==5.2.0/" \
-       /opt/repos/ckan-forked/requirements.txt \
-    && sed -i -E "/markdown/s/==.*/==3.3.3/" \
-       /opt/repos/ckan-forked/requirements.txt \
     # add flask-debugtoolbar to enable debug mode
     && grep Flask-DebugToolbar \
       < /opt/repos/ckan-forked/dev-requirements.txt \
