@@ -5,7 +5,7 @@ FROM ${INTERNAL_REG}/debian:bullseye as certs
 
 
 
-FROM ${EXTERNAL_REG}/nginx:${NGINX_IMG_TAG}-alpine as run
+FROM ${EXTERNAL_REG}/nginx:${NGINX_IMG_TAG} as run
 # CA-Certs
 COPY --from=certs \
     /etc/ssl/certs/ca-certificates.crt \
