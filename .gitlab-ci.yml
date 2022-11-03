@@ -280,8 +280,7 @@ helm-deploy:
   rules:
     - if: $CI_COMMIT_REF_NAME == "main"
       when: never
-    - when: always
-  needs: [ckan-retag]
+    - when: on_success
   variables:
     GIT_STRATEGY: none
   script:
@@ -315,7 +314,7 @@ helm-deploy-prod:
   rules:
     - if: $CI_COMMIT_REF_NAME != "main"
       when: never
-    - when: always
+    - when: on_success
   variables:
     GIT_STRATEGY: none
   script:
