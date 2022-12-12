@@ -13,6 +13,8 @@ server {
 
     add_header 'Content-Security-Policy' $upgrade_policy;
     add_header 'Access-Control-Allow-Credentials' 'true';
+    # For opentelemetry
+    add_header 'Access-Control-Allow-Headers' 'traceparent,tracestate';
 
     location / {
         proxy_pass http://${CKAN_HOST};
