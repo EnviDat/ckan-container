@@ -21,7 +21,9 @@ s3GroupImgs:
   bucketName: ckan-group-img
   mountPath: /opt/ckan/data/storage/uploads/group
 
-extraEnv: []
+extraEnv:
+  - name: CKAN_INI
+    value: /opt/ckan/ckan.ini
 
 extraEnvFrom:
   - secretRef:

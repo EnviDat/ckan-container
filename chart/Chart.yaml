@@ -2,7 +2,7 @@ apiVersion: v2
 type: application
 name: ckan
 description: CKAN backend for envidat.ch.
-version: "0.1.0-chart"
+version: "0.1.1-chart"
 appVersion: "local"
 maintainers:
 - email: samuel.woodcock@wsl.ch

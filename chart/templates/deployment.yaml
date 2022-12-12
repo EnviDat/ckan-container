@@ -171,7 +171,7 @@ spec:
             {{- toYaml .Values.extraEnvFrom | nindent 12 }}
           volumeMounts:
           - name: ckan-config
-            mountPath: /home/ckan/ckan.ini
+            mountPath: $CKAN_INI
             subPath: ckan.ini
             readOnly: true
           - name: ckan-group-imgs
