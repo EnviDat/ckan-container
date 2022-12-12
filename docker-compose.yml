@@ -16,7 +16,7 @@ services:
     image: "${INTERNAL_REG}/ckan:${CKAN_VERSION}-main"
     build:
       context: .
-      target: prod
+      target: debug
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
         - INTERNAL_REG=${INTERNAL_REG}
