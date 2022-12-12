@@ -7,8 +7,8 @@ while IFS=+ read -r _ repo_url; do
     git clone --depth 1 "$repo_url" ./ckanext
     if [ -f ./ckanext/requirements.txt ]; then
         echo "Installing dependencies for $repo_url"
-        PIPENV_VENV_IN_PROJECT=1 pipenv run \
-            python -m pip install -r "./ckanext/requirements.txt"
+        pip install --user --no-warn-script-location \
+            --no-cache-dir -r ./ckanext/requirements.txt
     fi
     rm -rf ./ckanext
-done </opt/repos/envidat_extensions.txt
+done < ./envidat_extensions.txt

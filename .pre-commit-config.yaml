@@ -27,7 +27,13 @@ repos:
     hooks:
       - id: hadolint-docker
         entry: hadolint/hadolint:v2.8.0 hadolint
-        args: ["--ignore=DL3008", "--ignore=DL3013", "--ignore=DL3018"]
+        args:
+          [
+            "--ignore=DL3008",
+            "--ignore=DL3013",
+            "--ignore=DL3018",
+            "--ignore=DL3059",
+          ]
 
   # Lint: YAML
   - repo: https://github.com/adrienverge/yamllint.git

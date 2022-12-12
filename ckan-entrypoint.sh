@@ -1,27 +1,20 @@
 #!/bin/bash
 set -eo pipefail
 
-CONFIG="${CKAN_CONFIG}/production.ini"
-export CKAN_STORAGE_PATH=/opt/ckan/data
-
 abort () {
     echo "$@" >&2
     exit 1
 }
 
-if [ -f "/home/ckan/ckan.ini" ]; then
-    echo "Linking existing config to $CONFIG"
-    ln -sf /home/ckan/ckan.ini "$CONFIG"
-fi
-if [ -f "$CONFIG" ]; then
+if [ -f "$CKAN_INI" ]; then
     echo "Extracting CKAN_SQLALCHEMY_URL"
-    CKAN_SQLALCHEMY_URL=$(awk -F " = " '/sqlalchemy.url/ {print $2;exit;}' "$CONFIG")
+    CKAN_SQLALCHEMY_URL=$(awk -F " = " '/sqlalchemy.url/ {print $2;exit;}' "$CKAN_INI")
     echo "Extracting SOLR_HOST"
-    SOLR_HOST=$(awk -F " = " '/solr_url/ {print $2;exit;}' "$CONFIG" | sed -e 's/\/solr\/ckan$//')
+    SOLR_HOST=$(awk -F " = " '/solr_url/ {print $2;exit;}' "$CKAN_INI" | sed -e 's/\/solr\/ckan$//')
     echo "Extracting SOLR_USER"
-    SOLR_USER=$(awk -F " = " '/solr_user/ {print $2;exit;}' "$CONFIG")
+    SOLR_USER=$(awk -F " = " '/solr_user/ {print $2;exit;}' "$CKAN_INI")
     echo "Extracting SOLR_PASS"
-    SOLR_PASS=$(awk -F " = " '/solr_password/ {print $2;exit;}' "$CONFIG")
+    SOLR_PASS=$(awk -F " = " '/solr_password/ {print $2;exit;}' "$CKAN_INI")
 else
     abort "ERROR: No ckan.ini file found."
 fi
@@ -48,14 +41,19 @@ done
 
 # Rebuild Solr search index
 echo "Rebuilding Solr search index..."
-ckan --config /etc/ckan/production.ini search-index rebuild --only-missing
+ckan search-index rebuild --only-missing
 
 # Build web assets
 echo "Building web assets..."
-ckan --config /etc/ckan/production.ini asset build
+ckan asset build
 
 # Re-init cloudstorage db tables
 echo "Initialising cloudstorage database tables..."
-ckan --config /etc/ckan/production.ini cloudstorage initdb
+ckan cloudstorage initdb
+
+echo "---------------------"
+echo "Init script complete."
+echo "---------------------"
+echo "Starting CKAN..."
 
 exec "$@"

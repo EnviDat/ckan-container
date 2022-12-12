@@ -6,3 +6,6 @@
 !ckan-entrypoint.sh
 !who.ini
 !envidat_licenses.json
+!requirements-extra.txt
+!wsgi.py
+!debug_run.py
