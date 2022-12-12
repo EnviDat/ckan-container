@@ -7,6 +7,7 @@ volumes:
 
 networks:
   ckan-internal:
+  traefik-proxy:
     external: true
 
 services:
@@ -15,6 +16,7 @@ services:
     image: "${INTERNAL_REG}/ckan:${CKAN_VERSION}-main"
     build:
       context: .
+      target: prod
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
         - INTERNAL_REG=${INTERNAL_REG}
@@ -29,11 +31,24 @@ services:
       - redis
     env_file:
       - .env
+    environment:
+      CKAN_INI: "/opt/ckan/ckan.ini"
+      OTEL_LOG_LEVEL: debug
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=ckan-local-dev"
+      OTEL_TRACES_EXPORTER: "otlp_proto_http"
+      OTEL_METRICS_EXPORTER: "otlp_proto_http"
+      OTEL_LOGS_EXPORTER: "otlp_proto_http"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "https://traces.envidat.ch"
+      # OTEL_PYTHON_LOG_CORRELATION: "True"
+      # OTEL_PYTHON_LOG_FORMAT:
+      # OTEL_PYTHON_LOG_LEVEL:
     volumes:
       - ckan_storage:/opt/ckan/data
-      - ./ckan.ini:/home/ckan/ckan.ini
+      - ./ckan.ini:/opt/ckan/ckan.ini
     networks:
       - ckan-internal
+      - traefik-proxy
 
   proxy:
     container_name: ckan_proxy

@@ -1,6 +1,5 @@
 .db.env
 .solr.env
 **/**ckan.ini
-production.ini
 chart/charts/*
 chart/Chart.lock

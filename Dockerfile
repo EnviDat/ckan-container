@@ -6,27 +6,24 @@ FROM ${INTERNAL_REG}/debian:bullseye as certs
 
 
 FROM ${EXTERNAL_REG}/python:${PYTHON_IMG_TAG}-slim-bullseye as base
-
 ARG PYTHON_IMG_TAG
 ARG CKAN_VERSION
 ARG MAINTAINER
 LABEL envidat.ch.python-img-tag="${PYTHON_IMG_TAG}" \
       envidat.ch.ckan-version="${CKAN_VERSION}" \
-      envidat.ch.maintainer="${MAINTAINER}"
-
+      envidat.ch.maintainer="${MAINTAINER}" \
+      envidat.ch.api-port="5000"
 # CA-Certs
 COPY --from=certs \
     /etc/ssl/certs/ca-certificates.crt \
     /etc/ssl/certs/ca-certificates.crt
 ENV SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
-
 RUN set -ex \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install \
        -y --no-install-recommends locales \
     && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/*
-
 # Set locale
 RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
 ENV LANG en_US.UTF-8
@@ -35,90 +32,124 @@ ENV LC_ALL en_US.UTF-8
 
 
 
-FROM base as build
-
+FROM base as extract-deps
 RUN set -ex \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install \
     -y --no-install-recommends \
+        git \
+    && rm -rf /var/lib/apt/lists/*
+# Clone repos
+WORKDIR /opt/repos
+ARG CKAN_VERSION
+RUN git clone -b "$CKAN_VERSION" --depth 1 \
+    https://github.com/EnviDat/ckan-forked.git
+# Merge requirements to single file
+WORKDIR /opt/requirements
+RUN cp /opt/repos/ckan-forked/requirements.txt ./requirements-ckan.txt
+# Add flask-debugtoolbar to enable debug mode
+RUN grep flask-debugtoolbar \
+      < /opt/repos/ckan-forked/dev-requirements.txt \
+      >> ./requirements-ckan.txt
+# Add extras (opentelemetry instrumentation)
+COPY requirements-extra.txt .
+RUN cat ./requirements-extra.txt \
+      >> ./requirements-ckan.txt
+# Import to PDM
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir pdm==2.3.2 \
+    && pdm config python.use_venv false
+RUN pdm init --non-interactive \
+    && pdm import -f requirements \
+       ./requirements-ckan.txt
+# Add ckan-forked to requirements & lock / check conflicts
+RUN pdm add --no-sync \
+    "git+https://github.com/EnviDat/ckan-forked.git@$CKAN_VERSION"
+# Export to single requirements file
+RUN pdm export --without-hashes --prod > requirements.txt
+
+
+
+FROM base as build
+RUN set -ex \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install \
+    -y --no-install-recommends \
+        git \
         build-essential \
         gcc \
+        python3-dev \
         libpq-dev \
-        git \
         libxml2-dev \
         libxslt-dev \
         libgeos-dev \
         libssl-dev \
         libffi-dev \
     && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /opt/repos
-ARG CKAN_VERSION
-RUN git clone -b "$CKAN_VERSION" --depth 1 \
-    https://github.com/EnviDat/ckan-forked.git
-
 WORKDIR /opt/python
-# Requirements
-RUN pip install --no-cache-dir pipenv==11.9.0 \
-    # add flask-debugtoolbar to enable debug mode
-    && grep flask-debugtoolbar \
-      < /opt/repos/ckan-forked/dev-requirements.txt \
-      >> /opt/repos/ckan-forked/requirements.txt \
-    && PIPENV_VENV_IN_PROJECT=1 pipenv install \
-       -r /opt/repos/ckan-forked/requirements.txt
-
-# CKAN
-RUN PIPENV_VENV_IN_PROJECT=1 pipenv run \
-        python -m pip install "/opt/repos/ckan-forked"
-# Additional plugins
-COPY envidat_extensions.* /opt/repos/
-RUN chmod +x /opt/repos/envidat_extensions.sh \
-    && /opt/repos/envidat_extensions.sh
-RUN PIPENV_VENV_IN_PROJECT=1 pipenv run \
-        python -m pip install -r "/opt/repos/envidat_extensions.txt" \
-    && rm /opt/python/Pipfile /opt/python/Pipfile.lock
+COPY --from=extract-deps \
+    /opt/requirements/requirements.txt .
+# Install deps, including CKAN
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir -r ./requirements.txt
+COPY envidat_extensions.* ./
+# Plugin sub-dependencies
+RUN chmod +x /opt/python/envidat_extensions.sh \
+    && /opt/python/envidat_extensions.sh
+# Install plugins
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir -r ./envidat_extensions.txt
 
 
 
 FROM base as runtime
-
+WORKDIR /opt/ckan
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PYTHONFAULTHANDLER=1
-
+    PYTHONFAULTHANDLER=1 \
+    PATH="/usr/lib/ckan/.local/bin:$PATH" \
+    CKAN_HOME="/usr/lib/ckan" \
+    CKAN_CONFIG_DIR="/opt/ckan" \
+    CKAN_STORAGE_PATH="/opt/ckan/data"
 RUN set -ex \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install \
     -y --no-install-recommends \
         curl \
-        libpcre3 \
         postgresql-client \
+        libpq-dev \
         libgeos-c1v5 \
         libmagic1 \
     && rm -rf /var/lib/apt/lists/*
-
-WORKDIR /opt/python
-
 COPY --from=build \
-    /opt/python/ \
-    /opt/python/
-
-ENV PATH="/opt/python/.venv/bin:$PATH"
-ENV CKAN_HOME /usr/lib/ckan
-ENV CKAN_CONFIG /etc/ckan
-
-COPY who.ini envidat_licenses.json $CKAN_CONFIG/
+    /root/.local \
+    $CKAN_HOME/.local
 COPY ckan-entrypoint.sh /ckan-entrypoint.sh
-
+COPY wsgi.py who.ini envidat_licenses.json $CKAN_CONFIG_DIR/
 # Upgrade pip & pre-compile deps to .pyc, add ckan user, permissions
-RUN /opt/python/.venv/bin/python -m pip install --no-cache --upgrade pip \
+RUN python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)" \
     && python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)" \
-    && useradd -r -u 900 -m -c "ckan account" -d $CKAN_HOME -s /bin/false ckan \
+    && useradd -r -u 900 -m -c "non-priv user" -d $CKAN_HOME -s /bin/false ckanuser \
     && chmod +x /ckan-entrypoint.sh \
-    && mkdir -p $CKAN_HOME $CKAN_CONFIG /opt/ckan/data/storage/uploads/group \
-    && chown -R ckan:ckan $CKAN_HOME $CKAN_CONFIG /opt
-
+    && mkdir -p $CKAN_HOME $CKAN_STORAGE_PATH/storage/uploads/group \
+    && chown -R ckanuser:ckanuser $CKAN_HOME $CKAN_CONFIG_DIR
+USER ckanuser
 ENTRYPOINT ["/ckan-entrypoint.sh"]
-USER ckan
-EXPOSE 5000
-CMD ["ckan", "-c", "/etc/ckan/production.ini", "run", "--host", "0.0.0.0"]
+
+
+
+FROM runtime as debug
+RUN pip install --no-cache-dir debugpy==1.6.4 --no-cache
+COPY debug_run.py .
+CMD ["python", "-m", "debugpy", "--wait-for-client", \
+    "--listen", "0.0.0.0:5678", \
+    "debug_run.py", "--", "run", "--host", "0.0.0.0"]
+
+
+
+FROM runtime as prod
+CMD ["opentelemetry-instrument", "gunicorn", "wsgi:application", \
+        "--bind", "0.0.0.0:5000", \
+        "--workers=2", "--threads=4", "--worker-class=gthread", \
+        "--worker-tmp-dir=/dev/shm", \
+        "--log-file=-", "--log-level=debug"]
