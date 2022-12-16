@@ -76,3 +76,22 @@ docker exec -it -u root:root ckan \
     pip install --upgrade --no-deps --force-reinstall \
     "git+${GIT_REPO}@${GIT_BRANCH}"
 ```
+
+### Using local dev version of ckan or ckanext
+
+- Create a symlink to the code:
+
+```bash
+ln -s ../ckan-forked/ckan ./ckan
+ln -s ../ckanext-passwordless_api/ckanext/passwordless_api ./ckanext/passwordless_api
+```
+
+- Mount the directories in your container:
+
+```yaml
+# docker-compose.yaml
+---
+volumes:
+  - ../ckan:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan
+  - ./ckanext/passwordless_api:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckanext/passwordless_api
+```

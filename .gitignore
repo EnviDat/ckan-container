@@ -3,3 +3,5 @@
 **/**ckan.ini
 chart/charts/*
 chart/Chart.lock
+ckanext
+ckan

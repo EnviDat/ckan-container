@@ -1,14 +1,6 @@
 {
   "configurations": [
     {
-      "name": "Python: Current File",
-      "type": "python",
-      "request": "launch",
-      "program": "${file}",
-      "console": "integratedTerminal",
-      "justMyCode": true
-    },
-    {
       "name": "Remote - Server Debug",
       "type": "python",
       "request": "attach",
@@ -17,10 +9,26 @@
       "pathMappings": [
         {
           "localRoot": "${workspaceFolder}",
-          "remoteRoot": "/opt/mastapi"
+          "remoteRoot": "/opt/ckan"
+        },
+        {
+          "localRoot": "${workspaceFolder}/ckanext",
+          "remoteRoot": "/usr/lib/ckan/.local/lib/python3.9/site-packages/ckanext"
+        },
+        {
+          "localRoot": "${workspaceFolder}/ckan",
+          "remoteRoot": "/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan"
         }
       ],
       "justMyCode": false
+    },
+    {
+      "name": "Python: Current File",
+      "type": "python",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal",
+      "justMyCode": true
     }
   ]
 }

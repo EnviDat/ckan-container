@@ -2,11 +2,13 @@ version: "3"
 
 volumes:
   ckan_storage:
+  ckan_translations:
   pg_data:
   solr_data:
 
 networks:
   ckan-internal:
+    external: true
   traefik-proxy:
     external: true
 
@@ -32,6 +34,7 @@ services:
     env_file:
       - .env
     environment:
+      FLASK_ENV: development
       CKAN_INI: "/opt/ckan/ckan.ini"
       OTEL_LOG_LEVEL: debug
       OTEL_RESOURCE_ATTRIBUTES: "service.name=ckan-local-dev"
@@ -46,6 +49,9 @@ services:
     volumes:
       - ckan_storage:/opt/ckan/data
       - ./ckan.ini:/opt/ckan/ckan.ini
+      - ./ckan:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan
+      - ckan_translations:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan/public/base/i18n
+      - ./ckanext/passwordless_api:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckanext/passwordless_api
     networks:
       - ckan-internal
       - traefik-proxy
