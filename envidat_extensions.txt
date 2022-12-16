@@ -10,3 +10,4 @@ git+https://github.com/EnviDat/ckanext-spatial.git
 git+https://github.com/EnviDat/ckanext-oaipmh_repository.git
 git+https://github.com/EnviDat/ckanext-hierarchy.git
 git+https://github.com/EnviDat/ckanext-envidat_theme.git
+git+https://gitlabext.wsl.ch/EnviDat/ckanext-passwordless_api.git
