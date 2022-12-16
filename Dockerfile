@@ -103,6 +103,7 @@ RUN pip install --user --no-warn-script-location \
 
 
 FROM base as runtime
+ARG PYTHON_IMG_TAG
 WORKDIR /opt/ckan
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -110,7 +111,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PATH="/usr/lib/ckan/.local/bin:$PATH" \
     CKAN_HOME="/usr/lib/ckan" \
     CKAN_CONFIG_DIR="/opt/ckan" \
-    CKAN_STORAGE_PATH="/opt/ckan/data"
+    CKAN_STORAGE_PATH="/opt/ckan/data" \
+    CKAN_LIB="/usr/lib/ckan/.local/lib/python$PYTHON_IMG_TAG/site-packages"
 RUN set -ex \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install \
@@ -143,7 +145,8 @@ RUN pip install --no-cache-dir debugpy==1.6.4 --no-cache
 COPY debug_run.py .
 CMD ["python", "-m", "debugpy", "--wait-for-client", \
     "--listen", "0.0.0.0:5678", \
-    "debug_run.py", "--", "run", "--host", "0.0.0.0"]
+    "debug_run.py", "--", "run", "--host", "0.0.0.0", "--passthrough-errors"]
+    # "--disable-debugger"]
 
 
 
