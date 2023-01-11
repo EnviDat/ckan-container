@@ -16,6 +16,7 @@ nameOverride: ""
 fullnameOverride: ""
 
 configIniSecret: ckan-config-ini
+authCookieName: envidat
 
 s3GroupImgs:
   bucketName: ckan-group-img
