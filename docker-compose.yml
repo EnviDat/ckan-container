@@ -15,7 +15,7 @@ networks:
 services:
   ckan:
     container_name: ckan
-    image: "${INTERNAL_REG}/ckan:${CKAN_VERSION}-main"
+    image: "${INTERNAL_REG}/ckan:${CKAN_VERSION}-debug"
     build:
       context: .
       target: debug
@@ -34,7 +34,6 @@ services:
     env_file:
       - .env
     environment:
-      FLASK_ENV: development
       CKAN_INI: "/opt/ckan/ckan.ini"
       OTEL_LOG_LEVEL: debug
       OTEL_RESOURCE_ATTRIBUTES: "service.name=ckan-local-dev"
@@ -49,9 +48,9 @@ services:
     volumes:
       - ckan_storage:/opt/ckan/data
       - ./ckan.ini:/opt/ckan/ckan.ini
-      - ./ckan:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan
       - ckan_translations:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan/public/base/i18n
-      - ./ckanext/passwordless_api:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckanext/passwordless_api
+      - ./ckan:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan
+      # - ./ckanext/passwordless_api:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckanext/passwordless_api
     networks:
       - ckan-internal
       - traefik-proxy
@@ -70,6 +69,7 @@ services:
       - ckan
     environment:
       - CKAN_HOST=ckan:5000
+      - AUTH_COOKIE_NAME=envidat_local
     ports:
       - "8989:80"
     networks:
