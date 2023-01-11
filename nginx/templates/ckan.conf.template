@@ -11,6 +11,7 @@ server {
     # below redirect breaks localhost access
     # rewrite ^/(.*)/$ /$1 permanent;
 
+    # Response headers
     add_header 'Content-Security-Policy' $upgrade_policy;
     add_header 'Access-Control-Allow-Credentials' 'true';
     # For opentelemetry
@@ -19,6 +20,7 @@ server {
     location / {
         proxy_pass http://${CKAN_HOST};
 
+        # Requests headers
         proxy_set_header Host                $http_host;
         proxy_set_header X-Real-IP           $remote_addr;
         proxy_set_header X-Forwarded-Proto   $scheme;
@@ -27,13 +29,14 @@ server {
         proxy_set_header X-Forwarded-Server  $http_host;
         proxy_set_header X-Forwarded-Port    $server_port;
 
+        # Add cookie content to Authorization request header
+        proxy_set_header 'Authorization' $cookie_${AUTH_COOKIE_NAME};
+
         proxy_cache cache;
-        proxy_cache_bypass $cookie_auth_tkt;
-        proxy_no_cache $cookie_auth_tkt;
+        proxy_cache_bypass $cookie_${AUTH_COOKIE_NAME};
+        proxy_no_cache $cookie_${AUTH_COOKIE_NAME};
         proxy_cache_valid 30m;
         proxy_cache_key $host$scheme$proxy_host$request_uri;
-        
-        proxy_cookie_flags ~ secure samesite=lax;
 
         # In emergency comment out line to force caching
         #proxy_ignore_headers X-Accel-Expires Expires Cache-Control;
