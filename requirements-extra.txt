@@ -1,4 +1,8 @@
+# WSGI server
 gunicorn==20.1.0
+# Plugins
+ckanext-passwordless-api==0.3.1
+# Opentelemetry
 opentelemetry-sdk==1.15.0
 opentelemetry-api==1.15.0
 opentelemetry-exporter-otlp==1.15.0

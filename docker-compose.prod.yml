@@ -3,22 +3,18 @@ version: "3"
 volumes:
   ckan_storage:
   ckan_translations:
-  pg_data:
   solr_data:
 
 networks:
   ckan-internal:
-    external: true
-  traefik-proxy:
-    external: true
 
 services:
   ckan:
     container_name: ckan
-    image: "${INTERNAL_REG}/ckan:${CKAN_VERSION}-debug"
+    image: "${INTERNAL_REG}/ckan:${CKAN_VERSION}-main"
     build:
       context: .
-      target: debug
+      target: prod
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
         - INTERNAL_REG=${INTERNAL_REG}
@@ -26,9 +22,9 @@ services:
         - CKAN_VERSION=${CKAN_VERSION}
         - MAINTAINER=${MAINTAINER}
     extra_hosts:
+      postgres.wsl.ch: 10.30.1.29
       notes.wsl.ch: 10.30.1.224
     depends_on:
-      - db
       - solr
       - redis
     env_file:
@@ -36,7 +32,7 @@ services:
     environment:
       CKAN_INI: "/opt/ckan/ckan.ini"
       OTEL_LOG_LEVEL: debug
-      OTEL_RESOURCE_ATTRIBUTES: "service.name=ckan-local-dev"
+      OTEL_RESOURCE_ATTRIBUTES: "service.name=ckan-docker"
       OTEL_TRACES_EXPORTER: "otlp_proto_http"
       OTEL_METRICS_EXPORTER: "otlp_proto_http"
       OTEL_LOGS_EXPORTER: "otlp_proto_http"
@@ -49,11 +45,8 @@ services:
       - ckan_storage:/opt/ckan/data
       - ./ckan.ini:/opt/ckan/ckan.ini
       - ckan_translations:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan/public/base/i18n
-      - ./ckan:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan
-      # - ./ckanext/passwordless_api:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckanext/passwordless_api
     networks:
       - ckan-internal
-      - traefik-proxy
 
   proxy:
     container_name: ckan_proxy
@@ -69,36 +62,11 @@ services:
       - ckan
     environment:
       - CKAN_HOST=ckan:5000
-      - AUTH_COOKIE_NAME=envidat_local
+      - AUTH_COOKIE_NAME=envidat
     ports:
-      - "8989:80"
+      - "8080:80"
     networks:
       - ckan-internal
-
-  db:
-    container_name: ckan_db
-    image: "${INTERNAL_REG}/ckan-db:${POSTGRES_IMG_TAG}-${POSTGIS_IMG_TAG}-main"
-    build:
-      context: ./postgresql
-      args:
-        - EXTERNAL_REG=${EXTERNAL_REG}
-        - POSTGRES_IMG_TAG=${POSTGRES_IMG_TAG}
-        - POSTGIS_IMG_TAG=${POSTGIS_IMG_TAG}
-        - MAINTAINER=${MAINTAINER}
-    environment:
-      - POSTGRES_PASSWORD=ai4ncF6GpHokPaNmW25UftzMjM7hrC
-      - PGDATA=/var/lib/postgresql/data/db
-    env_file:
-      - .db.env
-    volumes:
-      - pg_data:/var/lib/postgresql/data
-      - /etc/hosts:/etc/hosts:ro
-    networks:
-      - ckan-internal
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres"]
-    ports:
-      - "25432:5432"
 
   solr:
     container_name: ckan_solr
@@ -114,7 +82,7 @@ services:
     networks:
       - ckan-internal
     ports:
-      - "8988:8983"
+      - "8090:8983"
 
   init-solr:
     container_name: ckan_init_solr
@@ -124,10 +92,10 @@ services:
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
         - MAINTAINER=${MAINTAINER}
+    env_file:
+      - .solr.env
     environment:
       SOLR_HOST: http://solr:8983
-      SOLR_ADMIN_PASS: 4hAYTQkUD6REA3futeKsvUjvK9wETG
-      SOLR_CKAN_PASS: MPnJRcGVGurpJF3kWq2eFNDEr3cXv6
     networks:
       - ckan-internal
     depends_on:

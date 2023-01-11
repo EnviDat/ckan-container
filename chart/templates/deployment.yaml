@@ -191,6 +191,8 @@ spec:
           env:
           - name: CKAN_HOST
             value: "{{ .Release.Name }}.{{ .Release.Namespace }}.svc.cluster.local:5000"
+          - name: AUTH_COOKIE_NAME
+            value: {{ .Values.authCookieName }}
         {{- end }}
       volumes:
       - name: ckan-config
