@@ -293,6 +293,7 @@ helm-deploy:
       --set proxy.image.tag="${NGINX_IMG_TAG}-${CI_COMMIT_REF_NAME}"
       --set image.pullPolicy="Always"
       --set configIniSecret="${APP_NAME}-config-ini"
+      --set authCookieName="${APP_NAME//-/_}"
       --set extraEnvFrom[0].secretRef.name="solr-${APP_NAME}-vars"
       --set ingress.hosts[0].host="${APP_NAME}.envidat.ch"
       --set ingress.hosts[0].paths[0].path="/"
