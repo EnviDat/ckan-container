@@ -23,7 +23,7 @@ services:
         - MAINTAINER=${MAINTAINER}
     extra_hosts:
       postgres.wsl.ch: 10.30.1.29
-      notes.wsl.ch: 10.30.1.224
+      mail.wsl.ch: 10.30.1.224
     depends_on:
       - solr
       - redis

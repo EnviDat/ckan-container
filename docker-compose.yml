@@ -26,7 +26,7 @@ services:
         - CKAN_VERSION=${CKAN_VERSION}
         - MAINTAINER=${MAINTAINER}
     extra_hosts:
-      notes.wsl.ch: 10.30.1.224
+      mail.wsl.ch: 10.30.1.224
     depends_on:
       - db
       - solr
