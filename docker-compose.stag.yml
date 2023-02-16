@@ -54,7 +54,7 @@ services:
       - ckan
     environment:
       - CKAN_HOST=ckan:5000
-      - AUTH_COOKIE_NAME=envidat-staging
+      - AUTH_COOKIE_NAME=envidat_staging
     ports:
       - "8081:80"
     networks:
