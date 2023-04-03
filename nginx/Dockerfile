@@ -18,5 +18,7 @@ LABEL envidat.ch.nginx-img-tag="${NGINX_IMG_TAG}" \
 WORKDIR /etc/nginx
 # Remove default Nginx static assets
 RUN rm -rf ./conf.d/default.conf ./nginx.conf
-COPY . .
+COPY nginx.conf nginx.conf
+ARG CONFIG_NAME
+COPY templates/${CONFIG_NAME}.template templates/ckan.conf.template
 EXPOSE 80

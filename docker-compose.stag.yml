@@ -50,13 +50,17 @@ services:
         - INTERNAL_REG=${INTERNAL_REG}
         - NGINX_IMG_TAG=${NGINX_IMG_TAG}
         - MAINTAINER=${MAINTAINER}
+        - CONFIG_NAME=stag
     depends_on:
       - ckan
     environment:
       - CKAN_HOST=ckan:5000
       - AUTH_COOKIE_NAME=envidat_staging
+    volumes:
+      - /etc/pki/wsl_ch/wsl.ch.crt:/certs/cert.crt
+      - /etc/pki/wsl_ch/wsl.ch.key:/certs/cert.key
     ports:
-      - "8081:80"
+      - "8081:443"
     networks:
       - ckan-staging
 
