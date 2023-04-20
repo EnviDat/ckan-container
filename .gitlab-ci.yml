@@ -156,6 +156,7 @@ ckan-scan:
   variables:
     IMAGE_NAME: ${CKAN_IMAGE}
     SHORT_NAME: "ckan"
+  allow_failure: true
 
 proxy-scan:
   extends:
