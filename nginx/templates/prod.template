@@ -1,9 +1,14 @@
 proxy_cache_path /var/cache/nginx levels=1:2 keys_zone=cache:30m max_size=250m;
 proxy_temp_path /var/cache/nginx_tmp 1 2;
 
+upstream ckan {
+    server ${CKAN_HOST} max_fails=1 fail_timeout=2s;
+    keepalive 32;
+}
+
 server {
 
-    listen 80 default_server;
+    listen 80 default_server reuseport;
     server_name _;
 
     client_max_body_size 10G;
@@ -18,7 +23,7 @@ server {
     add_header 'Access-Control-Allow-Headers' 'traceparent,tracestate';
 
     location / {
-        proxy_pass http://${CKAN_HOST};
+        proxy_pass http://ckan;
 
         # Requests headers
         proxy_set_header Host                $http_host;
@@ -37,6 +42,13 @@ server {
         proxy_no_cache $cookie_${AUTH_COOKIE_NAME};
         proxy_cache_valid 30m;
         proxy_cache_key $host$scheme$proxy_host$request_uri;
+        proxy_cache_use_stale error timeout updating http_500 http_502 http_503 http_504;
+
+        # Disable buffer to temp files, tweak buffer for memory
+        proxy_max_temp_file_size 0;
+        proxy_buffer_size 64k;
+        proxy_buffers 8 64k;
+        proxy_busy_buffers_size 64k;
 
         # In emergency comment out line to force caching
         #proxy_ignore_headers X-Accel-Expires Expires Cache-Control;
