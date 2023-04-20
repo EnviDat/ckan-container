@@ -11,17 +11,17 @@ home: https://github.com/EnviDat/ckan-container/tree/main/chart
 icon: https://ckan.org/static/img/ckan.ico
 dependencies:
   - name: postgresql
-    version: 11.1.3
-    repository: https://charts.bitnami.com/bitnami
+    version: 12.2.8
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: db.enabled
     alias: db
   - name: solr
-    version: 3.0.6
-    repository: https://charts.bitnami.com/bitnami
+    version: 7.2.4
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: solr.enabled
     alias: solr
   - name: redis
-    version: 16.4.5
-    repository: https://charts.bitnami.com/bitnami
+    version: 17.9.5
+    repository: oci://registry-1.docker.io/bitnamicharts
     condition: redis.enabled
     alias: redis
