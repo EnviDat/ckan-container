@@ -262,7 +262,7 @@ create-helm-chart:
     - yq -i '.appVersion = strenv(CKAN_VERSION)' chart/Chart.yaml
     - helm package chart
     - CHART_VER=$(yq '.version' chart/Chart.yaml)
-    - helm push "ckan-${CHART_VER}.tgz" oci://registry-gitlab.wsl.ch/envidat
+    - helm push "ckan-${CHART_VER}.tgz" oci://registry-gitlab.wsl.ch/envidat/ckan-container
 # helm-deploy:
 #   extends:
 #     - .helm
