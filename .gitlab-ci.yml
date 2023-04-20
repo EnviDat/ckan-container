@@ -273,56 +273,55 @@ create-helm-chart:
     - helm package chart
     - CHART_VER=$(yq '.version' chart/Chart.yaml)
     - helm push "ckan-${CHART_VER}.tgz" oci://registry.envidat.ch/envidat
+# helm-deploy:
+#   extends:
+#     - .helm
+#   rules:
+#     - if: $CI_COMMIT_REF_NAME == "main"
+#       when: never
+#     - when: on_success
+#   variables:
+#     GIT_STRATEGY: none
+#   script:
+#     - >
+#       helm upgrade --install "${APP_NAME}"
+#       oci://registry.envidat.ch/envidat/ckan
+#       --namespace "${NAMESPACE}" --create-namespace
+#       --version "${CHART_VERSION}"
+#       --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
+#       --set proxy.image.tag="${NGINX_IMG_TAG}-${CI_COMMIT_REF_NAME}"
+#       --set image.pullPolicy="Always"
+#       --set configIniSecret="${APP_NAME}-config-ini"
+#       --set authCookieName="${APP_NAME//-/_}"
+#       --set extraEnvFrom[0].secretRef.name="solr-${APP_NAME}-vars"
+#       --set ingress.hosts[0].host="${APP_NAME}.envidat.ch"
+#       --set ingress.hosts[0].paths[0].path="/"
+#       --set ingress.hosts[0].paths[0].pathType="ImplementationSpecific"
+#       --set ingress.tls[0].secretName="envidat-star"
+#       --set ingress.tls[0].hosts[0]="${APP_NAME}.envidat.ch"
+#       --set db.auth.existingSecret="db-${APP_NAME}-creds"
+#       --set db.primary.resources.requests.cpu="100m"
+#       --set db.primary.resources.requests.memory="100Mi"
+#       --set db.syncData.restoreDbSecret="db-${APP_NAME}-vars"
+#       --set solr.image.tag="${SOLR_IMG_TAG}-${CI_COMMIT_REF_NAME}"
+#       --set solr.ingress.hostname="solr-${CI_COMMIT_REF_NAME}.envidat.ch"
+#       --set solr.passwordInitCredsSecret="solr-${APP_NAME}-vars"
+#       --set autoscaling.enabled=false
 
-helm-deploy:
-  extends:
-    - .helm
-  rules:
-    - if: $CI_COMMIT_REF_NAME == "main"
-      when: never
-    - when: on_success
-  variables:
-    GIT_STRATEGY: none
-  script:
-    - >
-      helm upgrade --install "${APP_NAME}"
-      oci://registry.envidat.ch/envidat/ckan
-      --namespace "${NAMESPACE}" --create-namespace
-      --version "${CHART_VERSION}"
-      --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
-      --set proxy.image.tag="${NGINX_IMG_TAG}-${CI_COMMIT_REF_NAME}"
-      --set image.pullPolicy="Always"
-      --set configIniSecret="${APP_NAME}-config-ini"
-      --set authCookieName="${APP_NAME//-/_}"
-      --set extraEnvFrom[0].secretRef.name="solr-${APP_NAME}-vars"
-      --set ingress.hosts[0].host="${APP_NAME}.envidat.ch"
-      --set ingress.hosts[0].paths[0].path="/"
-      --set ingress.hosts[0].paths[0].pathType="ImplementationSpecific"
-      --set ingress.tls[0].secretName="envidat-star"
-      --set ingress.tls[0].hosts[0]="${APP_NAME}.envidat.ch"
-      --set db.auth.existingSecret="db-${APP_NAME}-creds"
-      --set db.primary.resources.requests.cpu="100m"
-      --set db.primary.resources.requests.memory="100Mi"
-      --set db.syncData.restoreDbSecret="db-${APP_NAME}-vars"
-      --set solr.image.tag="${SOLR_IMG_TAG}-${CI_COMMIT_REF_NAME}"
-      --set solr.ingress.hostname="solr-${CI_COMMIT_REF_NAME}.envidat.ch"
-      --set solr.passwordInitCredsSecret="solr-${APP_NAME}-vars"
-      --set autoscaling.enabled=false
-
-helm-deploy-prod:
-  extends:
-    - .helm
-  rules:
-    - if: $CI_COMMIT_REF_NAME != "main"
-      when: never
-    - when: on_success
-  variables:
-    GIT_STRATEGY: none
-  script:
-    - >
-      helm upgrade --install "${APP_NAME}"
-      oci://registry.envidat.ch/envidat/ckan
-      --namespace "${NAMESPACE}" --create-namespace
-      --version "${CHART_VERSION}"
-      --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
-      --set proxy.image.tag="${NGINX_IMG_TAG}-${CI_COMMIT_REF_NAME}"
+# helm-deploy-prod:
+#   extends:
+#     - .helm
+#   rules:
+#     - if: $CI_COMMIT_REF_NAME != "main"
+#       when: never
+#     - when: on_success
+#   variables:
+#     GIT_STRATEGY: none
+#   script:
+#     - >
+#       helm upgrade --install "${APP_NAME}"
+#       oci://registry.envidat.ch/envidat/ckan
+#       --namespace "${NAMESPACE}" --create-namespace
+#       --version "${CHART_VERSION}"
+#       --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
+#       --set proxy.image.tag="${NGINX_IMG_TAG}-${CI_COMMIT_REF_NAME}"
