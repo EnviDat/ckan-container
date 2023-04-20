@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: registry-gitlab.wsl.ch/envidat/ckan
+  repository: registry-gitlab.wsl.ch/envidat/ckan-container/ckan
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
@@ -155,7 +155,7 @@ solr:
   replicaCount: 1
   image:
     registry: registry.envidat.ch
-    repository: envidat/ckan-solr
+    repository: envidat/ckan-container/solr
     tag: 8.11-main
   command: ""
   containerSecurityContext:

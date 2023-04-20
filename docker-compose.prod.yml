@@ -11,7 +11,7 @@ networks:
 services:
   ckan:
     container_name: ckan
-    image: "${INTERNAL_REG}/ckan:${CKAN_VERSION}-main"
+    image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-main"
     build:
       context: .
       target: prod
@@ -50,7 +50,7 @@ services:
 
   proxy:
     container_name: ckan_proxy
-    image: "${INTERNAL_REG}/ckan-proxy:${NGINX_IMG_TAG}-main"
+    image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-main"
     build:
       context: ./nginx
       args:
@@ -71,7 +71,7 @@ services:
 
   solr:
     container_name: ckan_solr
-    image: "${INTERNAL_REG}/ckan-solr:${SOLR_IMG_TAG}-main"
+    image: "${INTERNAL_REG}/ckan-container/solr:${SOLR_IMG_TAG}-main"
     build:
       context: ./solr
       args:
@@ -87,7 +87,7 @@ services:
 
   init-solr:
     container_name: ckan_init_solr
-    image: "${INTERNAL_REG}/ckan-init-solr:${SOLR_IMG_TAG}-main"
+    image: "${INTERNAL_REG}/ckan-container/init-solr:${SOLR_IMG_TAG}-main"
     build:
       context: ./init_solr
       args:

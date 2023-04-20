@@ -32,15 +32,15 @@ set-vars:
     - echo "NAMESPACE=ckan" >> build.env
     - echo "APP_NAME=ckan-${CI_COMMIT_REF_NAME}" >> build.env
     - echo CHART_VERSION=$(yq '.version' chart/Chart.yaml) >> build.env
-    - "echo CKAN_IMAGE=${INTERNAL_REG}/ckan:\
+    - "echo CKAN_IMAGE=${INTERNAL_REG}/ckan-container/ckan:\
       ${CKAN_VERSION}-${CI_COMMIT_REF_NAME} >> build.env"
-    - "echo PROXY_IMAGE=${INTERNAL_REG}/ckan-proxy:\
+    - "echo PROXY_IMAGE=${INTERNAL_REG}/ckan-container/proxy:\
       ${NGINX_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
-    - "echo DB_IMAGE=${INTERNAL_REG}/ckan-db:\
+    - "echo DB_IMAGE=${INTERNAL_REG}/ckan-container/db:\
       ${POSTGRES_IMG_TAG}-${POSTGIS_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
-    - "echo SOLR_IMAGE=${INTERNAL_REG}/ckan-solr:\
+    - "echo SOLR_IMAGE=${INTERNAL_REG}/ckan-container/solr:\
       ${SOLR_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
-    - "echo SOLR_INIT_IMAGE=${INTERNAL_REG}/ckan-init-solr:\
+    - "echo SOLR_INIT_IMAGE=${INTERNAL_REG}/ckan-container/init-solr:\
       ${SOLR_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
   artifacts:
     reports:
@@ -273,7 +273,7 @@ create-helm-chart:
 #   script:
 #     - >
 #       helm upgrade --install "${APP_NAME}"
-#       oci://registry-gitlab.wsl.ch/envidat/ckan
+#       oci://registry-gitlab.wsl.ch/envidat/ckan-container/ckan
 #       --namespace "${NAMESPACE}" --create-namespace
 #       --version "${CHART_VERSION}"
 #       --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
@@ -308,7 +308,7 @@ create-helm-chart:
 #   script:
 #     - >
 #       helm upgrade --install "${APP_NAME}"
-#       oci://registry-gitlab.wsl.ch/envidat/ckan
+#       oci://registry-gitlab.wsl.ch/envidat/ckan-container/ckan
 #       --namespace "${NAMESPACE}" --create-namespace
 #       --version "${CHART_VERSION}"
 #       --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
