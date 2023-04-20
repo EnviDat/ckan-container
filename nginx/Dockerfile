@@ -26,6 +26,6 @@ WORKDIR /etc/nginx
 # Remove default Nginx static assets
 RUN rm -rf ./conf.d/default.conf ./nginx.conf
 COPY nginx.conf nginx.conf
-ARG CONFIG_NAME
-COPY templates/${CONFIG_NAME}.template templates/ckan.conf.template
+ARG NGINX_CONFIG_NAME
+COPY templates/${NGINX_CONFIG_NAME}.template templates/ckan.conf.template
 EXPOSE 80

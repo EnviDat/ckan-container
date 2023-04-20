@@ -73,6 +73,7 @@ set-vars:
       --build-arg POSTGIS_IMG_TAG="${POSTGIS_IMG_TAG}"
       --build-arg SOLR_IMG_TAG="${SOLR_IMG_TAG}"
       --build-arg NGINX_IMG_TAG="${NGINX_IMG_TAG}"
+      --build-arg NGINX_CONFIG_NAME="${NGINX_CONFIG_NAME}"
 
 ckan-build:
   extends:

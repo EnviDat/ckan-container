@@ -58,7 +58,7 @@ services:
         - INTERNAL_REG=${INTERNAL_REG}
         - NGINX_IMG_TAG=${NGINX_IMG_TAG}
         - MAINTAINER=${MAINTAINER}
-        - CONFIG_NAME=prod
+        - NGINX_CONFIG_NAME=${NGINX_CONFIG_NAME}
     depends_on:
       - ckan
     environment:
