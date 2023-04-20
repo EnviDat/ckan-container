@@ -52,9 +52,6 @@ set-vars:
     name: gcr.io/kaniko-project/executor:v1.9.1-debug
     entrypoint: [""]
   before_script:
-    - >
-      echo "${IMAGE_REGISTRY_CA_CERT}"
-      | base64 -d >> /kaniko/ssl/certs/ca-certificates.crt
     - mkdir -p /kaniko/.docker
     - >
       echo "{\"auths\":{\"${INTERNAL_REG}\":{\"auth\":\"$(printf
@@ -124,10 +121,6 @@ solr-init-build:
     entrypoint: [""]
   variables:
     GIT_STRATEGY: none
-  before_script:
-    - >
-      echo "${IMAGE_REGISTRY_CA_CERT}"
-      | base64 -d >> /etc/ssl/certs/ca-certificates.crt
   script:
     - trivy --version
     - time trivy image --clear-cache
@@ -200,9 +193,7 @@ solr-init-scan:
   before_script:
     - export REG_HOST=${INTERNAL_REG%/*}
     - >
-      echo "{\"hosts\":{\"${REG_HOST}\":{\"tls\":\"enabled\",\"regcert\":
-      \"$(printf "%s" "${IMAGE_REGISTRY_CERT}" | base64 -d
-      | awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}')\",\"hostname\":
+      echo "{\"hosts\":{\"${REG_HOST}\":{\"tls\":\"enabled\",\"hostname\":
       \"${REG_HOST}\",\"user\":\"${IMAGE_REGISTRY_USER}\",\"pass\":
       \"${IMAGE_REGISTRY_PASS}\"}}}" >> /home/appuser/.regctl/config.json
   script:
@@ -247,9 +238,6 @@ solr-init-retag:
     name: docker.io/alpine/helm:3.8.0
     entrypoint: [""]
   before_script:
-    - >
-      echo "${IMAGE_REGISTRY_CA_CERT}"
-      | base64 -d >> /etc/ssl/certs/ca-certificates.crt
     - mkdir -p /root/.config/helm/registry
     - >
       echo "{\"auths\":{\"${INTERNAL_REG}\":{\"auth\":\"$(printf "%s:%s"
@@ -272,7 +260,7 @@ create-helm-chart:
     - yq -i '.appVersion = strenv(CKAN_VERSION)' chart/Chart.yaml
     - helm package chart
     - CHART_VER=$(yq '.version' chart/Chart.yaml)
-    - helm push "ckan-${CHART_VER}.tgz" oci://registry.envidat.ch/envidat
+    - helm push "ckan-${CHART_VER}.tgz" oci://registry-gitlab.wsl.ch/envidat
 # helm-deploy:
 #   extends:
 #     - .helm
@@ -285,7 +273,7 @@ create-helm-chart:
 #   script:
 #     - >
 #       helm upgrade --install "${APP_NAME}"
-#       oci://registry.envidat.ch/envidat/ckan
+#       oci://registry-gitlab.wsl.ch/envidat/ckan
 #       --namespace "${NAMESPACE}" --create-namespace
 #       --version "${CHART_VERSION}"
 #       --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
@@ -320,7 +308,7 @@ create-helm-chart:
 #   script:
 #     - >
 #       helm upgrade --install "${APP_NAME}"
-#       oci://registry.envidat.ch/envidat/ckan
+#       oci://registry-gitlab.wsl.ch/envidat/ckan
 #       --namespace "${NAMESPACE}" --create-namespace
 #       --version "${CHART_VERSION}"
 #       --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"

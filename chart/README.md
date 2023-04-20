@@ -72,7 +72,7 @@ Requires secrets to be pre-populated.
 ## Deployment
 
 ```shell
-helm upgrade --install ckan oci://registry.envidat.ch/envidat/
+helm upgrade --install ckan oci://registry-gitlab.wsl.ch/envidat/
 envidat-frontend --namespace ckan
 ```
 
