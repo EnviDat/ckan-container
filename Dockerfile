@@ -64,7 +64,7 @@ RUN cat ./requirements-extra.txt \
       >> ./requirements-ckan.txt
 # Import to PDM
 RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir pdm==2.3.2 \
+    && pip install --no-cache-dir pdm==2.6.0 \
     && pdm config python.use_venv false
 RUN pdm init --non-interactive \
     && pdm import -f requirements \
