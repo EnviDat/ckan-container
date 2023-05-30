@@ -47,7 +47,6 @@ services:
       context: ./nginx
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
-        - INTERNAL_REG=${INTERNAL_REG}
         - NGINX_IMG_TAG=${NGINX_IMG_TAG}
         - MAINTAINER=${MAINTAINER}
         - NGINX_CONFIG_NAME=stag

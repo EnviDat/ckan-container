@@ -49,7 +49,7 @@ services:
       - ckan_storage:/opt/ckan/data
       - ./ckan.ini:/opt/ckan/ckan.ini
       - ckan_translations:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan/public/base/i18n
-      - ./ckan:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan
+      # - ./ckan:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan
       # - ./ckanext/passwordless_api:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckanext/passwordless_api
     networks:
       - ckan-internal
@@ -62,7 +62,6 @@ services:
       context: ./nginx
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
-        - INTERNAL_REG=${INTERNAL_REG}
         - NGINX_IMG_TAG=${NGINX_IMG_TAG}
         - MAINTAINER=${MAINTAINER}
         - NGINX_CONFIG_NAME=${NGINX_CONFIG_NAME}
