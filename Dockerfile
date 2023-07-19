@@ -150,7 +150,7 @@ ENTRYPOINT ["/ckan-entrypoint.sh"]
 FROM runtime as debug
 RUN pip install --no-cache-dir debugpy==1.6.4 --no-cache
 COPY debug_run.py .
-CMD ["python", "-m", "debugpy", "--wait-for-client", \
+CMD ["python", "-m", "debugpy", \
     "--listen", "0.0.0.0:5678", \
     "debug_run.py", "--", "run", "--host", "0.0.0.0", "--passthrough-errors"]
     # "--disable-debugger"]
