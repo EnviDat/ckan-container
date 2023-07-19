@@ -137,7 +137,6 @@ COPY ckan-entrypoint.sh /ckan-entrypoint.sh
 COPY wsgi.py who.ini envidat_licenses.json $CKAN_CONFIG_DIR/
 # Upgrade pip & pre-compile deps to .pyc, add ckan user, permissions
 RUN python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)" \
-    && python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)" \
     && useradd -r -u 900 -m -c "non-priv user" -d $CKAN_HOME -s /bin/false ckanuser \
     && chmod +x /ckan-entrypoint.sh \
     && mkdir -p $CKAN_HOME $CKAN_STORAGE_PATH/storage/uploads/group \
