@@ -50,28 +50,28 @@ RUN set -ex \
 WORKDIR /opt/repos
 ARG CKAN_VERSION
 RUN git clone -b "$CKAN_VERSION" --depth 1 \
-    https://github.com/EnviDat/ckan-forked.git
-# Merge requirements to single file
+    https://github.com/ckan/ckan.git
+# Merge requirements to single file &
+# add flask-debugtoolbar to enable debug mode
 WORKDIR /opt/requirements
-RUN cp /opt/repos/ckan-forked/requirements.txt ./requirements-ckan.txt
-# Add flask-debugtoolbar to enable debug mode
-RUN grep flask-debugtoolbar \
-      < /opt/repos/ckan-forked/dev-requirements.txt \
+RUN cp /opt/repos/ckan/requirements.txt \
+      ./requirements-ckan.txt
+RUN grep Flask-DebugToolbar \
+      < /opt/repos/ckan/dev-requirements.txt \
       >> ./requirements-ckan.txt
 # Add extra deps
 COPY requirements-extra.txt .
 RUN cat ./requirements-extra.txt \
       >> ./requirements-ckan.txt
-# Import to PDM
-RUN pip install --no-cache-dir --upgrade pip \
-    && pip install --no-cache-dir pdm==2.6.0 \
+# Import deps to PDM
+RUN pip install --no-cache-dir pdm==2.6.0 \
     && pdm config python.use_venv false
 RUN pdm init --non-interactive \
     && pdm import -f requirements \
        ./requirements-ckan.txt
-# Add ckan-forked to requirements & lock / check conflicts
+# Add ckan to requirements & lock / check conflicts
 RUN pdm add --no-sync \
-    "git+https://github.com/EnviDat/ckan-forked.git@$CKAN_VERSION"
+    "git+https://github.com/ckan/ckan.git@$CKAN_VERSION"
 # Export to single requirements file
 RUN pdm export --without-hashes --prod > requirements.txt
 
@@ -96,6 +96,8 @@ RUN set -ex \
 WORKDIR /opt/python
 COPY --from=extract-deps \
     /opt/requirements/requirements.txt .
+# Fix for CKAN 2.9
+RUN pip install --no-cache-dir --upgrade setuptools==45
 # Install deps, including CKAN
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir -r ./requirements.txt
