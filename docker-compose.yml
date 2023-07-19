@@ -47,13 +47,14 @@ services:
       # OTEL_PYTHON_LOG_LEVEL:
     volumes:
       - ckan_storage:/opt/ckan/data
-      - ./ckan.ini:/opt/ckan/ckan.ini
+      - ./config/ckan.ini:/opt/ckan/ckan.ini
       - ckan_translations:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan/public/base/i18n
       # - ./ckan:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan
       # - ./ckanext/passwordless_api:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckanext/passwordless_api
     networks:
       - ckan-internal
       - traefik-proxy
+    restart: unless-stopped
 
   proxy:
     container_name: ckan_proxy
@@ -74,6 +75,7 @@ services:
       - "8989:80"
     networks:
       - ckan-internal
+    restart: unless-stopped
 
   db:
     container_name: ckan_db
@@ -99,6 +101,7 @@ services:
       test: ["CMD", "pg_isready", "-U", "postgres"]
     ports:
       - "25432:5432"
+    restart: unless-stopped
 
   solr:
     container_name: ckan_solr
@@ -115,6 +118,7 @@ services:
       - ckan-internal
     ports:
       - "8988:8983"
+    restart: unless-stopped
 
   init-solr:
     container_name: ckan_init_solr
@@ -132,9 +136,11 @@ services:
       - ckan-internal
     depends_on:
       - solr
+    restart: unless-stopped
 
   redis:
     container_name: ckan_redis
     image: redis:${REDIS_IMG_TAG}
     networks:
       - ckan-internal
+    restart: unless-stopped

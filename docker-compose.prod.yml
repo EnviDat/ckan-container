@@ -43,10 +43,11 @@ services:
       # OTEL_PYTHON_LOG_LEVEL:
     volumes:
       - ckan_storage:/opt/ckan/data
-      - ./ckan.ini:/opt/ckan/ckan.ini
+      - ./config/ckan.ini:/opt/ckan/ckan.ini
       - ckan_translations:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan/public/base/i18n
     networks:
       - ckan-internal
+    restart: unless-stopped
 
   proxy:
     container_name: ckan_proxy
@@ -67,6 +68,7 @@ services:
       - "8080:80"
     networks:
       - ckan-internal
+    restart: unless-stopped
 
   solr:
     container_name: ckan_solr
@@ -83,6 +85,7 @@ services:
       - ckan-internal
     ports:
       - "8090:8983"
+    restart: unless-stopped
 
   init-solr:
     container_name: ckan_init_solr
@@ -106,3 +109,4 @@ services:
     image: redis:${REDIS_IMG_TAG}
     networks:
       - ckan-internal
+    restart: unless-stopped

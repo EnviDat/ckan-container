@@ -35,10 +35,11 @@ services:
       CKAN_INI: "/opt/ckan/ckan.ini"
     volumes:
       - ckan_storage:/opt/ckan/data
-      - ./ckan-stag.ini:/opt/ckan/ckan.ini
+      - ./config/stag-ckan.ini:/opt/ckan/ckan.ini
       - ckan_translations:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan/public/base/i18n
     networks:
       - ckan-staging
+    restart: unless-stopped
 
   proxy:
     container_name: ckan_proxy
@@ -62,6 +63,7 @@ services:
       - "8081:443"
     networks:
       - ckan-staging
+    restart: unless-stopped
 
   db:
     container_name: ckan_db
@@ -85,6 +87,7 @@ services:
       - ckan-staging
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "postgres"]
+    restart: unless-stopped
 
   solr:
     container_name: ckan_solr
@@ -99,6 +102,7 @@ services:
       - solr_data:/var/solr/data
     networks:
       - ckan-staging
+    restart: unless-stopped
 
   init-solr:
     container_name: ckan_init_solr
@@ -122,3 +126,4 @@ services:
     image: redis:${REDIS_IMG_TAG}
     networks:
       - ckan-staging
+    restart: unless-stopped
