@@ -21,10 +21,15 @@ ARG NGINX_IMG_TAG
 ARG MAINTAINER
 LABEL envidat.ch.nginx-img-tag="${NGINX_IMG_TAG}" \
       envidat.ch.maintainer="${MAINTAINER}"
+RUN apt-get update && apt-get install\
+    -y --no-install-recommends \
+        wait-for-it \
+    && rm -rf /var/lib/apt/lists/*
 WORKDIR /etc/nginx
 # Remove default Nginx static assets
 RUN rm -rf ./conf.d/default.conf ./nginx.conf
 COPY nginx.conf nginx.conf
 ARG NGINX_CONFIG_NAME
 COPY templates/${NGINX_CONFIG_NAME}.template templates/ckan.conf.template
+CMD ["wait-for-it", "ckan:5000", "--", "nginx", "-g", "daemon off;"] 
 EXPOSE 80
