@@ -4,8 +4,8 @@
 # Allow files and directories
 !envidat_extensions.*
 !ckan-entrypoint.sh
-!who.ini
-!envidat_licenses.json
+!config/who.ini
+!config/*.json
 !requirements-extra.txt
 !wsgi.py
 !debug_run.py

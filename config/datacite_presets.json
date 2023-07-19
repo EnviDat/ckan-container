@@ -1,0 +1,23 @@
+{
+  "scheming_presets_version": 1,
+  "about": "these are the additional datacite publication field presets",
+  "about_url": "http://github.com/EnviDat/ckanext-datacite_publication",
+  "presets": [
+    {
+      "preset_name": "datacite_publication_select",
+      "values": {
+        "form_snippet": "datacite_publication_select.html",
+        "display_snippet": "select.html",
+        "validators": "scheming_required scheming_choices"
+      }
+    },
+    {
+      "preset_name": "datacite_publication_doi_text",
+      "values": {
+        "form_snippet": "datacite_publication_doi_text.html",
+        "display_snippet": "datacite_publication_doi_display_text.html",
+        "validators": "scheming_required"
+      }
+    }
+  ]
+}
