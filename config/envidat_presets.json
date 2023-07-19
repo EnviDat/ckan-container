@@ -1,5 +1,5 @@
 {
-  "scheming_presets_version": 1,
+  "scheming_version": 2,
   "about": "these are the additional Envidat datacite based field presets",
   "about_url": "http://github.com/EnviDat/ckanext-envidat_schema",
   "presets": [

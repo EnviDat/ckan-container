@@ -82,15 +82,15 @@
     {
       "field_name": "funding",
       "label": "Funding Information",
-      "preset": "composite_repeating",
+      "preset": "json_object",
       "form_blanks": 1,
       "help_text": "Information about the financial support for obtaining this dataset",
       "help_inline": false,
       "required": true,
       "display_snippet": null,
       "datacite": "fundingReferences",
-      "subfields_label": " Funder no.",
-      "subfields": [
+      "repeating_label": " Funder no.",
+      "repeating_subfields": [
         {
           "field_name": "institution",
           "label": "Name",
@@ -148,15 +148,15 @@
     {
       "field_name": "author",
       "label": "Authors",
-      "preset": "composite_repeating",
+      "preset": "json_object",
       "form_blanks": 1,
       "help_text": "Authors of the dataset",
       "help_inline": false,
       "required": true,
       "datacite": "creators",
-      "subfields_label": " Author no.",
+      "repeating_label": " Author no.",
       "validators": "composite_repeating_group2json envidat_reorder",
-      "subfields": [
+      "repeating_subfields": [
         {
           "field_name": "email",
           "label": "Email",
@@ -295,11 +295,11 @@
     {
       "field_name": "maintainer",
       "label": "Contact Person",
-      "preset": "composite",
+      "preset": "json_object",
       "required": true,
       "datacite": "contributors",
-      "subfields_label": " Contact",
-      "subfields": [
+      "repeating_label": " Contact",
+      "repeating_subfields": [
         {
           "field_name": "copy-from-author",
           "label": "Name",
@@ -376,11 +376,11 @@
     {
       "field_name": "subtitle",
       "label": "Subtitles",
-      "preset": "composite_repeating",
+      "preset": "json_object",
       "form_snippet": null,
       "form_blanks": 1,
       "datacite": "titles",
-      "subfields": [
+      "repeating_subfields": [
         {
           "field_name": "subtitle",
           "label": "Subtitle",
@@ -447,11 +447,11 @@
     {
       "field_name": "publication",
       "label": "Publication",
-      "preset": "composite",
+      "preset": "json_object",
       "help_text": "Publication of the dataset",
       "help_inline": true,
       "required": true,
-      "subfields": [
+      "repeating_subfields": [
         {
           "field_name": "publisher",
           "label": "Publisher",
@@ -473,11 +473,11 @@
     {
       "field_name": "date",
       "label": "Dates",
-      "preset": "composite_repeating",
+      "preset": "json_object",
       "form_blanks": 1,
       "datacite": "dates",
       "required": true,
-      "subfields": [
+      "repeating_subfields": [
         {
           "field_name": "date_type",
           "label": "Type",
@@ -658,9 +658,9 @@
       "label": "Size",
       "help_text": "Only necessary for linked resources",
       "help_inline": true,
-      "preset": "composite",
+      "preset": "json_object",
       "display_snippet": null,
-      "subfields": [
+      "repeating_subfields": [
         {
           "field_name": "size_value",
           "label": "Size"
@@ -702,9 +702,9 @@
     {
       "field_name": "restricted",
       "label": "Access Restriction",
-      "preset": "composite",
+      "preset": "json_object",
       "validators": "composite_group2json restricted_username_from_mail",
-      "subfields": [
+      "repeating_subfields": [
         {
           "field_name": "level",
           "label": "Level",
