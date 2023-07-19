@@ -35,13 +35,13 @@ services:
       - .env
     environment:
       CKAN_INI: "/opt/ckan/ckan.ini"
-      OTEL_LOG_LEVEL: debug
-      OTEL_RESOURCE_ATTRIBUTES: "service.name=ckan-local-dev"
-      OTEL_TRACES_EXPORTER: "otlp_proto_http"
-      OTEL_METRICS_EXPORTER: "otlp_proto_http"
-      OTEL_LOGS_EXPORTER: "otlp_proto_http"
-      OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
-      OTEL_EXPORTER_OTLP_ENDPOINT: "https://traces.envidat.ch"
+      # OTEL_LOG_LEVEL: debug
+      # OTEL_RESOURCE_ATTRIBUTES: "service.name=ckan-local-dev"
+      # OTEL_TRACES_EXPORTER: "otlp_proto_http"
+      # OTEL_METRICS_EXPORTER: "otlp_proto_http"
+      # OTEL_LOGS_EXPORTER: "otlp_proto_http"
+      # OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+      # OTEL_EXPORTER_OTLP_ENDPOINT: "https://traces.envidat.ch"
       # OTEL_PYTHON_LOG_CORRELATION: "True"
       # OTEL_PYTHON_LOG_FORMAT:
       # OTEL_PYTHON_LOG_LEVEL:

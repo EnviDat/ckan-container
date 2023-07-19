@@ -58,7 +58,7 @@ RUN cp /opt/repos/ckan-forked/requirements.txt ./requirements-ckan.txt
 RUN grep flask-debugtoolbar \
       < /opt/repos/ckan-forked/dev-requirements.txt \
       >> ./requirements-ckan.txt
-# Add extras (opentelemetry instrumentation)
+# Add extra deps
 COPY requirements-extra.txt .
 RUN cat ./requirements-extra.txt \
       >> ./requirements-ckan.txt
@@ -158,7 +158,12 @@ CMD ["python", "-m", "debugpy", "--wait-for-client", \
 
 
 FROM runtime as prod
-CMD ["opentelemetry-instrument", "gunicorn", "wsgi:application", \
+# CMD ["opentelemetry-instrument", "gunicorn", "wsgi:application", \
+#         "--bind", "0.0.0.0:5000", \
+#         "--workers=2", "--threads=4", "--worker-class=gthread", \
+#         "--worker-tmp-dir=/dev/shm", \
+#         "--log-file=-", "--log-level=debug"]
+CMD ["gunicorn", "wsgi:application", \
         "--bind", "0.0.0.0:5000", \
         "--workers=2", "--threads=4", "--worker-class=gthread", \
         "--worker-tmp-dir=/dev/shm", \
