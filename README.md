@@ -82,7 +82,7 @@ docker exec -it -u root:root ckan \
 - Create a symlink to the code:
 
 ```bash
-ln -s ../ckan-forked/ckan ./ckan
+ln -s ../ckan/ckan ./ckan
 ln -s ../ckanext-passwordless_api/ckanext/passwordless_api ./ckanext/passwordless_api
 ```
 
