@@ -29,7 +29,7 @@ WORKDIR /etc/nginx
 # Remove default Nginx static assets
 RUN rm -rf ./conf.d/default.conf ./nginx.conf
 COPY nginx.conf nginx.conf
+COPY --chmod=744 00-wait-for-start.sh /docker-entrypoint.d/
 ARG NGINX_CONFIG_NAME
 COPY templates/${NGINX_CONFIG_NAME}.template templates/ckan.conf.template
-CMD ["wait-for-it", "ckan:5000", "--", "nginx", "-g", "daemon off;"] 
 EXPOSE 80
