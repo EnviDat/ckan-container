@@ -90,6 +90,7 @@ RUN set -ex \
         libxml2-dev \
         libxslt-dev \
         libgeos-dev \
+        libproj-dev \
         libssl-dev \
         libffi-dev \
     && rm -rf /var/lib/apt/lists/*
@@ -130,6 +131,7 @@ RUN set -ex \
         postgresql-client \
         libpq-dev \
         libgeos-c1v5 \
+        libproj19 \
         libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=build \
