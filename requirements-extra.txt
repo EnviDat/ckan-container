@@ -1,8 +1,25 @@
 # WSGI server
 gunicorn==20.1.0
+
 # Plugins
+ckanext-scheming==3.0.0
+ckanext-hierarchy==1.2.0
 ckanext-passwordless-api==1.1.1
 ckanext-envidat-validators==0.1.1
+boto3==1.20.26
+
+# SPATIAL - REMOVE ME
+ckantoolkit
+Shapely>=1.2.13,<2.0.0
+pyproj==2.6.1
+OWSLib==0.18.0
+lxml>=2.3
+argparse
+pyparsing>=2.1.10
+requests>=1.1.0
+six
+geojson==2.5.0
+
 # # Opentelemetry
 # opentelemetry-sdk==1.15.0
 # opentelemetry-api==1.15.0
