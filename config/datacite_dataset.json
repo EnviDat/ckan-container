@@ -7,7 +7,7 @@
     {
       "field_name": "title",
       "label": "Title",
-      "validators": "if_empty_same_as(name) unicode",
+      "validators": "if_empty_same_as(name) unicode_safe",
       "form_attrs": {
         "data-module": "slug-preview-target"
       },
@@ -17,7 +17,7 @@
     {
       "field_name": "name",
       "label": "URL",
-      "validators": "not_empty unicode name_validator package_name_validator envidat_shortname_validator",
+      "validators": "not_empty unicode_safe name_validator package_name_validator envidat_shortname_validator",
       "form_placeholder": "eg. my-dataset"
     },
     {
@@ -520,7 +520,7 @@
     {
       "field_name": "version",
       "label": "Version",
-      "validators": "ignore_missing unicode package_version_validator",
+      "validators": "ignore_missing unicode_safe package_version_validator",
       "form_placeholder": "1.0",
       "default_value": "1.0",
       "datacite": "version",
