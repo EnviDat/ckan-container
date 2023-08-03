@@ -5,7 +5,7 @@ gunicorn==20.1.0
 ## Latest scheming on pypi release Nov 2022
 ckanext-hierarchy==1.2.0
 ckanext-passwordless-api==1.1.1
-ckanext-envidat-validators==0.1.1
+ckanext-envidat-validators==0.1.2
 boto3==1.20.26
 
 # # Opentelemetry
