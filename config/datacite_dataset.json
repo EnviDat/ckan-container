@@ -8,7 +8,6 @@
       "field_name": "title",
       "label": "Title",
       "validators": "if_empty_same_as(name) unicode",
-      "form_snippet": "datacite_publication_title.html",
       "form_attrs": {
         "data-module": "slug-preview-target"
       },
@@ -19,13 +18,11 @@
       "field_name": "name",
       "label": "URL",
       "validators": "not_empty unicode name_validator package_name_validator envidat_shortname_validator",
-      "form_snippet": "datacite_publication_url.html",
       "form_placeholder": "eg. my-dataset"
     },
     {
       "field_name": "doi",
       "label": "DOI",
-      "preset": "datacite_publication_doi_text",
       "form_placeholder": "eg. 10.12345/678",
       "help_text": "A DOI can be requested after saving the dataset (if you do not have one already)",
       "help_inline": false,
@@ -34,7 +31,6 @@
     {
       "field_name": "publication_state",
       "label": "Publication State",
-      "preset": "datacite_publication_select",
       "required": false,
       "choices": [
         {
@@ -65,8 +61,7 @@
     },
     {
       "field_name": "owner_org",
-      "label": "Organization",
-      "preset": "envidat_dataset_organization"
+      "label": "Organization"
     },
     {
       "field_name": "notes",
@@ -138,7 +133,7 @@
     {
       "field_name": "tag_string",
       "label": "Keywords",
-      "preset": "tag_string_upper_autocomplete",
+      "preset": "tag_string_autocomplete",
       "required": true,
       "help_text": "At least 5 keywords required",
       "help_inline": true,
@@ -168,7 +163,6 @@
         {
           "field_name": "autocomplete",
           "label": "Autocomplete",
-          "form_snippet": "envidat_author_complete.html",
           "display_snippet": null,
           "help_text": "Click the button to autocomplete the author information from the email",
           "help_inline": true
@@ -284,7 +278,6 @@
         {
           "field_name": "order",
           "label": "Order",
-          "form_snippet": "envidat_author_order.html",
           "help_text": "Author Order",
           "help_inline": true,
           "form_placeholder": "1",
@@ -303,7 +296,6 @@
         {
           "field_name": "copy-from-author",
           "label": "Name",
-          "form_snippet": "envidat_copy_from_author.html",
           "help_text": "Maintainer from author",
           "help_inline": true,
           "form_placeholder": "Author 1"
@@ -521,7 +513,6 @@
       "field_name": "license_id",
       "label": "Content License",
       "form_include_blank_choice": true,
-      "form_snippet": "envidat_license.html",
       "help_text": "Please select a license from the list:<ul><li><b>ODbL</b> requests to attribute, share-Alike and keep Open: see https://opendatacommons.org/licenses/odbl/summary/ </li><li><b>WSL Data Policy</b>  requests to Attribute, forbids the duplication of datasets and forbids redistribution unless otherwise agreed with data originators </li><li><b>CC-BY-SA</b> requests you Attribute, Share-Alike and keep Open: see https://creativecommons.org/licenses/by-sa/4.0/ </li><li><b>CC 0</b> you waive all rights and dedicate the work to the public domain: see https://creativecommons.org/publicdomain/zero/1.0/ </li><li>Select <b>Other</b> in order to specify your own license in the description of the dataset </li></ul>",
       "datacite": "rightsList.rights",
       "required": true
@@ -531,7 +522,6 @@
       "label": "Version",
       "validators": "ignore_missing unicode package_version_validator",
       "form_placeholder": "1.0",
-      "form_snippet": "envidat_text_default.html",
       "default_value": "1.0",
       "datacite": "version",
       "required": true
@@ -541,7 +531,6 @@
       "label": "Type",
       "form_placeholder": "Dataset",
       "datacite": "resourceType",
-      "form_snippet": "envidat_text_default.html",
       "default_value": "Dataset",
       "validators": "envidat_copy_type_general",
       "hidden": true
@@ -549,7 +538,6 @@
     {
       "field_name": "resource_type_general",
       "label": "General Type",
-      "preset": "envidat_select",
       "form_include_blank_choice": false,
       "required": true,
       "datacite": "resourceType.resourceTypeGeneral",
@@ -576,8 +564,6 @@
       "label": "Language",
       "datacite": "language",
       "form_include_blank_choice": false,
-      "preset": "envidat_select",
-      "form_snippet": "envidat_text_default.html",
       "default_value": "en",
       "hidden": true,
       "choices": [
@@ -606,7 +592,6 @@
     {
       "field_name": "spatial_info",
       "label": "Location",
-      "form_snippet": "envidat_text_default.html",
       "default_value": "Switzerland",
       "form_placeholder": "Switzerland",
       "help_text": "Free text spatial information",
@@ -616,7 +601,6 @@
     {
       "field_name": "spatial",
       "default_value": "{\"type\": \"Polygon\", \"coordinates\": [[[5.95587, 45.81802],[5.95587, 47.80838],[10.49203, 47.80838],[10.49203, 45.81802],[5.95587, 45.81802]]]}",
-      "form_snippet": "envidat_map.html",
       "display_snippet": null,
       "modal_text": "spatial_help",
       "required": true,
@@ -631,8 +615,7 @@
       "field_name": "url",
       "label": "URL",
       "preset": "resource_url_upload",
-      "help_text": "for files larger than 1 GB please contact envidat@wsl.ch",
-      "form_snippet": "envidat_upload.html"
+      "help_text": "for files larger than 1 GB please contact envidat@wsl.ch"
     },
     {
       "field_name": "name",
@@ -695,7 +678,6 @@
     {
       "field_name": "doi",
       "label": "DOI",
-      "preset": "datacite_publication_doi_text",
       "form_placeholder": "eg. 10.12345/678",
       "datacite": "identifier"
     },
@@ -737,7 +719,6 @@
     {
       "field_name": "publication_state",
       "label": "Publication State",
-      "preset": "datacite_publication_select",
       "required": false,
       "choices": [
         {
