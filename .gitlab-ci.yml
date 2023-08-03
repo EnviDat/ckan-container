@@ -37,7 +37,7 @@ set-vars:
     - "echo PROXY_IMAGE=${INTERNAL_REG}/ckan-container/proxy:\
       ${NGINX_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
     - "echo DB_IMAGE=${INTERNAL_REG}/ckan-container/db:\
-      ${POSTGRES_IMG_TAG}-${POSTGIS_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
+      ${POSTGRES_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
     - "echo SOLR_IMAGE=${INTERNAL_REG}/ckan-container/solr:\
       ${SOLR_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
     - "echo SOLR_INIT_IMAGE=${INTERNAL_REG}/ckan-container/init-solr:\
@@ -70,7 +70,6 @@ set-vars:
       --build-arg PYTHON_IMG_TAG="${PYTHON_IMG_TAG}"
       --build-arg CKAN_VERSION="${CKAN_VERSION}"
       --build-arg POSTGRES_IMG_TAG="${POSTGRES_IMG_TAG}"
-      --build-arg POSTGIS_IMG_TAG="${POSTGIS_IMG_TAG}"
       --build-arg SOLR_IMG_TAG="${SOLR_IMG_TAG}"
       --build-arg NGINX_IMG_TAG="${NGINX_IMG_TAG}"
       --build-arg NGINX_CONFIG_NAME="${NGINX_CONFIG_NAME}"

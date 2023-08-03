@@ -67,13 +67,12 @@ services:
 
   db:
     container_name: ckan_db
-    image: "${INTERNAL_REG}/ckan-container/db:${POSTGRES_IMG_TAG}-${POSTGIS_IMG_TAG}-main"
+    image: "${INTERNAL_REG}/ckan-container/db:${POSTGRES_IMG_TAG}-main"
     build:
       context: ./postgresql
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
         - POSTGRES_IMG_TAG=${POSTGRES_IMG_TAG}
-        - POSTGIS_IMG_TAG=${POSTGIS_IMG_TAG}
         - MAINTAINER=${MAINTAINER}
     environment:
       - POSTGRES_PASSWORD=ai4ncF6GpHokPaNmW25UftzMjM7hrC

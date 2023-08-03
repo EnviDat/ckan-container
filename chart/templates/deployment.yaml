@@ -32,7 +32,7 @@ spec:
       initContainers:
         {{- if .Values.db.enabled }}
         - name: check-db-ready
-          image: docker.io/postgis/postgis:14-3.2
+          image: docker.io/postgres:15
           imagePullPolicy: IfNotPresent
           envFrom:
             - secretRef:
@@ -52,7 +52,7 @@ spec:
                 sleep 2;
               done;
         - name: sync-db
-          image: docker.io/postgis/postgis:14-3.2
+          image: docker.io/postgres:15
           imagePullPolicy: IfNotPresent
           envFrom:
             - secretRef:
@@ -80,26 +80,20 @@ spec:
               EOSQL
               echo "Backup and restoring $DB_CKAN_NAME via pipe to new host."
               PGPASSWORD="$BACKUP_DB_PASS" pg_dump --verbose --format c \
+                  --extension=plpgsql \
+                  --exclude-table=package_extent --exclude-table=spatial_ref_sys \
                   --host "$BACKUP_DB_HOST" --username "$DB_USER" "$DB_CKAN_NAME" \
                   | PGPASSWORD="$RESTORE_DB_PG_PASS" pg_restore --verbose \
                   --create --clean --exit-on-error \
                   --host "$RESTORE_DB_HOST" --username postgres --dbname postgres
               echo "Backup and restoring $DB_DOI_NAME via pipe to new host."
               PGPASSWORD="$BACKUP_DB_PASS" pg_dump --verbose --format c \
+                  --extension=plpgsql \
+                  --exclude-table=package_extent --exclude-table=spatial_ref_sys \
                   --host "$BACKUP_DB_HOST" --username "$DB_USER" "$DB_DOI_NAME" \
                   | PGPASSWORD="$RESTORE_DB_PG_PASS" pg_restore --verbose \
                   --create --clean --exit-on-error \
                   --host "$RESTORE_DB_HOST" --username postgres --dbname postgres
-              echo "Adding Postgis extension if does not exist."
-              PGPASSWORD="$RESTORE_DB_PG_PASS" psql -v ON_ERROR_STOP=1 \
-                  --host "$RESTORE_DB_HOST" --username postgres --dbname postgres <<-EOSQL
-                  CREATE EXTENSION IF NOT EXISTS postgis;
-                  CREATE EXTENSION IF NOT EXISTS postgis_topology;
-                  CREATE EXTENSION IF NOT EXISTS fuzzystrmatch;
-                  CREATE EXTENSION IF NOT EXISTS postgis_tiger_geocoder;
-                  ALTER VIEW geometry_columns OWNER TO "$DB_USER";
-                  ALTER TABLE spatial_ref_sys OWNER TO "$DB_USER";
-              EOSQL
         {{- end }}
         - name: copy-group-img
           image: docker.io/rclone/rclone
