@@ -1,0 +1,464 @@
+scheming_version: 2
+dataset_type: dataset
+about: The default CKAN dataset schema plus additional EnviDat fields
+about_url: http://github.com/ckan/ckanext-scheming
+
+dataset_fields:
+  - field_name: title
+    label: Title
+    validators: "if_empty_same_as(name) unicode_safe"
+    form_attrs:
+      data-module: slug-preview-target
+    form_placeholder: "eg. A descriptive title"
+  - field_name: name
+    label: URL
+    validators: "not_empty unicode_safe name_validator package_name_validator envidat_shortname_validator"
+    form_placeholder: "eg. my-dataset"
+  - field_name: doi
+    label: DOI
+    form_placeholder: "eg. 10.12345/678"
+    help_text: "A DOI can be requested after saving the dataset (if you do not have one already)"
+    help_inline: false
+  - field_name: publication_state
+    label: Publication State
+    validators: "scheming_required scheming_choices"
+    required: false
+    choices:
+      - value: ""
+        label: ""
+      - value: "reserved"
+        label: "Reserved"
+      - value: "pub_requested"
+        label: "Publication Requested"
+      - value: "pub_pending"
+        label: "Publication Pending"
+      - value: "approved"
+        label: "Approved"
+      - value: "published"
+        label: "Published"
+  - field_name: owner_org
+    label: Organization
+    validators: owner_org_validator unicode_safe
+  - field_name: notes
+    label: Description
+    validators: envidat_minimum_description_length
+    form_snippet: markdown.html
+    form_placeholder: "The description should be as brief as possible, but as long as necessary so that any potential data user can find answers to the following: what is the research data about, which methods were used, including important steps in processing or manipulating data, and citations for any third-party data that you have used in order to produce the new dataset."
+    required: true
+    help_text: "Concise text describing the dataset thoroughly (minimum 100 characters)."
+    help_inline: false
+  - field_name: funding
+    label: Funding Information
+    validators: composite_repeating_group2json
+    form_blanks: 1
+    help_text: "Information about the financial support for obtaining this dataset"
+    help_inline: false
+    required: true
+    display_snippet: null
+    repeating_label: "Funder no."
+    repeating_subfields:
+      - field_name: institution
+        label: Name
+        form_placeholder: "eg. ETH"
+        help_text: "Funder institution or organization name"
+        help_inline: false
+        required: true
+      - field_name: institution_url
+        label: "Link to Funding Agency"
+        form_placeholder: "eg. http://p3.snf.ch/project-155999"
+        help_text: "Funding agency URL"
+        help_inline: false
+        required: false
+      - field_name: grant_number
+        label: "Grant Number"
+        form_placeholder: "eg. GBMF3859"
+        help_text: "Code assigned by the funder to a sponsored award (grant)"
+        help_inline: false
+        required: false
+  - field_name: related_datasets
+    label: Related Datasets
+    form_snippet: markdown.html
+    display_snippet: null
+    help_text: "Please cite datasets, one per line starting with a '*'. The use of EnviDat IDs (e.g. dataset-for-ogrs-2018-publication) or EnviDat links is recommended."
+    form_placeholder: " * dataset-for-ogrs-2018-publication\n * https://www.envidat.ch/#/metadata/dataset-for-ogrs-2018-publication\n * Marielle Fraefel (2018). Dataset for OGRS 2018 publication. WSL. [doi: 10.16904/envidat.49](https://doi.org/10.16904/envidat.49)"
+  - field_name: related_publications
+    label: Related Publications
+    form_snippet: markdown.html
+    display_snippet: null
+    help_text: "Please cite publications, one per line starting with a '*'. The use of DORA IDs (e.g. wsl:18753) or DORA links is recommended."
+    form_placeholder: " * wsl:18753\n * https://www.dora.lib4ri.ch/wsl/islandora/object/wsl:18753\n * Iosif Schubiger et al. (2021). A long-term, spatially distributed wood dataset for Switzerland. WSL. [doi: 10.16904/envidat.248](https://doi.org/10.16904/envidat.248)"
+  - field_name: tag_string
+    label: Keywords
+    preset: tag_string_autocomplete
+    required: true
+    help_text: At least 5 keywords required
+    help_inline: true
+    form_placeholder: "eg. FOREST, ICE TEMPERATURE, WATER"
+  - field_name: author
+    label: Authors
+    form_blanks: 1
+    help_text: Authors of the dataset
+    help_inline: false
+    required: true
+    repeating_label: "Author no."
+    validators: "composite_repeating_group2json envidat_reorder"
+    repeating_subfields:
+      - field_name: email
+        label: Email
+        form_placeholder: "eg. john@wsl.ch"
+        required: true
+        help_text: Contact e-mail for this author
+        help_inline: true
+      - field_name: autocomplete
+        label: Autocomplete
+        display_snippet: null
+        help_text: Click the button to autocomplete the author information from the email
+        help_inline: true
+      - field_name: identifier
+        label: ORCID
+        form_placeholder: "eg. 0000-0003-0166-248X"
+        help_text: More info at https://orcid.org/
+        help_inline: true
+      - field_name: given_name
+        label: Given Name
+        form_placeholder: "eg. John"
+        help_text: Author's first name
+        help_inline: false
+        required: false
+      - field_name: name
+        label: Family Name
+        form_placeholder: "eg. Smith"
+        help_text: Aunthor's surname. For additional authors press the + button.
+        help_inline: false
+        required: true
+      - field_name: identifier_scheme
+        label: Scheme
+        preset: select
+        form_snippet: null
+        display_snippet: null
+        default_value: "orcid"
+        choices:
+          - value: "orcid"
+            label: "ORCID"
+          - value: "isni"
+            label: "ISNI"
+          - value: "rid"
+            label: "ResearcherID"
+          - value: "rgate"
+            label: "ResearchGate"
+      - field_name: affiliation
+        label: Affiliation
+        form_placeholder: "eg. WSL"
+        required: true
+      - field_name: affiliation_02
+        label: Additional Affiliation
+        form_placeholder: "eg. SLF"
+        required: false
+      - field_name: affiliation_03
+        label: Additional Affiliation
+        form_placeholder: "eg. ETH"
+        required: false
+      - field_name: data_credit
+        label: DataCRediT
+        required: false
+        preset: multiple_checkbox
+        help_text: "Data Authorship Contributor Roles Taxonomy defined at [www.wsl.ch/datacredit]https://www.wsl.ch/datacredit/"
+        help_inline: false
+        choices:
+          - value: "collection"
+            label: "Collection"
+          - value: "validation"
+            label: "Validation"
+          - value: "curation"
+            label: "Curation"
+          - value: "software"
+            label: "Software"
+          - value: "publication"
+            label: "Publication"
+          - value: "supervision"
+            label: "Supervision"
+      - field_name: order
+        label: Order
+        help_text: Author Order
+        help_inline: true
+        form_placeholder: "1"
+        display_snippet: null
+  - field_name: maintainer
+    label: Contact Person
+    validators: "composite_group2json"
+    required: true
+    repeating_label: "Contact"
+    repeating_subfields:
+      - field_name: copy-from-author
+        label: Name
+        help_text: Maintainer from author
+        help_inline: true
+        form_placeholder: "Author 1"
+      - field_name: given_name
+        label: Given Name
+        form_placeholder: "eg. John"
+        help_text: Maintainer of the dataset surname
+        help_inline: false
+        required: false
+      - field_name: name
+        label: Family Name
+        required: true
+        form_placeholder: "Bloggs"
+      - field_name: email
+        label: Email
+        required: true
+        form_placeholder: "eg. john@wsl.ch"
+      - field_name: affiliation
+        label: Affiliation
+        form_placeholder: "eg. WSL"
+      - field_name: identifier
+        label: ORCID
+        form_placeholder: "eg. 0000-0003-0166-248X"
+        help_text: More info at https://orcid.org/
+        help_inline: true
+      - field_name: identifier_scheme
+        label: Scheme
+        required: false
+        preset: select
+        form_snippet: null
+        display_snippet: null
+        choices:
+          - value: "orcid"
+            label: "ORCID"
+          - value: "isni"
+            label: "ISNI"
+          - value: "rid"
+            label: "ResearcherID"
+          - value: "rgate"
+            label: "ResearchGate"
+  - field_name: subtitle
+    label: Subtitles
+    form_snippet: null
+    form_blanks: 1
+    validators: "composite_repeating_group2json"
+    repeating_label: "Subtitles"
+    repeating_subfields:
+      - field_name: subtitle
+        label: Subtitle
+        form_placeholder: "eg. A secondary title"
+        help_text: A Secondary title for this dataset
+        help_inline: false
+        required: true
+      - field_name: type
+        label: Type
+        preset: select
+        choices:
+          - value: "alternative_title"
+            label: "Alternative Title"
+          - value: "subtitle"
+            label: "Subtitle"
+          - value: "translated_title"
+            label: "Translated Title"
+          - value: "other"
+            label: "Other"
+      - field_name: language
+        label: Language
+        preset: select
+        choices:
+          - value: "en"
+            label: "English"
+          - value: "de"
+            label: "German"
+          - value: "fr"
+            label: "French"
+          - value: "it"
+            label: "Italian"
+          - value: "ro"
+            label: "Romansh"
+  - field_name: publication
+    label: Publication
+    validators: "composite_group2json"
+    help_text: Publication of the dataset
+    help_inline: true
+    required: true
+    repeating_label: "Publication"
+    repeating_subfields:
+      - field_name: publisher
+        label: Publisher
+        form_placeholder: "eg. Institution or Journal"
+        default_value: "EnviDat"
+      - field_name: publication_year
+        label: Year
+        required: true
+        form_attrs: { "size": 5, "maxlength": 4 }
+        form_placeholder: "YYYY"
+        default_value: "composite_current_year"
+  - field_name: date
+    label: Dates
+    validators: "composite_repeating_group2json"
+    form_blanks: 1
+    required: true
+    repeating_label: "Dates"
+    repeating_subfields:
+      - field_name: date_type
+        label: Type
+        preset: select
+        required: true
+        form_include_blank_choice: false
+        choices:
+          - value: "collected"
+            label: "Collected"
+          - value: "created"
+            label: "Created"
+      - field_name: date
+        label: Date
+        preset: date
+        form_placeholder: "yyyy-mm-dd"
+        form_attrs: { "size": 12, "maxlength": 10 }
+        required: true
+        help_text: Pick a date
+        help_inline: true
+      - field_name: end_date
+        label: End Date
+        preset: date
+        form_placeholder: "yyyy-mm-dd"
+        form_attrs: { "size": 12, "maxlength": 10 }
+        required: false
+  - field_name: license_id
+    label: Content License
+    form_include_blank_choice: true
+    help_text: "Please select a license from the list:<ul><li><b>ODbL</b> requests to attribute, share-Alike and keep Open: see https://opendatacommons.org/licenses/odbl/summary/</li><li><b>WSL Data Policy</b> requests to Attribute, forbids the duplication of datasets and forbids redistribution unless otherwise agreed with data originators</li><li><b>CC-BY-SA</b> requests you Attribute, Share-Alike and keep Open: see https://creativecommons.org/licenses/by-sa/4.0/</li><li><b>CC 0</b> you waive all rights and dedicate the work to the public domain: see https://creativecommons.org/publicdomain/zero/1.0/</li><li>Select <b>Other</b> in order to specify your own license in the description of the dataset</li></ul>"
+    required: true
+  - field_name: version
+    label: Version
+    validators: "ignore_missing unicode_safe package_version_validator"
+    form_placeholder: "1.0"
+    default_value: "1.0"
+    required: true
+  - field_name: resource_type
+    label: Type
+    form_placeholder: "Dataset"
+    default_value: "Dataset"
+    validators: "envidat_copy_type_general"
+    hidden: true
+  - field_name: resource_type_general
+    label: General Type
+    form_include_blank_choice: false
+    required: true
+    help_text: "Select depending on the attached data resources:<ul><li><i>DataPaper</i> if they correspond to publications</li><li><i>Software</i> for scripts or programs</li><li><i>Dataset</i> for mixed data, text and software resources (default)</li></ul>"
+    default_value: "dataset"
+    validators: "scheming_required scheming_choices"
+    hidden: false
+    choices:
+      - value: "dataset"
+        label: "Dataset"
+      - value: "datapaper"
+        label: "DataPaper"
+      - value: "software"
+        label: "Software"
+  - field_name: language
+    label: Language
+    form_include_blank_choice: false
+    default_value: "en"
+    validators: "scheming_required scheming_choices"
+    hidden: true
+    choices:
+      - value: "en"
+        label: "English"
+      - value: "de"
+        label: "German"
+      - value: "fr"
+        label: "French"
+      - value: "it"
+        label: "Italian"
+      - value: "ro"
+        label: "Romansh"
+  - field_name: spatial_info
+    label: Location
+    default_value: "Switzerland"
+    form_placeholder: "Switzerland"
+    help_text: Free text spatial information
+    help_inline: false
+  - field_name: spatial
+    default_value: '{"type": "Polygon", "coordinates": [[[5.95587, 45.81802],[5.95587, 47.80838],[10.49203, 47.80838],[10.49203, 45.81802],[5.95587, 45.81802]]]}'
+    display_snippet: null
+    modal_text: "spatial_help"
+    required: true
+    label: "Spatial Extent"
+    help_text: "Draw the spatial extent in the map or paste a valid GeoJSON geometry"
+    help_inline: false
+    form_placeholder: '{"type": "Point", "coordinates": [8.6124600, 47.4031100]}'
+
+resource_fields:
+  - field_name: name
+    label: Name
+    validators: "not_empty unicode_safe"
+    form_placeholder: "eg. Data file"
+    help_text: "The name or title of the resource"
+  - field_name: description
+    label: Description
+    form_snippet: markdown.html
+    form_placeholder: "Describe the resource"
+    help_text: "A description of the resource (e.g., abstract or summary)"
+  - field_name: url
+    label: URL
+    form_placeholder: "eg. http://example.com/datafile.csv"
+    help_text: "The URL where the resource can be accessed"
+  - field_name: format
+    label: Format
+    form_snippet: resource_format.html
+    form_placeholder: "eg. text/csv"
+    help_text: "The file format or MIME type of the resource"
+  - field_name: resource_size
+    label: Size
+    help_text: Only necessary for linked resources
+    help_inline: true
+    validators: "composite_group2json"
+    display_snippet: null
+    repeating_label: "Size"
+    repeating_subfields:
+      - field_name: size_value
+        label: Size
+      - field_name: size_units
+        label: Unit
+        form_include_blank_choice: false
+        preset: select
+        default_value: "kb"
+        choices:
+          - value: "kb"
+            label: "KB"
+          - value: "mb"
+            label: "MB"
+          - value: "gb"
+            label: "GB"
+          - value: "tb"
+            label: "TB"
+  - field_name: doi
+    label: DOI
+    form_placeholder: "eg. 10.12345/678"
+    validators: "scheming_required"
+  - field_name: restricted
+    label: Access Restriction
+    validators: "composite_group2json restricted_username_from_mail"
+    repeating_label: "Restricted"
+    repeating_subfields:
+      - field_name: level
+        label: Level
+        preset: select
+        form_include_blank_choice: false
+        required: true
+        choices:
+          - value: "public"
+            label: "Public"
+          - value: "same_organization"
+            label: "Restricted to Same Organization Members"
+      - field_name: allowed_users
+        label: Allowed Users
+        preset: tag_string_autocomplete
+        data-module-source: "/api/2/util/user/autocomplete?q=?"
+      - field_name: shared_secret
+        label: Shared Secret
+  - field_name: publication_state
+    label: Publication State
+    validators: "scheming_required scheming_choices"
+    required: false
+    choices:
+      - value: ""
+        label: ""
+      - value: "published"
+        label: "Published"

@@ -129,7 +129,8 @@ COPY --from=build \
     /root/.local \
     $CKAN_HOME/.local
 COPY ckan-entrypoint.sh /ckan-entrypoint.sh
-COPY wsgi.py config/who.ini config/*.json $CKAN_CONFIG_DIR/
+COPY wsgi.py config/who.ini \
+     config/*.yaml config/*.json $CKAN_CONFIG_DIR/
 # Upgrade pip & add ckan user, permissions
 RUN useradd -r -u 900 -m -c "non-priv user" -d $CKAN_HOME -s /bin/false ckanuser \
     && chmod +x /ckan-entrypoint.sh \
