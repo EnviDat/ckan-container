@@ -62,7 +62,8 @@
     },
     {
       "field_name": "owner_org",
-      "label": "Organization"
+      "label": "Organization",
+      "validators": "owner_org_validator unicode_safe"
     },
     {
       "field_name": "notes",
@@ -372,6 +373,7 @@
       "form_blanks": 1,
       "datacite": "titles",
       "validators": "composite_repeating_group2json",
+      "repeating_label": " Subtitles",
       "repeating_subfields": [
         {
           "field_name": "subtitle",
@@ -443,6 +445,7 @@
       "help_text": "Publication of the dataset",
       "help_inline": true,
       "required": true,
+      "repeating_label": " Publication",
       "repeating_subfields": [
         {
           "field_name": "publisher",
@@ -469,6 +472,7 @@
       "form_blanks": 1,
       "datacite": "dates",
       "required": true,
+      "repeating_label": " Dates",
       "repeating_subfields": [
         {
           "field_name": "date_type",
@@ -543,6 +547,7 @@
       "datacite": "resourceType.resourceTypeGeneral",
       "help_text": "Select depending on the attached data resources:<ul><li><i>DataPaper</i> if they correspond to publications</li><li><i>Software</i> for scripts or programs</li><li><i>Dataset</i> for mixed data, text and software resources (default)</li></ul>",
       "default_value": "dataset",
+      "validators": "scheming_required scheming_choices",
       "hidden": false,
       "choices": [
         {
@@ -565,6 +570,7 @@
       "datacite": "language",
       "form_include_blank_choice": false,
       "default_value": "en",
+      "validators": "scheming_required scheming_choices",
       "hidden": true,
       "choices": [
         {
@@ -643,6 +649,7 @@
       "help_inline": true,
       "validators": "composite_group2json",
       "display_snippet": null,
+      "repeating_label": " Size",
       "repeating_subfields": [
         {
           "field_name": "size_value",
@@ -679,12 +686,14 @@
       "field_name": "doi",
       "label": "DOI",
       "form_placeholder": "eg. 10.12345/678",
-      "datacite": "identifier"
+      "datacite": "identifier",
+      "validators": "scheming_required"
     },
     {
       "field_name": "restricted",
       "label": "Access Restriction",
       "validators": "composite_group2json restricted_username_from_mail",
+      "repeating_label": " Restricted",
       "repeating_subfields": [
         {
           "field_name": "level",
