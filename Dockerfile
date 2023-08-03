@@ -102,10 +102,7 @@ RUN pip install --no-cache-dir --upgrade setuptools==45
 # Install deps, including CKAN
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir -r ./requirements.txt
-COPY envidat_extensions.* ./
-# Plugin sub-dependencies
-RUN chmod +x /opt/python/envidat_extensions.sh \
-    && /opt/python/envidat_extensions.sh
+COPY envidat_extensions.txt ./
 # Install plugins
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir -r ./envidat_extensions.txt
