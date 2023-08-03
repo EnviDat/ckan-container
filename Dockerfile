@@ -136,13 +136,11 @@ COPY --from=build \
     $CKAN_HOME/.local
 COPY ckan-entrypoint.sh /ckan-entrypoint.sh
 COPY wsgi.py config/who.ini config/*.json $CKAN_CONFIG_DIR/
-# Upgrade pip & pre-compile deps to .pyc, add ckan user, permissions
-RUN python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)" \
-    && useradd -r -u 900 -m -c "non-priv user" -d $CKAN_HOME -s /bin/false ckanuser \
+# Upgrade pip & add ckan user, permissions
+RUN useradd -r -u 900 -m -c "non-priv user" -d $CKAN_HOME -s /bin/false ckanuser \
     && chmod +x /ckan-entrypoint.sh \
     && mkdir -p $CKAN_HOME $CKAN_STORAGE_PATH/storage/uploads/group \
     && chown -R ckanuser:ckanuser $CKAN_HOME $CKAN_CONFIG_DIR
-USER ckanuser
 ENTRYPOINT ["/ckan-entrypoint.sh"]
 
 
@@ -150,6 +148,7 @@ ENTRYPOINT ["/ckan-entrypoint.sh"]
 FROM runtime as debug
 RUN pip install --no-cache-dir debugpy==1.6.4 --no-cache
 COPY debug_run.py .
+USER ckanuser
 CMD ["python", "-m", "debugpy", \
     "--listen", "0.0.0.0:5678", \
     "debug_run.py", "--", "run", "--host", "0.0.0.0", "--passthrough-errors"]
@@ -163,6 +162,9 @@ FROM runtime as prod
 #         "--workers=2", "--threads=4", "--worker-class=gthread", \
 #         "--worker-tmp-dir=/dev/shm", \
 #         "--log-file=-", "--log-level=debug"]
+# Pre-compile packages to .pyc (init speed gains)
+RUN python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)"
+USER ckanuser
 CMD ["gunicorn", "wsgi:application", \
         "--bind", "0.0.0.0:5000", \
         "--workers=2", "--threads=4", "--worker-class=gthread", \
