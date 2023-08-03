@@ -31,6 +31,7 @@
     {
       "field_name": "publication_state",
       "label": "Publication State",
+      "validators": "scheming_required scheming_choices",
       "required": false,
       "choices": [
         {
@@ -77,7 +78,7 @@
     {
       "field_name": "funding",
       "label": "Funding Information",
-      "preset": "json_object",
+      "validators": "composite_repeating_group2json",
       "form_blanks": 1,
       "help_text": "Information about the financial support for obtaining this dataset",
       "help_inline": false,
@@ -143,7 +144,6 @@
     {
       "field_name": "author",
       "label": "Authors",
-      "preset": "json_object",
       "form_blanks": 1,
       "help_text": "Authors of the dataset",
       "help_inline": false,
@@ -288,7 +288,7 @@
     {
       "field_name": "maintainer",
       "label": "Contact Person",
-      "preset": "json_object",
+      "validators": "composite_group2json",
       "required": true,
       "datacite": "contributors",
       "repeating_label": " Contact",
@@ -368,10 +368,10 @@
     {
       "field_name": "subtitle",
       "label": "Subtitles",
-      "preset": "json_object",
       "form_snippet": null,
       "form_blanks": 1,
       "datacite": "titles",
+      "validators": "composite_repeating_group2json",
       "repeating_subfields": [
         {
           "field_name": "subtitle",
@@ -439,7 +439,7 @@
     {
       "field_name": "publication",
       "label": "Publication",
-      "preset": "json_object",
+      "validators": "composite_group2json",
       "help_text": "Publication of the dataset",
       "help_inline": true,
       "required": true,
@@ -465,7 +465,7 @@
     {
       "field_name": "date",
       "label": "Dates",
-      "preset": "json_object",
+      "validators": "composite_repeating_group2json",
       "form_blanks": 1,
       "datacite": "dates",
       "required": true,
@@ -641,7 +641,7 @@
       "label": "Size",
       "help_text": "Only necessary for linked resources",
       "help_inline": true,
-      "preset": "json_object",
+      "validators": "composite_group2json",
       "display_snippet": null,
       "repeating_subfields": [
         {
@@ -684,7 +684,6 @@
     {
       "field_name": "restricted",
       "label": "Access Restriction",
-      "preset": "json_object",
       "validators": "composite_group2json restricted_username_from_mail",
       "repeating_subfields": [
         {
@@ -719,6 +718,7 @@
     {
       "field_name": "publication_state",
       "label": "Publication State",
+      "validators": "scheming_required scheming_choices",
       "required": false,
       "choices": [
         {
