@@ -87,10 +87,6 @@ RUN set -ex \
         gcc \
         python3-dev \
         libpq-dev \
-        libxml2-dev \
-        libxslt-dev \
-        libgeos-dev \
-        libproj-dev \
         libssl-dev \
         libffi-dev \
     && rm -rf /var/lib/apt/lists/*
@@ -127,8 +123,6 @@ RUN set -ex \
         curl \
         postgresql-client \
         libpq-dev \
-        libgeos-c1v5 \
-        libproj19 \
         libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=build \
