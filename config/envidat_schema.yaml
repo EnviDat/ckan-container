@@ -43,17 +43,16 @@ dataset_fields:
 
   - field_name: funding
     label: Funding Information
-    validators: "scheming_required composite_repeating_group2json"
     required: true
-    repeating_label: "Funder no."
-    repeating_subfields:
-      - field_name: institution
-        label: Name
-        required: true
-      - field_name: institution_url
-        label: "Link to Funding Agency"
-      - field_name: grant_number
-        label: "Grant Number"
+    # repeating_label: "Funder no."
+    # repeating_subfields:
+    #   - field_name: institution
+    #     label: Name
+    #     required: true
+    #   - field_name: institution_url
+    #     label: "Link to Funding Agency"
+    #   - field_name: grant_number
+    #     label: "Grant Number"
 
   - field_name: related_datasets
     label: Related Datasets
@@ -64,132 +63,130 @@ dataset_fields:
   - field_name: tag_string
     label: Keywords
     required: true
+    validators: "envidat_minimum_tag_count envidat_string_uppercase"
 
   - field_name: author
     label: Authors
     required: true
-    validators: "scheming_required composite_repeating_group2json envidat_reorder"
-    repeating_label: "Author no."
-    repeating_subfields:
-      - field_name: email
-        label: Email
-        required: true
-      - field_name: autocomplete
-        label: Autocomplete
-      - field_name: identifier
-        label: ORCID
-      - field_name: given_name
-        label: Given Name
-      - field_name: name
-        label: Family Name
-        required: true
-      - field_name: identifier_scheme
-        label: Scheme
-        default: "orcid"
-        choices:
-          - value: "orcid"
-            label: "ORCID"
-          - value: "isni"
-            label: "ISNI"
-          - value: "rid"
-            label: "ResearcherID"
-          - value: "rgate"
-            label: "ResearchGate"
-      - field_name: affiliation
-        label: Affiliation
-        required: true
-      - field_name: affiliation_02
-        label: Additional Affiliation
-      - field_name: affiliation_03
-        label: Additional Affiliation
-      - field_name: data_credit
-        label: DataCredit
-        preset: multiple_checkbox
-        choices:
-          - value: "collection"
-            label: "Collection"
-          - value: "validation"
-            label: "Validation"
-          - value: "curation"
-            label: "Curation"
-          - value: "software"
-            label: "Software"
-          - value: "publication"
-            label: "Publication"
-          - value: "supervision"
-            label: "Supervision"
-      - field_name: order
-        label: Order
+    validators: "scheming_required envidat_reorder"
+    # repeating_label: "Author no."
+    # repeating_subfields:
+    #   - field_name: email
+    #     label: Email
+    #     required: true
+    #   - field_name: autocomplete
+    #     label: Autocomplete
+    #   - field_name: identifier
+    #     label: ORCID
+    #   - field_name: given_name
+    #     label: Given Name
+    #   - field_name: name
+    #     label: Family Name
+    #     required: true
+    #   - field_name: identifier_scheme
+    #     label: Scheme
+    #     default: "orcid"
+    #     choices:
+    #       - value: "orcid"
+    #         label: "ORCID"
+    #       - value: "isni"
+    #         label: "ISNI"
+    #       - value: "rid"
+    #         label: "ResearcherID"
+    #       - value: "rgate"
+    #         label: "ResearchGate"
+    #   - field_name: affiliation
+    #     label: Affiliation
+    #     required: true
+    #   - field_name: affiliation_02
+    #     label: Additional Affiliation
+    #   - field_name: affiliation_03
+    #     label: Additional Affiliation
+    #   - field_name: data_credit
+    #     label: DataCredit
+    #     preset: multiple_checkbox
+    #     choices:
+    #       - value: "collection"
+    #         label: "Collection"
+    #       - value: "validation"
+    #         label: "Validation"
+    #       - value: "curation"
+    #         label: "Curation"
+    #       - value: "software"
+    #         label: "Software"
+    #       - value: "publication"
+    #         label: "Publication"
+    #       - value: "supervision"
+    #         label: "Supervision"
+    #   - field_name: order
+    #     label: Order
 
   - field_name: maintainer
     label: Contact Person
-    validators: "composite_group2json"
     required: true
-    repeating_label: "Contact"
-    repeating_subfields:
-      - field_name: copy-from-author
-        label: Name
-      - field_name: given_name
-        label: Given Name
-      - field_name: name
-        label: Family Name
-        required: true
-      - field_name: email
-        label: Email
-        required: true
-      - field_name: affiliation
-        label: Affiliation
-      - field_name: identifier
-        label: ORCID
-      - field_name: identifier_scheme
-        label: Scheme
-        default: "orcid"
-        choices:
-          - value: "orcid"
-            label: "ORCID"
-          - value: "isni"
-            label: "ISNI"
-          - value: "rid"
-            label: "ResearcherID"
-          - value: "rgate"
-            label: "ResearchGate"
+    # repeating_label: "Contact"
+    # repeating_subfields:
+    #   - field_name: copy-from-author
+    #     label: Name
+    #   - field_name: given_name
+    #     label: Given Name
+    #   - field_name: name
+    #     label: Family Name
+    #     required: true
+    #   - field_name: email
+    #     label: Email
+    #     required: true
+    #   - field_name: affiliation
+    #     label: Affiliation
+    #   - field_name: identifier
+    #     label: ORCID
+    #   - field_name: identifier_scheme
+    #     label: Scheme
+    #     default: "orcid"
+    #     choices:
+    #       - value: "orcid"
+    #         label: "ORCID"
+    #       - value: "isni"
+    #         label: "ISNI"
+    #       - value: "rid"
+    #         label: "ResearcherID"
+    #       - value: "rgate"
+    #         label: "ResearchGate"
 
   - field_name: publication
     label: Publication
-    validators: "composite_group2json"
     required: true
-    repeating_label: "Publication"
-    repeating_subfields:
-      - field_name: publisher
-        label: Publisher
-        default: "EnviDat"
-      - field_name: publication_year
-        label: Year
-        required: true
-        default: "composite_current_year"
+    # repeating_label: "Publication"
+    # repeating_subfields:
+    #   - field_name: publisher
+    #     label: Publisher
+    #     default: "EnviDat"
+    #   - field_name: publication_year
+    #     label: Year
+    #     required: true
+    #     default: "composite_current_year"
 
   - field_name: date
     label: Dates
-    validators: "composite_repeating_group2json"
     required: true
-    repeating_label: "Dates"
-    repeating_subfields:
-      - field_name: date_type
-        label: Type
-        required: true
-        choices:
-          - value: "collected"
-            label: "Collected"
-          - value: "created"
-            label: "Created"
-      - field_name: date
-        label: Date
-        preset: date
-        required: true
-      - field_name: end_date
-        label: End Date
-        preset: date
-        required: false
+    # repeating_label: "Dates"
+    # repeating_subfields:
+    #   - field_name: date_type
+    #     label: Type
+    #     required: true
+    #     choices:
+    #       - value: "collected"
+    #         label: "Collected"
+    #       - value: "created"
+    #         label: "Created"
+    #   - field_name: date
+    #     label: Date
+    #     preset: date
+    #     required: true
+    #   - field_name: end_date
+    #     label: End Date
+    #     preset: date
+    #     required: false
 
   - field_name: license_id
     label: Content License
@@ -260,23 +257,22 @@ resource_fields:
 
   - field_name: resource_size
     label: Size
-    validators: "composite_group2json"
-    repeating_label: "Size"
-    repeating_subfields:
-      - field_name: size_value
-        label: Size
-      - field_name: size_units
-        label: Unit
-        default: "kb"
-        choices:
-          - value: "kb"
-            label: "KB"
-          - value: "mb"
-            label: "MB"
-          - value: "gb"
-            label: "GB"
-          - value: "tb"
-            label: "TB"
+    # repeating_label: "Size"
+    # repeating_subfields:
+    #   - field_name: size_value
+    #     label: Size
+    #   - field_name: size_units
+    #     label: Unit
+    #     default: "kb"
+    #     choices:
+    #       - value: "kb"
+    #         label: "KB"
+    #       - value: "mb"
+    #         label: "MB"
+    #       - value: "gb"
+    #         label: "GB"
+    #       - value: "tb"
+    #         label: "TB"
 
   - field_name: doi
     label: DOI
@@ -284,21 +280,21 @@ resource_fields:
 
   - field_name: restricted
     label: Access Restriction
-    validators: "composite_group2json restricted_username_from_mail"
-    repeating_label: "Restricted"
-    repeating_subfields:
-      - field_name: level
-        label: Level
-        required: true
-        choices:
-          - value: "public"
-            label: "Public"
-          - value: "same_organization"
-            label: "Restricted to Same Organization Members"
-      - field_name: allowed_users
-        label: Allowed Users
-      - field_name: shared_secret
-        label: Shared Secret
+    validators: "restricted_username_from_mail"
+    # repeating_label: "Restricted"
+    # repeating_subfields:
+    #   - field_name: level
+    #     label: Level
+    #     required: true
+    #     choices:
+    #       - value: "public"
+    #         label: "Public"
+    #       - value: "same_organization"
+    #         label: "Restricted to Same Organization Members"
+    #   - field_name: allowed_users
+    #     label: Allowed Users
+    #   - field_name: shared_secret
+    #     label: Shared Secret
 
   - field_name: publication_state
     label: Publication State
