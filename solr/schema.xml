@@ -6,7 +6,9 @@
  The ASF licenses this file to You under the Apache License, Version 2.0
  (the "License"); you may not use this file except in compliance with
  the License.  You may obtain a copy of the License at
+
      http://www.apache.org/licenses/LICENSE-2.0
+
  Unless required by applicable law or agreed to in writing, software
  distributed under the License is distributed on an "AS IS" BASIS,
  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -20,65 +22,113 @@
 -->
 
 <!-- We update the version when there is a backward-incompatible change to this
-schema. We used to use the `version` attribute for this but this is an internal
-attribute that should not be used so starting from CKAN 2.10 we use the `name`
-attribute with the form `ckan-X.Y` -->
-<schema name="ckan-2.10" version="1.6">
+schema. In this case the version should be set to the next CKAN version number.
+(x.y but not x.y.z since it needs to be a float) -->
+<schema name="ckan" version="2.9">
 
 <types>
     <fieldType name="string" class="solr.StrField" sortMissingLast="true" omitNorms="true"/>
     <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true" omitNorms="true"/>
     <fieldtype name="binary" class="solr.BinaryField"/>
-    <fieldType name="int" class="solr.IntPointField" omitNorms="true" positionIncrementGap="0"/>
-    <fieldType name="float" class="solr.FloatPointField" omitNorms="true" positionIncrementGap="0"/>
-    <fieldType name="long" class="solr.LongPointField" omitNorms="true" positionIncrementGap="0"/>
-    <fieldType name="double" class="solr.DoublePointField" omitNorms="true" positionIncrementGap="0"/>
-    <fieldType name="pint" class="solr.IntPointField" omitNorms="true" positionIncrementGap="0"/>
-    <fieldType name="pfloat" class="solr.FloatPointField" omitNorms="true" positionIncrementGap="0"/>
-    <fieldType name="plong" class="solr.LongPointField" omitNorms="true" positionIncrementGap="0"/>
-    <fieldType name="pdouble" class="solr.DoublePointField" omitNorms="true" positionIncrementGap="0"/>
-    <fieldType name="date" class="solr.DatePointField" omitNorms="true" positionIncrementGap="0"/>
-    <fieldType name="pdate" class="solr.DatePointField" omitNorms="true" positionIncrementGap="0"/>
+    <fieldType name="int" class="solr.IntPointField" docValues="true" omitNorms="true"/>
+    <fieldType name="float" class="solr.FloatPointField" docValues="true" omitNorms="true"/>
+    <fieldType name="long" class="solr.LongPointField" docValues="true" omitNorms="true"/>
+    <fieldType name="double" class="solr.DoublePointField" docValues="true" omitNorms="true"/>
+    <fieldType name="tint" class="solr.IntPointField" docValues="true" omitNorms="true"/>
+    <fieldType name="tfloat" class="solr.FloatPointField" docValues="true" omitNorms="true"/>
+    <fieldType name="tlong" class="solr.LongPointField" docValues="true" omitNorms="true"/>
+    <fieldType name="tdouble" class="solr.DoublePointField" docValues="true" omitNorms="true"/>
+    <fieldType name="date" class="solr.DatePointField" omitNorms="true" docValues="true"/>
+    <fieldType name="tdate" class="solr.DatePointField" omitNorms="true"/>
 
-    <fieldType name="pdates" class="solr.DatePointField" positionIncrementGap="0" multiValued="true"/>
+    <fieldType name="tdates" class="solr.DatePointField" docValues="true" multiValued="true"/>
     <fieldType name="booleans" class="solr.BoolField" sortMissingLast="true" multiValued="true"/>
-    <fieldType name="pints" class="solr.IntPointField" positionIncrementGap="0" multiValued="true"/>
-    <fieldType name="pfloats" class="solr.FloatPointField" positionIncrementGap="0" multiValued="true"/>
-    <fieldType name="plongs" class="solr.LongPointField" positionIncrementGap="0" multiValued="true"/>
-    <fieldType name="pdoubles" class="solr.DoublePointField" positionIncrementGap="0" multiValued="true"/>
+    <fieldType name="tints" class="solr.IntPointField" docValues="true" multiValued="true"/>
+    <fieldType name="tfloats" class="solr.FloatPointField" docValues="true" multiValued="true"/>
+    <fieldType name="tlongs" class="solr.LongPointField" docValues="true" multiValued="true"/>
+    <fieldType name="tdoubles" class="solr.DoublePointField" docValues="true" multiValued="true"/>
 
     <fieldType name="text" class="solr.TextField" positionIncrementGap="100">
         <analyzer type="index">
             <tokenizer class="solr.WhitespaceTokenizerFactory"/>
-            <filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1"/>
-            <filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
+            <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1"/>
             <filter class="solr.LowerCaseFilterFactory"/>
             <filter class="solr.SnowballPorterFilterFactory" language="English" protected="protwords.txt"/>
+            <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+            <filter class="solr.LengthFilterFactory" min="2" max="100" />
             <filter class="solr.ASCIIFoldingFilterFactory"/>
         </analyzer>
         <analyzer type="query">
             <tokenizer class="solr.WhitespaceTokenizerFactory"/>
-            <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
-            <filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1"/>
+            <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+            <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1"/>
             <filter class="solr.LowerCaseFilterFactory"/>
             <filter class="solr.SnowballPorterFilterFactory" language="English" protected="protwords.txt"/>
+            <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
             <filter class="solr.ASCIIFoldingFilterFactory"/>
         </analyzer>
     </fieldType>
 
-
-    <!-- A general unstemmed text field - good if one does not know the language of the field -->
-    <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
+    <fieldType name="mlt_authors" class="solr.TextField" positionIncrementGap="100">
         <analyzer type="index">
             <tokenizer class="solr.WhitespaceTokenizerFactory"/>
-            <filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="0"/>
-            <filter class="solr.FlattenGraphFilterFactory"/> <!-- required on index analyzers after graph filters -->
+            <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1"/>
+            <filter class="solr.LowerCaseFilterFactory"/>
+            <filter class="solr.LengthFilterFactory" min="4" max="12" />
+            <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+            <filter class="solr.ASCIIFoldingFilterFactory"/>
+        </analyzer>
+        <analyzer type="query">
+            <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+            <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+            <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1"/>
+            <filter class="solr.LowerCaseFilterFactory"/>
+            <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+            <filter class="solr.ASCIIFoldingFilterFactory"/>
+        </analyzer>
+    </fieldType>
+
+    <fieldType name="mlt_notes" class="solr.TextField" positionIncrementGap="100">
+        <analyzer type="index">
+            <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+            <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="1"/>
+            <filter class="solr.LowerCaseFilterFactory"/>
+            <filter class="solr.LengthFilterFactory" min="3" max="20" />
+            <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+            <filter class="solr.ASCIIFoldingFilterFactory"/>
+        </analyzer>
+        <analyzer type="query">
+            <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+            <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+            <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="1"/>
+            <filter class="solr.LowerCaseFilterFactory"/>
+            <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+            <filter class="solr.ASCIIFoldingFilterFactory"/>
+        </analyzer>
+    </fieldType>
+
+    <!-- spatial search field type (ckanext-spatial) -->
+    <fieldType name="location_rpt"   class="solr.SpatialRecursivePrefixTreeFieldType"
+        spatialContextFactory="JTS"
+        autoIndex="true"
+        validationRule="repairBuffer0"
+        distErrPct="0.025"
+        maxDistErr="0.001"
+        distanceUnits="kilometers" />
+
+    <!-- A general unstemmed text field - good if one does not know the language of the field -->
+    <fieldType name="textgen" class="solr.TextField" positionIncrementGap="100">
+        <analyzer type="index">
+            <tokenizer class="solr.WhitespaceTokenizerFactory"/>
+            <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="1" catenateNumbers="1" catenateAll="0" splitOnCaseChange="0"/>
+            <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
             <filter class="solr.LowerCaseFilterFactory"/>
         </analyzer>
         <analyzer type="query">
             <tokenizer class="solr.WhitespaceTokenizerFactory"/>
-            <filter class="solr.SynonymGraphFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
-            <filter class="solr.WordDelimiterGraphFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="0"/>
+            <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
+            <filter class="solr.StopFilterFactory" words="stopwords.txt" ignoreCase="true"/>
+            <filter class="solr.WordDelimiterFilterFactory" generateWordParts="1" generateNumberParts="1" catenateWords="0" catenateNumbers="0" catenateAll="0" splitOnCaseChange="0"/>
             <filter class="solr.LowerCaseFilterFactory"/>
         </analyzer>
     </fieldType>
@@ -93,7 +143,6 @@ attribute with the form `ckan-X.Y` -->
         <filter class="solr.LowerCaseFilterFactory"/>
       </analyzer>
     </fieldType>
-
 </types>
 
 
@@ -114,12 +163,16 @@ attribute with the form `ckan-X.Y` -->
     <field name="ckan_url" type="string" indexed="true" stored="true" omitNorms="true" />
     <field name="download_url" type="string" indexed="true" stored="true" omitNorms="true" />
     <field name="notes" type="text" indexed="true" stored="true"/>
-    <field name="author" type="text_general" indexed="true" stored="true" />
-    <field name="author_email" type="text_general" indexed="true" stored="true" />
-    <field name="maintainer" type="text_general" indexed="true" stored="true" />
-    <field name="maintainer_email" type="text_general" indexed="true" stored="true" />
+    <field name="author" type="textgen" indexed="true" stored="true" />
+    <field name="author_email" type="textgen" indexed="true" stored="true" />
+    <field name="maintainer" type="textgen" indexed="true" stored="true" />
+    <field name="maintainer_email" type="textgen" indexed="true" stored="true" />
+    <field name="funding" type="textgen" indexed="true" stored="true" />
+    <field name="funding_institution" type="textgen" indexed="true" stored="true" />
     <field name="license" type="string" indexed="true" stored="true" />
     <field name="license_id" type="string" indexed="true" stored="true" />
+    <field name="ratings_count" type="int" indexed="true" stored="false" />
+    <field name="ratings_average" type="float" indexed="true" stored="false" />
     <field name="tags" type="string" indexed="true" stored="true" multiValued="true"/>
     <field name="groups" type="string" indexed="true" stored="true" multiValued="true"/>
     <field name="organization" type="string" indexed="true" stored="true" multiValued="false"/>
@@ -127,8 +180,8 @@ attribute with the form `ckan-X.Y` -->
     <field name="capacity" type="string" indexed="true" stored="true" multiValued="false"/>
     <field name="permission_labels" type="string" indexed="true" stored="false" multiValued="true"/>
 
-    <field name="res_name" type="text_general" indexed="true" stored="true" multiValued="true" />
-    <field name="res_description" type="text_general" indexed="true" stored="true" multiValued="true"/>
+    <field name="res_name" type="textgen" indexed="true" stored="true" multiValued="true" />
+    <field name="res_description" type="textgen" indexed="true" stored="true" multiValued="true"/>
     <field name="res_format" type="string" indexed="true" stored="true" multiValued="true"/>
     <field name="res_url" type="string" indexed="true" stored="true" multiValued="true"/>
     <field name="res_type" type="string" indexed="true" stored="true" multiValued="true"/>
@@ -137,6 +190,9 @@ attribute with the form `ckan-X.Y` -->
          via copyField further on in this schema  -->
     <field name="text" type="text" indexed="true" stored="false" multiValued="true"/>
     <field name="urls" type="text" indexed="true" stored="false" multiValued="true"/>
+    <!-- copy fields for the MorLikeThis handler-->
+    <field name="mlt_authors" type="mlt_authors" indexed="true" stored="false" multiValued="true"/>
+    <field name="mlt_notes" type="mlt_notes" indexed="true" stored="false" multiValued="true"/>
 
     <field name="depends_on" type="text" indexed="true" stored="false" multiValued="true"/>
     <field name="dependency_of" type="text" indexed="true" stored="false" multiValued="true"/>
@@ -165,15 +221,24 @@ attribute with the form `ckan-X.Y` -->
 
     <field name="_version_" type="string" indexed="true" stored="true"/>
 
-    <dynamicField name="*_date" type="date" indexed="true" stored="true" multiValued="false"/>
+    <!-- spatial search field (ckanext-spatial) -->
+    <field name="spatial_geom"  type="location_rpt" indexed="true" stored="true" multiValued="true" />
 
+    <!-- nested dates in json -->
+    <dynamicField name="extras_date_date_*" type="date" indexed="true" stored="true" multiValued="true"/>
+    <dynamicField name="extras_date_date_type_*" type="string" indexed="true" stored="true" multiValued="true"/>
+    <dynamicField name="extras_date_end_date_*" type="date" indexed="true" stored="true" multiValued="true"/>
+
+    <!-- other dynamic fields -->
     <dynamicField name="extras_*" type="text" indexed="true" stored="true" multiValued="false"/>
     <dynamicField name="res_extras_*" type="text" indexed="true" stored="true" multiValued="true"/>
     <dynamicField name="vocab_*" type="string" indexed="true" stored="true" multiValued="true"/>
-    <dynamicField name="*" type="string" indexed="true"  stored="false"/>
+    <dynamicField name="*" type="string" indexed="true" stored="false"/>
 </fields>
 
 <uniqueKey>index_id</uniqueKey>
+<!-- <defaultSearchField>text</defaultSearchField> -->
+<!-- <solrQueryParser defaultOperator="AND"/> -->
 
 <copyField source="url" dest="urls"/>
 <copyField source="title" dest="title_ngram"/>
@@ -197,5 +262,10 @@ attribute with the form `ckan-X.Y` -->
 <copyField source="res_description" dest="text"/>
 <copyField source="maintainer" dest="text"/>
 <copyField source="author" dest="text"/>
+<copyField source="funding" dest="text"/>
+
+<copyField source="author" dest="mlt_authors"/>
+<copyField source="notes" dest="mlt_notes"/>
+
 
 </schema>
