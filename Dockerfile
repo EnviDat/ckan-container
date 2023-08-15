@@ -56,7 +56,7 @@ RUN git clone -b "$CKAN_VERSION" --depth 1 \
 WORKDIR /opt/requirements
 RUN cp /opt/repos/ckan/requirements.txt \
       ./requirements-ckan.txt
-RUN grep Flask-DebugToolbar \
+RUN grep flask-debugtoolbar \
       < /opt/repos/ckan/dev-requirements.txt \
       >> ./requirements-ckan.txt
 # Add extra deps
