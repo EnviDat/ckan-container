@@ -81,7 +81,6 @@ services:
       - .db.env
     volumes:
       - pg_data:/var/lib/postgresql/data
-      - /etc/hosts:/etc/hosts:ro
     networks:
       - ckan-staging
     healthcheck:
