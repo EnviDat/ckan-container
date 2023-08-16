@@ -280,7 +280,6 @@ resource_fields:
 
   - field_name: restricted
     label: Access Restriction
-    validators: "restricted_username_from_mail"
     # repeating_label: "Restricted"
     # repeating_subfields:
     #   - field_name: level
