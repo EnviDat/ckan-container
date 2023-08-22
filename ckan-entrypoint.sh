@@ -39,6 +39,14 @@ while [[ $response != "200" ]]; do
     fi
 done
 
+# Re-init core db tables
+echo "Migrating database tables if required..."
+ckan db init
+
+# Re-init cloudstorage db tables
+echo "Initialising cloudstorage database tables..."
+ckan cloudstorage initdb
+
 # Rebuild Solr search index
 echo "Rebuilding Solr search index..."
 ckan search-index rebuild --only-missing
@@ -46,10 +54,6 @@ ckan search-index rebuild --only-missing
 # Build web assets
 echo "Building web assets..."
 ckan asset build
-
-# Re-init cloudstorage db tables
-echo "Initialising cloudstorage database tables..."
-ckan cloudstorage initdb
 
 echo "---------------------"
 echo "Init script complete."
