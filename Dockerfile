@@ -93,8 +93,6 @@ RUN set -ex \
 WORKDIR /opt/python
 COPY --from=extract-deps \
     /opt/requirements/requirements.txt .
-# Fix for CKAN 2.9
-RUN pip install --no-cache-dir --upgrade setuptools==45
 # Install deps, including CKAN
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir -r ./requirements.txt
