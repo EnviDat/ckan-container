@@ -6,7 +6,7 @@ gunicorn==20.1.0
 ckanext-hierarchy==1.2.0
 ckanext-passwordless-api==1.1.3
 ckanext-restricted-api==1.0.0
-ckanext-cloudstorage-api==0.1.0
+ckanext-cloudstorage-api==0.1.1
 ckanext-envidat-validators==0.1.4
 
 # # Opentelemetry
