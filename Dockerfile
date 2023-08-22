@@ -39,45 +39,8 @@ ENV LC_ALL en_US.UTF-8
 
 
 
-FROM base as extract-deps
-RUN set -ex \
-    && apt-get update \
-    && DEBIAN_FRONTEND=noninteractive apt-get install \
-    -y --no-install-recommends \
-        git \
-    && rm -rf /var/lib/apt/lists/*
-# Clone repos
-WORKDIR /opt/repos
-ARG CKAN_VERSION
-RUN git clone -b "$CKAN_VERSION" --depth 1 \
-    https://github.com/ckan/ckan.git
-# Merge requirements to single file &
-# add flask-debugtoolbar to enable debug mode
-WORKDIR /opt/requirements
-RUN cp /opt/repos/ckan/requirements.txt \
-      ./requirements-ckan.txt
-RUN grep flask-debugtoolbar \
-      < /opt/repos/ckan/dev-requirements.txt \
-      >> ./requirements-ckan.txt
-# Add extra deps
-COPY requirements-extra.txt .
-RUN cat ./requirements-extra.txt \
-      >> ./requirements-ckan.txt
-# Import deps to PDM
-RUN pip install --no-cache-dir pdm==2.6.0 \
-    && pdm config python.use_venv false
-RUN pdm init --non-interactive \
-    && pdm import -f requirements \
-       ./requirements-ckan.txt
-# Add ckan to requirements & lock / check conflicts
-RUN pdm add --no-sync \
-    "git+https://github.com/ckan/ckan.git@$CKAN_VERSION"
-# Export to single requirements file
-RUN pdm export --without-hashes --prod > requirements.txt
-
-
-
 FROM base as build
+ARG CKAN_VERSION
 RUN set -ex \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install \
@@ -91,11 +54,13 @@ RUN set -ex \
         libffi-dev \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /opt/python
-COPY --from=extract-deps \
-    /opt/requirements/requirements.txt .
-# Install deps, including CKAN
+COPY requirements-extra.txt .
+# Install CKAN, plus extra deps
 RUN pip install --user --no-warn-script-location \
-    --no-cache-dir -r ./requirements.txt
+    --no-cache-dir "ckan[requirements]==$CKAN_VERSION" \
+    && pip install --user --no-warn-script-location \
+    --no-cache-dir -r ./requirements-extra.txt \
+    && rm requirements-extra.txt
 COPY envidat_extensions.txt ./
 # Install plugins
 RUN pip install --user --no-warn-script-location \
@@ -127,8 +92,7 @@ COPY --from=build \
     /root/.local \
     $CKAN_HOME/.local
 COPY ckan-entrypoint.sh /ckan-entrypoint.sh
-COPY wsgi.py config/who.ini \
-     config/*.yaml config/*.json $CKAN_CONFIG_DIR/
+COPY wsgi.py config/*.yaml config/*.json $CKAN_CONFIG_DIR/
 # Upgrade pip & add ckan user, permissions
 RUN useradd -r -u 900 -m -c "non-priv user" -d $CKAN_HOME -s /bin/false ckanuser \
     && chmod +x /ckan-entrypoint.sh \
@@ -139,12 +103,14 @@ ENTRYPOINT ["/ckan-entrypoint.sh"]
 
 
 FROM runtime as debug
-RUN pip install --no-cache-dir debugpy==1.6.4 --no-cache
-COPY debug_run.py .
+ARG CKAN_VERSION
 USER ckanuser
-CMD ["python", "-m", "debugpy", \
-    "--listen", "0.0.0.0:5678", \
-    "debug_run.py", "--", "run", "--host", "0.0.0.0", "--passthrough-errors"]
+RUN pip install --user --no-cache-dir --no-cache \
+    debugpy==1.6.4  \
+    "ckan[dev]==$CKAN_VERSION"
+CMD ["python", "-m", "debugpy", "--listen", "0.0.0.0:5678", \
+    "/usr/lib/ckan/.local/bin/ckan", "run", "--host", "0.0.0.0", \
+    "--passthrough-errors"]
     # "--disable-debugger"]
 
 
