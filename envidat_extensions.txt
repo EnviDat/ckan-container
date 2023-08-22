@@ -1,2 +1,0 @@
-git+https://github.com/EnviDat/ckanext-cloudstorage.git
-git+https://github.com/ckan/ckanext-scheming.git

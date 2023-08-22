@@ -61,10 +61,9 @@ RUN pip install --user --no-warn-script-location \
     && pip install --user --no-warn-script-location \
     --no-cache-dir -r ./requirements-extra.txt \
     && rm requirements-extra.txt
-COPY envidat_extensions.txt ./
-# Install plugins
+# Install ckanext-scheming (not updated on PyPi)
 RUN pip install --user --no-warn-script-location \
-    --no-cache-dir -r ./envidat_extensions.txt
+    --no-cache-dir git+https://github.com/ckan/ckanext-scheming.git
 
 
 
