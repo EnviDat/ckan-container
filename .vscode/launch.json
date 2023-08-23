@@ -13,11 +13,11 @@
         },
         {
           "localRoot": "${workspaceFolder}/ckanext",
-          "remoteRoot": "/usr/lib/ckan/.local/lib/python3.9/site-packages/ckanext"
+          "remoteRoot": "/usr/lib/ckan/.local/lib/python3.10/site-packages/ckanext"
         },
         {
           "localRoot": "${workspaceFolder}/ckan",
-          "remoteRoot": "/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan"
+          "remoteRoot": "/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan"
         }
       ],
       "justMyCode": false

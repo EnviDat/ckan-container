@@ -36,7 +36,7 @@ services:
     volumes:
       - ckan_storage:/opt/ckan/data
       - ./config/stag-ckan.ini:/opt/ckan/ckan.ini
-      - ckan_translations:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan/public/base/i18n
+      - ckan_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
     networks:
       - ckan-staging
     restart: unless-stopped

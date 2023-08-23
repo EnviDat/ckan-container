@@ -86,6 +86,6 @@ ln -s ../ckanext-passwordless_api/ckanext/passwordless_api ./ckanext/passwordles
 # docker-compose.yaml
 ---
 volumes:
-  - ../ckan:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan
-  - ./ckanext/passwordless_api:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckanext/passwordless_api
+  - ../ckan:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan
+  - ./ckanext/passwordless_api:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckanext/passwordless_api
 ```
