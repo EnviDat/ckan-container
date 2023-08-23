@@ -9,8 +9,6 @@ volumes:
 networks:
   ckan-internal:
     external: true
-  traefik-proxy:
-    external: true
 
 services:
   ckan:
@@ -54,7 +52,6 @@ services:
       # - ./ckanext/restricted_api:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckanext/restricted_api
     networks:
       - ckan-internal
-      - traefik-proxy
     restart: unless-stopped
 
   proxy:
