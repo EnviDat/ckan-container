@@ -4,8 +4,8 @@ gunicorn==20.1.0
 # Plugins
 ## Latest scheming on pypi release Nov 2022
 ckanext-hierarchy==1.2.0
-ckanext-passwordless-api==1.1.5
-ckanext-restricted-api==2.0.2
+ckanext-passwordless-api==1.1.6
+ckanext-restricted-api==2.0.3
 ckanext-cloudstorage-api==0.1.4
 ckanext-envidat-validators==0.1.4
 
