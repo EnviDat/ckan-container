@@ -23,6 +23,9 @@ server {
     add_header 'Access-Control-Allow-Headers' 'traceparent,tracestate';
 
     location / {
+        proxy_read_timeout 40s;
+        proxy_connect_timeout 20s;
+
         proxy_pass http://ckan;
 
         # Requests headers
@@ -41,6 +44,9 @@ server {
         }
         proxy_set_header 'Authorization' $auth_token;
 
+        # Strip out ckan cookie (not required)
+        proxy_set_header Cookie "ckan=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+        
         proxy_cache cache;
         proxy_cache_bypass $cookie_${AUTH_COOKIE_NAME};
         proxy_no_cache $cookie_${AUTH_COOKIE_NAME};
