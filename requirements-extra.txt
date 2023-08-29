@@ -1,5 +1,5 @@
 # WSGI server
-gunicorn==20.1.0
+gunicorn==21.2.0
 
 # Plugins
 ## Latest scheming on pypi release Nov 2022
