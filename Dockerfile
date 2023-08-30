@@ -4,7 +4,7 @@ ARG PYTHON_IMG_TAG
 
 
 
-FROM ${EXTERNAL_REG}/debian:bullseye AS certs
+FROM ${EXTERNAL_REG}/debian:bookworm AS certs
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
@@ -12,7 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 
 
-FROM ${EXTERNAL_REG}/python:${PYTHON_IMG_TAG}-slim-bullseye as base
+FROM ${EXTERNAL_REG}/python:${PYTHON_IMG_TAG}-slim-bookworm as base
 ARG PYTHON_IMG_TAG
 ARG CKAN_VERSION
 ARG MAINTAINER

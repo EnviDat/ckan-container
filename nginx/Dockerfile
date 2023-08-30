@@ -3,7 +3,7 @@ ARG NGINX_IMG_TAG
 
 
 
-FROM ${EXTERNAL_REG}/debian:bullseye AS certs
+FROM ${EXTERNAL_REG}/debian:bookworm AS certs
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
