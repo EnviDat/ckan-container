@@ -20,6 +20,10 @@ pretty_echo() {
     echo ""
 }
 
+pretty_echo "WSL: setting resolv.conf"
+echo 'nameserver 1.1.1.1' | sudo tee /etc/resolv.conf > /dev/null
+echo "Done"
+
 pretty_echo "Removing old versions of docker"
 packages=(
     docker.io
@@ -60,10 +64,6 @@ sudo systemctl disable --now docker.service docker.socket
 
 pretty_echo "Changing to rootless docker"
 dockerd-rootless-setuptool.sh install --skip-iptables
-
-pretty_echo "Extra docker resolv.conf config step for WSL"
-echo 'nameserver 1.1.1.1' | sudo tee /etc/resolv.conf > /dev/null
-echo "Done"
 
 pretty_echo "Updating docker ps formatting"
 tee ~/.docker/config.json <<EOF
