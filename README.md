@@ -39,6 +39,22 @@ docker run --rm --entrypoint=sh \
     -c "ckan generate config ckan.ini && cat ckan.ini"
 ```
 
+### Setting the Solr credentials
+
+- During development dummy credentials are used for Solr.
+- In production we must set the Solr container user and password.
+
+> The credentials must match the credentials specified in `ckan.ini`.
+
+**.solr.env** contains credentials of the Solr instance.
+
+```dotenv
+SOLR_ADMIN_PASS=xxxx
+SOLR_CKAN_PASS=xxxx
+```
+
+> Note: this can also be set via the `envidat-in-a-box.sh` script.
+
 ### Replicating an existing DB
 
 This is the default configuration when running `docker-compose.yml`.
