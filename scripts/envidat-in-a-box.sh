@@ -20,6 +20,27 @@ pretty_echo() {
     echo ""
 }
 
+write_db_env() {
+    {
+        echo "DB_HOST=$DB_HOST"
+        echo "DB_USER=$DB_USER"
+        echo "DB_PASS=$DB_PASS"
+        echo "DB_CKAN_NAME=$DB_CKAN_NAME"
+        echo "DB_DOI_NAME=$DB_DOI_NAME"
+    } > "$repo_dir/.db.env"
+
+    echo "Credentials saved to $repo_dir/.db.env"
+}
+
+write_solr_env() {
+    {
+        echo "SOLR_ADMIN_PASS=$SOLR_ADMIN_PASS"
+        echo "SOLR_CKAN_PASS=$SOLR_CKAN_PASS"
+    } > "$repo_dir/.solr.env"
+
+    echo "Credentials saved to $repo_dir/.solr.env"
+}
+
 
 echo "*******************************************"
 echo " _____                _ ______         _   "
@@ -109,27 +130,76 @@ while true; do
         read -rp "Are these correct? (y/n): " creds_confirmed
 
         if [ "$creds_confirmed" == "y" ]; then
-            # Attempt to remove the file first
-            if rm -f "$repo_dir/.db.env"; then
-                {
-                    echo "DB_HOST=$DB_HOST"
-                    echo "DB_USER=$DB_USER"
-                    echo "DB_PASS=$DB_PASS"
-                    echo "DB_CKAN_NAME=$DB_CKAN_NAME"
-                    echo "DB_DOI_NAME=$DB_DOI_NAME"
-                } > "$repo_dir/.db.env"
 
-                echo "Credentials saved to $repo_dir/.db.env"
-                break  # Exit the loop if credentials are confirmed
+            if [ -f "$repo_dir/.db.env" ]; then
+                read -rp "Do you wish to overwrite existing $repo_dir/.db.env? (y/n): " overwrite_db_env
             else
-                echo "Failed to remove $repo_dir/.db.env and regenerate."
-                echo "Please delete it first."
+                write_db_env
+                break  # Exit the loop as .db.env written
+            fi
+
+            if [ "$overwrite_db_env" == "y" ]; then
+                # Attempt to remove the file first
+                if rm -f "$repo_dir/.db.env"; then
+                    write_db_env
+                    break  # Exit the loop as .db.env written
+                else
+                    echo "Failed to remove $repo_dir/.db.env and regenerate."
+                    echo "Please delete it first."
+                    exit 1
+                fi
+            else
+                echo "Move or rename $repo_dir/.db.env and rerun this script."
                 exit 1
             fi
         fi
     else
         pretty_echo "Using a fresh database."
         break  # Exit the loop if not recovering a remote database
+    fi
+done
+
+### Solr Creds ###
+
+pretty_echo "Solr Credentials"
+
+while true; do
+    read -rp "Enter a password for the admin: " admin_pass
+    read -rp "Enter a password for ckan user : " ckan_pass
+
+    SOLR_ADMIN_PASS=$admin_pass
+    SOLR_CKAN_PASS=$ckan_pass
+
+    pretty_echo "Your provided credentials are:"
+    echo "SOLR_ADMIN_PASS=$SOLR_ADMIN_PASS"
+    echo "SOLR_CKAN_PASS=$SOLR_CKAN_PASS"
+    echo ""
+
+    read -rp "Are these correct? (y/n): " creds_confirmed
+
+    if [ "$creds_confirmed" == "y" ]; then
+
+        if [ -f "$repo_dir/.solr.env" ]; then
+            read -rp "Do you wish to overwrite existing $repo_dir/.solr.env? (y/n): " overwrite_solr_env
+        else
+            write_solr_env
+            break  # Exit the loop as .solr.env written
+        fi
+
+        if [ "$overwrite_solr_env" == "y" ]; then
+            # Attempt to remove the file first
+            if rm -f "$repo_dir/.solr.env"; then
+                write_solr_env
+                break  # Exit the loop as .solr.env written
+            else
+                echo "Failed to remove $repo_dir/.solr.env and regenerate."
+                echo "Please delete it first."
+                exit 1
+            fi
+        else
+            echo "Move or rename $repo_dir/.solr.env and rerun this script."
+            exit 1
+        fi
     fi
 done
 
