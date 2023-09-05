@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Tested for Debian 11 Bookworm
+
 pretty_echo() {
     local message="$1"
     local length=${#message}

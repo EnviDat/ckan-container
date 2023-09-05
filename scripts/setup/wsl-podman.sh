@@ -2,6 +2,7 @@
 
 # Note: this script is WSL specific.
 # Use another script if you are not running WSL.
+# Tested for Ubuntu 22.04 LTS & Debian 11 Bookworm
 
 pretty_echo() {
     local message="$1"

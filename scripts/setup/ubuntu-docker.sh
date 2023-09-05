@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Tested for Ubuntu 22.04 LTS
+
 pretty_echo() {
     local message="$1"
     local length=${#message}
