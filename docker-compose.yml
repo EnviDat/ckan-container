@@ -8,7 +8,7 @@ volumes:
 
 networks:
   ckan-internal:
-    external: true
+    name: ckan-local
 
 services:
   ckan:
@@ -29,8 +29,6 @@ services:
       - db
       - solr
       - redis
-    env_file:
-      - .env
     environment:
       CKAN_INI: "/opt/ckan/ckan.ini"
       # OTEL_LOG_LEVEL: debug

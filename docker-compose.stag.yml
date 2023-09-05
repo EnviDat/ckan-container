@@ -8,11 +8,12 @@ volumes:
 
 networks:
   ckan-staging:
+    name: ckan-staging
 
 services:
   ckan:
     container_name: ckan
-    image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-main"
+    image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-stag"
     build:
       context: .
       target: prod
@@ -29,8 +30,6 @@ services:
       - db
       - solr
       - redis
-    env_file:
-      - .env
     environment:
       CKAN_INI: "/opt/ckan/ckan.ini"
     volumes:
@@ -43,7 +42,7 @@ services:
 
   proxy:
     container_name: ckan_proxy
-    image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-main"
+    image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-stag"
     build:
       context: ./nginx
       args:
