@@ -22,8 +22,11 @@ pretty_echo() {
 
 pretty_echo "WSL: setting resolv.conf and disable generateResolvConf"
 echo 'nameserver 1.1.1.1' | sudo tee /etc/resolv.conf > /dev/null
-echo '[network]' | sudo tee /etc/wsl.conf > /dev/null
-echo 'generateResolvConf = false' | sudo tee /etc/wsl.conf > /dev/null
+sudo tee -a /etc/wsl.conf <<EOF
+[network]
+generateResolvConf = false
+EOF
+sudo chattr +i /etc/resolv.conf
 echo "Done"
 
 pretty_echo "Installing Podman"
