@@ -105,6 +105,14 @@ fi
 
 read -rp "Do you want to recover a remote database? (y/n): " db_recover
 
+if [ -f "$repo_dir/.db.env" ]; then
+    read -rp "Do you wish to overwrite existing $repo_dir/.db.env? (y/n): " overwrite_db_env
+fi
+if [ "$overwrite_db_env" != "y" ]; then
+    echo "Move or rename $repo_dir/.db.env and rerun this script."
+    exit 1
+fi
+
 while true; do
     if [ "$db_recover" == "y" ]; then
         read -rp "Enter your database host: " db_host
@@ -131,13 +139,6 @@ while true; do
 
         if [ "$creds_confirmed" == "y" ]; then
 
-            if [ -f "$repo_dir/.db.env" ]; then
-                read -rp "Do you wish to overwrite existing $repo_dir/.db.env? (y/n): " overwrite_db_env
-            else
-                write_db_env
-                break  # Exit the loop as .db.env written
-            fi
-
             if [ "$overwrite_db_env" == "y" ]; then
                 # Attempt to remove the file first
                 if rm -f "$repo_dir/.db.env"; then
@@ -149,8 +150,8 @@ while true; do
                     exit 1
                 fi
             else
-                echo "Move or rename $repo_dir/.db.env and rerun this script."
-                exit 1
+                write_db_env
+                break  # Exit the loop as .db.env written
             fi
         fi
     else
@@ -163,9 +164,17 @@ done
 
 pretty_echo "Solr Credentials"
 
+if [ -f "$repo_dir/.solr.env" ]; then
+    read -rp "Do you wish to overwrite existing $repo_dir/.solr.env? (y/n): " overwrite_solr_env
+fi
+if [ "$overwrite_solr_env" != "y" ]; then
+    echo "Move or rename $repo_dir/.solr.env and rerun this script."
+    exit 1
+fi
+
 while true; do
     read -rp "Enter a password for the admin: " admin_pass
-    read -rp "Enter a password for ckan user : " ckan_pass
+    read -rp "Enter a password for ckan user: " ckan_pass
 
     SOLR_ADMIN_PASS=$admin_pass
     SOLR_CKAN_PASS=$ckan_pass
@@ -179,13 +188,6 @@ while true; do
 
     if [ "$creds_confirmed" == "y" ]; then
 
-        if [ -f "$repo_dir/.solr.env" ]; then
-            read -rp "Do you wish to overwrite existing $repo_dir/.solr.env? (y/n): " overwrite_solr_env
-        else
-            write_solr_env
-            break  # Exit the loop as .solr.env written
-        fi
-
         if [ "$overwrite_solr_env" == "y" ]; then
             # Attempt to remove the file first
             if rm -f "$repo_dir/.solr.env"; then
@@ -197,8 +199,8 @@ while true; do
                 exit 1
             fi
         else
-            echo "Move or rename $repo_dir/.solr.env and rerun this script."
-            exit 1
+            write_solr_env
+            break  # Exit the loop as .solr.env written
         fi
     fi
 done
