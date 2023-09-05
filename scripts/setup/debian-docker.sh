@@ -63,3 +63,7 @@ tee ~/.docker/config.json <<EOF
   "psFormat": "table {{.ID}}\\t{{.Image}}\\t{{.Status}}\\t{{.Names}}"
 }
 EOF
+
+pretty_echo "Adding dc='docker compose' alias"
+echo "alias dc='docker compose'" >> ~/.bashrc
+echo "Done"

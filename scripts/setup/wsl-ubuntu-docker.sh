@@ -80,3 +80,7 @@ if [ -z "\$RUNNING" ]; then
     disown
 fi
 EOF
+
+pretty_echo "Adding dc='docker compose' alias"
+echo "alias dc='docker compose'" >> ~/.bashrc
+echo "Done"

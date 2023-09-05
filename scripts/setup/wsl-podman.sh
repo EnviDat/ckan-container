@@ -37,3 +37,7 @@ net.ipv4.ip_unprivileged_port_start=0
 EOF
 sudo sysctl -p
 echo "Done"
+
+pretty_echo "Adding docker='podman' alias"
+echo "alias docker='podman'" >> ~/.bashrc
+echo "Done"
