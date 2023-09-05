@@ -86,7 +86,7 @@ services:
       - POSTGRES_PASSWORD=ai4ncF6GpHokPaNmW25UftzMjM7hrC
       - PGDATA=/var/lib/postgresql/data/db
     env_file:
-      - .db.env
+      - ${DB_ENV_FILE:-.db.env}
     volumes:
       - pg_data:/var/lib/postgresql/data
     extra_hosts:

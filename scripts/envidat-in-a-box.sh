@@ -140,5 +140,5 @@ pretty_echo "Starting CKAN."
 if [ "$db_recover" == "y" ]; then
     docker compose -f docker-compose.prod.yml up -d
 else
-    docker compose -f docker-compose.prod.yml -f docker-compose.newdb.yml up -d
+    DB_ENV_FILE=/dev/null NEW_DB=true docker compose -f docker-compose.prod.yml up -d
 fi
