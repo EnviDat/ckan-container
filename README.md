@@ -65,7 +65,7 @@ Alternatively, a fresh database can be used for CKAN.
 To do this, run with this command instead:
 
 ```bash
-docker compose -f docker-compose.yml -f docker-compose.newdb.yml up -d
+DB_ENV_FILE=/dev/null NEW_DB=true docker compose -f docker-compose.yml up -d
 ```
 
 ### Reinstalling ckanext_xxx after editing
