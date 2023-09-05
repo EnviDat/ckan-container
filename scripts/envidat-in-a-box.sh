@@ -105,16 +105,16 @@ fi
 
 read -rp "Do you want to recover a remote database? (y/n): " db_recover
 
-if [ -f "$repo_dir/.db.env" ]; then
-    read -rp "Do you wish to overwrite existing $repo_dir/.db.env? (y/n): " overwrite_db_env
-fi
-if [ "$overwrite_db_env" != "y" ]; then
-    echo "Move or rename $repo_dir/.db.env and rerun this script."
-    exit 1
-fi
-
 while true; do
     if [ "$db_recover" == "y" ]; then
+        if [ -f "$repo_dir/.db.env" ]; then
+            read -rp "Do you wish to overwrite existing $repo_dir/.db.env? (y/n): " overwrite_db_env
+        fi
+        if [ "$overwrite_db_env" == "n" ]; then
+            echo "Continuing..."
+            break  # Exit the loop if .db.env exists
+        fi
+
         read -rp "Enter your database host: " db_host
         read -rp "Enter your database user: " db_user
         read -rp "Enter your database password: " db_pass
@@ -164,15 +164,15 @@ done
 
 pretty_echo "Solr Credentials"
 
-if [ -f "$repo_dir/.solr.env" ]; then
-    read -rp "Do you wish to overwrite existing $repo_dir/.solr.env? (y/n): " overwrite_solr_env
-fi
-if [ "$overwrite_solr_env" != "y" ]; then
-    echo "Move or rename $repo_dir/.solr.env and rerun this script."
-    exit 1
-fi
-
 while true; do
+    if [ -f "$repo_dir/.solr.env" ]; then
+        read -rp "Do you wish to overwrite existing $repo_dir/.solr.env? (y/n): " overwrite_solr_env
+    fi
+    if [ "$overwrite_solr_env" == "n" ]; then
+            echo "Continuing..."
+            break  # Exit the loop if .solr.env exists
+        fi
+
     read -rp "Enter a password for the admin: " admin_pass
     read -rp "Enter a password for ckan user: " ckan_pass
 
