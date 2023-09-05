@@ -27,8 +27,6 @@ dataset_fields:
         label: "Publication Requested"
       - value: "pub_pending"
         label: "Publication Pending"
-      - value: "approved"
-        label: "Approved"
       - value: "published"
         label: "Published"
 
