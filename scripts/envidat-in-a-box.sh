@@ -80,9 +80,16 @@ if [ "$install_docker" == "y" ]; then
     read -rp "Select your distribution (ubuntu/debian): " distribution
 
     if [ "$distribution" == "ubuntu" ]; then
-        # Install Docker on Ubuntu
-        pretty_echo "Installing Docker on Ubuntu..."
-        bash "$repo_dir/scripts/setup/ubuntu-docker.sh"
+        read -rp "Are you on WSL (y/n): " is_wsl
+        if [ "$is_wsl" == "y" ]; then
+            # Install Docker on Ubuntu
+            pretty_echo "Installing Docker on WSL Ubuntu..."
+            bash "$repo_dir/scripts/setup/wsl-ubuntu-docker.sh"
+        else
+            # Install Docker on Ubuntu
+            pretty_echo "Installing Docker on Ubuntu..."
+            bash "$repo_dir/scripts/setup/ubuntu-docker.sh"
+        fi
 
     elif [ "$distribution" == "debian" ]; then
         # Install Docker on Debian
