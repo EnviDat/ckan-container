@@ -2,6 +2,7 @@
 
 # Note: this script is WSL specific.
 # Use another script if you are not running WSL.
+# Tested for Ubuntu 22.04 LTS
 
 pretty_echo() {
     local message="$1"
@@ -71,16 +72,10 @@ tee ~/.docker/config.json <<EOF
 }
 EOF
 
-pretty_echo "Adding docker to WSL startup"
-tee -a ~/.bashrc <<EOF
-echo "Starting Docker daemon automatically if not running..."
-RUNNING=\`ps aux | grep dockerd | grep -v grep\`
-if [ -z "\$RUNNING" ]; then
-    dockerd > /dev/null 2>&1 &
-    disown
-fi
-EOF
+pretty_echo "Adding rootless DOCKER_HOST to bashrc"
+echo "export DOCKER_HOST=unix:///run/user/1000//docker.sock" >> ~/.bashrc
+echo "Done"
 
-pretty_echo "Adding dc='docker compose' alias"
+pretty_echo "Adding dc='docker compose' alias to bashrc"
 echo "alias dc='docker compose'" >> ~/.bashrc
 echo "Done"
