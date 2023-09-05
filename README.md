@@ -9,32 +9,16 @@ Use cases:
 
 ## Production - Docker
 
-Deploy using:
+If you know what you are doing with Docker, use:
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-## Production - K8S
+Otherwise, run using the interactive script:
 
-- Helm deploy (see chart directory README.md with values and secrets).
-- Modify ckan.ini secret (example parameters below):
-
-```ini
-beaker.session.secret = xxx
-app_instance_uuid = xxx-xxx-xxx-xxx-xxx
-ckan.site_url = ingress_host_url
-ckan.site_description = EnviDat Prod
-ckan.storage_path = /data/ckan/default
-ckan.cors.origin_whitelist = envidat.ch frontend.envidat.ch
-sqlalchemy.url = SERVICE_NAME.NAMESPACE.svc.cluster.local:5432
-solr_url = SERVICE_NAME.NAMESPACE.svc.cluster.local:8983
-solr_password = xxx
-ckan.redis.url = SERVICE_NAME.NAMESPACE.svc.cluster.local:6379
-ckanext.cloudstorage.container_name = envidat-dev
-ckanext.cloudstorage.driver_options = {"key": "xxx", "secret": "xxx", "host": "https://minio.envidat.ch"}
-ckanext.cloudstorage.use_secure_urls = 0
-recaptcha.keys = xxx
+```bash
+bash scripts/envidat-in-a-box.sh
 ```
 
 ## Development
@@ -116,4 +100,26 @@ ln -s ../ckanext-passwordless_api/ckanext/passwordless_api ./ckanext/passwordles
 volumes:
   - ../ckan:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan
   - ./ckanext/passwordless_api:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckanext/passwordless_api
+```
+
+## Production - K8S
+
+- Helm deploy (see chart directory README.md with values and secrets).
+- Modify ckan.ini secret (example parameters below):
+
+```ini
+beaker.session.secret = xxx
+app_instance_uuid = xxx-xxx-xxx-xxx-xxx
+ckan.site_url = ingress_host_url
+ckan.site_description = EnviDat Prod
+ckan.storage_path = /data/ckan/default
+ckan.cors.origin_whitelist = envidat.ch frontend.envidat.ch
+sqlalchemy.url = SERVICE_NAME.NAMESPACE.svc.cluster.local:5432
+solr_url = SERVICE_NAME.NAMESPACE.svc.cluster.local:8983
+solr_password = xxx
+ckan.redis.url = SERVICE_NAME.NAMESPACE.svc.cluster.local:6379
+ckanext.cloudstorage.container_name = envidat-dev
+ckanext.cloudstorage.driver_options = {"key": "xxx", "secret": "xxx", "host": "https://minio.envidat.ch"}
+ckanext.cloudstorage.use_secure_urls = 0
+recaptcha.keys = xxx
 ```
