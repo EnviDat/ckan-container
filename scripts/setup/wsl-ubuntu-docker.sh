@@ -74,6 +74,8 @@ EOF
 
 pretty_echo "Adding rootless DOCKER_HOST to bashrc"
 echo "export DOCKER_HOST=unix:///run/user/1000//docker.sock" >> ~/.bashrc
+# shellcheck disable=SC1090
+source ~/.bashrc
 echo "Done"
 
 pretty_echo "Adding dc='docker compose' alias to bashrc"
