@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+if [ -n "$NEW_DB" ]; then
+    echo "Halted recovering DB: NEW_DB is set."
+    exit 1
+fi
+
 echo "Backup and restoring $DB_CKAN_NAME via pipe to new host."
 PGPASSWORD="$DB_PASS" pg_dump --verbose --format c \
     --extension=plpgsql \

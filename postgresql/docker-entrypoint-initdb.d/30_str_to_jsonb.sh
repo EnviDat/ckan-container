@@ -1,6 +1,11 @@
 #!/bin/bash
 set -e
 
+# if [ -n "$NEW_DB" ]; then
+#     echo "Halted setting str_to_jsonb: NEW_DB is set."
+#     exit 1
+# fi
+# 
 # PGPASSWORD="$DB_PASS" psql -v ON_ERROR_STOP=1 --username "$DB_USER" --dbname "$DB_CKAN_NAME" <<-EOSQL
 #     -- Author
 #     ALTER TABLE public.package
