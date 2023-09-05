@@ -7,7 +7,15 @@ Use cases:
 - Replicating an existing database, then running a dev CKAN server.
 - Running production CKAN with an existing database.
 
-## Production
+## Production - Docker
+
+Deploy using:
+
+```bash
+docker compose -f docker-compose.prod.yml up -d
+```
+
+## Production - K8S
 
 - Helm deploy (see chart directory README.md with values and secrets).
 - Modify ckan.ini secret (example parameters below):
@@ -35,11 +43,21 @@ recaptcha.keys = xxx
 
 - Change versions, registry connections, etc.
 
-### Add secrets before running
+### Create config/ckan.ini
 
-- Create three files in the root of the repo:
+This file contains the config for CKAN, including connection urls.
 
-**ckan.ini** contains the config for CKAN, including connection urls.
+To generate an example `ckan.ini` file via terminal:
+
+```bash
+docker run --rm --entrypoint=sh \
+    registry-gitlab.wsl.ch/envidat/ckan-container/ckan:2.10.1-main \
+    -c "ckan generate config ckan.ini && cat ckan.ini"
+```
+
+### Replicating an existing DB
+
+This is the default configuration when running `docker-compose.yml`.
 
 **.db.env** contains credentials of the remote database to replicate.
 
@@ -51,10 +69,20 @@ DB_PASS=xxxxxx
 DB_DOI_NAME=envidat_doi
 ```
 
-### Running
+- Build the images with `docker compose build`.
+- Then run with `docker compose up -d`.
 
-- Once the .env is configured, build the images with `docker compose build`
-- Then once the secrets are set, run with `docker compose up -d`
+> The database will be replicated when the containers start.
+
+### Using a fresh DB
+
+Alternatively, a fresh database can be used for CKAN.
+
+To do this, run with this command instead:
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.newdb.yml up -d
+```
 
 ### Reinstalling ckanext_xxx after editing
 
