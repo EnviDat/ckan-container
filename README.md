@@ -9,16 +9,32 @@ Use cases:
 
 ## Production - Docker
 
-If you know what you are doing with Docker, use:
-
-```bash
-docker compose -f docker-compose.prod.yml up -d
-```
-
-Otherwise, run using the interactive script:
+The easiest way is to run using the interactive script:
 
 ```bash
 bash scripts/envidat-in-a-box.sh
+```
+
+Alternativly, follow the steps below.
+
+### Setting the Solr credentials
+
+- During development dummy credentials are used for Solr.
+- In production we must set the Solr container user and password.
+
+> The SOLR_CKAN_PASS must match the credentials specified in `ckan.ini`.
+
+**.solr.env** contains credentials of the Solr instance.
+
+```dotenv
+SOLR_ADMIN_PASS=xxxx
+SOLR_CKAN_PASS=xxxx
+```
+
+### Run the production containers
+
+```bash
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ## Development
@@ -39,23 +55,9 @@ docker run --rm --entrypoint=sh \
     -c "ckan generate config ckan.ini && cat ckan.ini"
 ```
 
-### Setting the Solr credentials
-
-- During development dummy credentials are used for Solr.
-- In production we must set the Solr container user and password.
-
-> The credentials must match the credentials specified in `ckan.ini`.
-
-**.solr.env** contains credentials of the Solr instance.
-
-```dotenv
-SOLR_ADMIN_PASS=xxxx
-SOLR_CKAN_PASS=xxxx
-```
-
 > Note: this can also be set via the `envidat-in-a-box.sh` script.
 
-### Replicating an existing DB
+### A) Replicating an existing DB
 
 This is the default configuration when running `docker-compose.yml`.
 
@@ -74,14 +76,14 @@ DB_DOI_NAME=envidat_doi
 
 > The database will be replicated when the containers start.
 
-### Using a fresh DB
+### B) Using a fresh DB
 
 Alternatively, a fresh database can be used for CKAN.
 
 To do this, run with this command instead:
 
 ```bash
-DB_ENV_FILE=/dev/null NEW_DB=true docker compose -f docker-compose.yml up -d
+DB_ENV_FILE=/dev/null docker compose up -d
 ```
 
 ### Reinstalling ckanext_xxx after editing
