@@ -11,7 +11,7 @@ echo "*******************************************"
 echo ""
 echo ""
 
-
+### Formatted echo ###
 pretty_echo() {
     local message="$1"
     local length=${#message}
@@ -28,6 +28,7 @@ pretty_echo() {
     echo ""
 }
 
+### Write Dev .db.env ###
 write_db_env() {
     {
         echo "DB_HOST=$DB_HOST"
@@ -40,6 +41,7 @@ write_db_env() {
     echo "Credentials saved to $repo_dir/.db.env"
 }
 
+### Write Prod .solr.env ###
 write_solr_env() {
     {
         echo "SOLR_ADMIN_PASS=$SOLR_ADMIN_PASS"
@@ -193,51 +195,8 @@ set_solr_creds() {
     done
 }
 
-
-### Main START ###
-
-# Get repo root dir
-current_dir="$(dirname "${BASH_SOURCE[0]}")"
-repo_dir="$(dirname "$current_dir")"
-
-# Global vars
-is_wsl=""
-db_recover=""
-
-### CKAN INI ###
-
-ckan_ini_file="$repo_dir/config/ckan.ini"
-
-if [ -f "$ckan_ini_file" ]; then
-    pretty_echo "$repo_dir/config/ckan.ini present."
-else
-    pretty_echo "$repo_dir/config/ckan.ini not found."
-    echo "Please generate a ckan.ini first."
-    echo "A template can be generated with:"
-    echo ""
-    echo 'docker run --rm --entrypoint=sh \
-    registry-gitlab.wsl.ch/envidat/ckan-container/ckan:2.10.1-main \
-    -c "ckan generate config ckan.ini && cat ckan.ini"'
-    echo ""
-    exit 1
-fi
-
-# Optional docker install
-install_docker
-
-### Prod / Dev ###
-
-read -rp "Are you running production? (y/n): " prod
-
-if [ "$prod" == "y" ]; then
-    set_solr_creds
-else
-    set_db_recovery_creds
-fi
-
 ### WSL Warning ###
-
-if [ "$is_wsl" == "y" ]; then
+wsl_restart_warning() {
     pretty_echo "Running in WSL"
     echo "If docker was installed on a fresh machine then"
     echo "pulling the container images may fail."
@@ -250,18 +209,121 @@ if [ "$is_wsl" == "y" ]; then
     if [ "$continue" != "y" ]; then
         exit 1
     fi
+}
+
+### CKAN INI Check ###
+check_ckan_ini() {
+    ckan_ini_file="$repo_dir/config/ckan.ini"
+
+    if [ -f "$ckan_ini_file" ]; then
+        pretty_echo "$repo_dir/config/ckan.ini present."
+    else
+        pretty_echo "$repo_dir/config/ckan.ini not found."
+        echo "Please generate a ckan.ini first."
+        echo "A template can be generated with:"
+        echo ""
+        echo 'docker run --rm --entrypoint=sh \
+        registry-gitlab.wsl.ch/envidat/ckan-container/ckan:2.10.1-main \
+        -c "ckan generate config ckan.ini && cat ckan.ini"'
+        echo ""
+        exit 1
+    fi
+}
+
+### Start CKAN ###
+start_ckan() {
+    pretty_echo "Starting CKAN."
+
+    if [ "$prod" == "y" ]; then
+        docker compose -f docker-compose.prod.yml up -d
+    else
+        if [ "$db_recover" == "y" ]; then
+            docker compose up -d
+        else
+            DB_ENV_FILE=/dev/null docker compose up -d
+        fi
+    fi
+}
+
+### Create Frontend .env.development ###
+gen_frontend_dotenv() {
+    cat <<EOF > "$repo_dir/.env.development"
+VITE_USE_TESTDATA=false
+VITE_ERROR_REPORTING_ENABLED=true
+VITE_CONFIG_URL=./testdata/config.json
+VITE_STATIC_ROOT=https://frontend-static.s3-zh.os.switch.ch
+VITE_DOMAIN=http://localhost:8990
+VITE_API_ROOT=http://localhost:8989
+VITE_API_BASE_URL=/api/action/
+EOF
+
+    echo "Generated .env.development with vars:"
+    echo "VITE_USE_TESTDATA=false"
+    echo "VITE_ERROR_REPORTING_ENABLED=true"
+    echo "VITE_CONFIG_URL=./testdata/config.json"
+    echo "VITE_STATIC_ROOT=https://frontend-static.s3-zh.os.switch.ch"
+    echo "VITE_DOMAIN=http://localhost:8990"
+    echo "VITE_API_ROOT=http://localhost:8989"
+    echo "VITE_API_BASE_URL=/api/action/"
+}
+
+### Start Frontend ###
+start_frontend() {
+    pretty_echo "Starting EnviDat Frontend."
+
+    default_frontend_version="0.8.04"
+    echo "Override frontend version? (default 0.8.04)"
+    read -rp "Press Enter to continue, or input a version: " frontend_version
+    if [ -z "$frontend_version" ]; then
+        frontend_version="$default_frontend_version"
+    fi
+
+    gen_frontend_dotenv
+
+    docker run -d \
+        --name envidat_frontend \
+        -p 8990:8080 \
+        -v "$repo_dir/.env.development:/app/.env.development" \
+        "registry-gitlab.wsl.ch/envidat/envidat-frontend:$frontend_version-dev"
+}
+
+
+### Main START ###
+
+# Get repo root dir
+current_dir="$(dirname "${BASH_SOURCE[0]}")"
+repo_dir="$(dirname "$current_dir")"
+
+# Global vars
+prod=""
+is_wsl=""
+db_recover=""
+
+# Prerequisites
+install_docker
+if [ "$is_wsl" == "y" ]; then
+    wsl_restart_warning
+fi
+check_ckan_ini
+
+# Prod / Dev Setup
+read -rp "Are you running production? (y/n): " prod
+if [ "$prod" == "y" ]; then
+    set_solr_creds
+else
+    set_db_recovery_creds
 fi
 
-### Start Containers ###
-
-pretty_echo "Starting CKAN."
-
+# Run Containers
+start_ckan
 if [ "$prod" == "y" ]; then
-    docker compose -f docker-compose.prod.yml up -d
+    pretty_echo "Script Finished."
+    echo "Update proxy rules for https://envidat.ch"
+    echo "and point your S3-based frontend to:"
+    echo ""
+    echo "VITE_API_ROOT=https://envidat.ch"
+    echo ""
+    echo "during build."
 else
-    if [ "$db_recover" == "y" ]; then
-        docker compose up -d
-    else
-        DB_ENV_FILE=/dev/null docker compose up -d
-    fi
+    start_frontend
 fi
