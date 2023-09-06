@@ -356,4 +356,4 @@ release_job:
     assets:
       links:
         - name: envidat-in-a-box
-          url: $CI_SERVER_URL/$CI_PROJECT_PATH/-/jobs/$BIN_JOB_ID/artifacts/envidat
+          url: $CI_SERVER_URL/$CI_PROJECT_PATH/-/jobs/$BIN_JOB_ID/artifacts/raw/envidat
