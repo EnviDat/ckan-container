@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-if [ -n "$NEW_DB" ]; then
-    echo "Halted recovering DB: NEW_DB is set."
+if [ -z "$DB_HOST" ]; then
+    echo "Halted recovering DB: DB_HOST is not set."
     exit 1
 fi
 
