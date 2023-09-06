@@ -319,9 +319,11 @@ create-helm-chart:
 
 static-binary:
   stage: release
+  image: docker.io/debian:bookworm
   rules:
     - if: $CI_COMMIT_TAG
   before_script:
+    - apt update && apt install -y curl
     - curl -LO https://github.com/ajdiaz/bashc/releases/download/5.2.15/bashc
     - chmod +x bashc
   script:
