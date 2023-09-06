@@ -328,10 +328,14 @@ static-binary:
     - chmod +x bashc
   script:
     - ./bashc scripts/envidat-in-a-box.sh envidat
+  after_script:
+    - echo "BIN_JOB_ID=$CI_JOB_ID" >> job.env
   artifacts:
     paths:
       - envidat
-    expire_in: 1 week
+    expire_in: never
+    reports:
+      dotenv: job.env
 
 release_job:
   stage: release
@@ -343,6 +347,7 @@ release_job:
     - if: $CI_COMMIT_TAG
   script:
     - echo "running release_job for $CI_COMMIT_TAG"
+    - echo "Using artifact from job $BIN_JOB_ID"
   release:
     name: "Release $CI_COMMIT_TAG"
     tag_name: "$CI_COMMIT_TAG"
@@ -351,4 +356,4 @@ release_job:
     assets:
       links:
         - name: envidat-in-a-box
-          url: $CI_SERVER_URL/$CI_PROJECT_PATH/-/jobs/$CI_JOB_ID/artifacts/envidat
+          url: $CI_SERVER_URL/$CI_PROJECT_PATH/-/jobs/$BIN_JOB_ID/artifacts/envidat
