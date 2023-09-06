@@ -24,26 +24,27 @@ update_wsl_conf() {
     wsl_conf="/etc/wsl.conf"
 
     # Check if the [network] section exists in wsl.conf
-    if grep -q "\[network\]" "$wsl_conf"; then
+    if sudo grep -q "\[network\]" "$wsl_conf"; then
         # Check if generateResolvConf is already set
-        if grep -q "generateResolvConf" "$wsl_conf"; then
+        if sudo grep -q "generateResolvConf" "$wsl_conf"; then
             # Replace the existing generateResolvConf line with the new setting
-            sed -i 's/^generateResolvConf\s*=.*/generateResolvConf = false/' "$wsl_conf"
+            sudo sed -i 's/^generateResolvConf\s*=.*/generateResolvConf=false/' "$wsl_conf"
         else
             # Add generateResolvConf setting under [network]
-            echo "generateResolvConf = false" >> "$wsl_conf"
+            echo "generateResolvConf=false" | sudo tee -a "$wsl_conf" > /dev/null
         fi
     else
         # [network] section does not exist, so create it
-        echo "[network]" >> "$wsl_conf"
-        echo "generateResolvConf = false" >> "$wsl_conf"
+        echo "[network]" | sudo tee -a "$wsl_conf" > /dev/null
+        echo "generateResolvConf=false" | sudo tee -a "$wsl_conf" > /dev/null
     fi
-
-    sudo chattr +i /etc/resolv.conf
 }
 
 pretty_echo "WSL: setting resolv.conf and disable generateResolvConf"
+# /etc/resolv.conf is a symbolic link, delete it to create a regular file
+sudo rm /etc/resolv.conf
 echo 'nameserver 1.1.1.1' | sudo tee /etc/resolv.conf > /dev/null
+sudo chattr +i /etc/resolv.conf
 update_wsl_conf
 echo "Done"
 
