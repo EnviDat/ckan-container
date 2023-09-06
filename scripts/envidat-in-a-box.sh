@@ -62,17 +62,17 @@ install_docker() {
             read -rp "Are you on WSL (y/n): " is_wsl
             if [ "$is_wsl" == "y" ]; then
                 # Install Docker on Ubuntu
-                pretty_echo "Installing Docker on WSL Ubuntu..."
+                pretty_echo "Installing Docker on WSL Ubuntu"
                 source "$repo_dir/scripts/setup/wsl-ubuntu-docker.sh"
             else
                 # Install Docker on Ubuntu
-                pretty_echo "Installing Docker on Ubuntu..."
+                pretty_echo "Installing Docker on Ubuntu"
                 source "$repo_dir/scripts/setup/ubuntu-docker.sh"
             fi
 
         elif [ "$distribution" == "debian" ]; then
             # Install Docker on Debian
-            pretty_echo "Installing Docker on Debian..."
+            pretty_echo "Installing Docker on Debian"
             source "$repo_dir/scripts/setup/debian-docker.sh"
 
         else
@@ -80,10 +80,10 @@ install_docker() {
             exit 1
         fi
 
-        pretty_echo "Docker installation completed."
+        pretty_echo "Docker installation completed"
 
     else
-        pretty_echo "Docker installation skipped."
+        pretty_echo "Docker installation skipped"
     fi
 }
 
@@ -143,7 +143,7 @@ set_db_recovery_creds() {
                 fi
             fi
         else
-            pretty_echo "Using a fresh database."
+            pretty_echo "Using a fresh database"
             break  # Exit the loop if not recovering a remote database
         fi
     done
@@ -216,9 +216,9 @@ check_ckan_ini() {
     ckan_ini_file="$repo_dir/config/ckan.ini"
 
     if [ -f "$ckan_ini_file" ]; then
-        pretty_echo "$repo_dir/config/ckan.ini present."
+        pretty_echo "$repo_dir/config/ckan.ini present"
     else
-        pretty_echo "$repo_dir/config/ckan.ini not found."
+        pretty_echo "$repo_dir/config/ckan.ini not found"
         echo "Please generate a ckan.ini first."
         echo "A template can be generated with:"
         echo ""
@@ -232,7 +232,7 @@ check_ckan_ini() {
 
 ### Start CKAN ###
 start_ckan() {
-    pretty_echo "Starting CKAN."
+    pretty_echo "Starting CKAN"
 
     if [ "$prod" == "y" ]; then
         docker compose -f docker-compose.prod.yml up -d
@@ -269,7 +269,7 @@ EOF
 
 ### Start Frontend ###
 start_frontend() {
-    pretty_echo "Starting EnviDat Frontend."
+    pretty_echo "Starting EnviDat Frontend"
 
     default_frontend_version="0.8.04"
     echo "Override frontend version? (default 0.8.04)"
@@ -317,13 +317,23 @@ fi
 # Run Containers
 start_ckan
 if [ "$prod" == "y" ]; then
-    pretty_echo "Script Finished."
+    pretty_echo "Script Finished"
     echo "Update proxy rules for https://envidat.ch"
-    echo "and point your S3-based frontend to:"
+    echo "and redirect envidat.ch endpoints to CKAN:"
+    echo ""
+    echo "<this_machine_domain>:8989"
+    echo ""
+    echo "Ensure your S3-based frontend is built with:"
     echo ""
     echo "VITE_API_ROOT=https://envidat.ch"
     echo ""
     echo "during build."
 else
     start_frontend
+    pretty_echo "Script Finished"
+    echo "Access services:"
+    echo ""
+    echo "EnviDat Frontend: http://localhost:8990"
+    echo "CKAN Backend: http://localhost:8989"
+    echo ""
 fi
