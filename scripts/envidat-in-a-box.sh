@@ -1,11 +1,16 @@
 #!/bin/bash
 
-# Get repo root dir
-current_dir="$(dirname "${BASH_SOURCE[0]}")"
-repo_dir="$(dirname "$current_dir")"
+echo "*******************************************"
+echo " _____                _ ______         _   "
+echo "|  ___|              (_)|  _  \       | |  "
+echo "| |__   _ __  __   __ _ | | | |  __ _ | |_ "
+echo "|  __| | '_ \ \ \ / /| || | | | / _  || __|"
+echo "| |___ | | | | \ V / | || |/ / | (_| || |_ "
+echo "\____/ |_| |_|  \_/  |_||___/   \__,_| \__|"
+echo "*******************************************"
+echo ""
+echo ""
 
-# Global vars
-db_recover=""
 
 pretty_echo() {
     local message="$1"
@@ -189,16 +194,14 @@ set_solr_creds() {
 }
 
 
-echo "*******************************************"
-echo " _____                _ ______         _   "
-echo "|  ___|              (_)|  _  \       | |  "
-echo "| |__   _ __  __   __ _ | | | |  __ _ | |_ "
-echo "|  __| | '_ \ \ \ / /| || | | | / _  || __|"
-echo "| |___ | | | | \ V / | || |/ / | (_| || |_ "
-echo "\____/ |_| |_|  \_/  |_||___/   \__,_| \__|"
-echo "*******************************************"
-echo ""
-echo ""
+### Main START ###
+
+# Get repo root dir
+current_dir="$(dirname "${BASH_SOURCE[0]}")"
+repo_dir="$(dirname "$current_dir")"
+
+# Global vars
+db_recover=""
 
 ### CKAN INI ###
 
@@ -220,7 +223,7 @@ fi
 
 ### Prod / Dev ###
 
-read -rp "Are you running production? (dev/prod): " prod
+read -rp "Are you running production? (y/n): " prod
 
 if [ "$prod" == "y" ]; then
     set_solr_creds
