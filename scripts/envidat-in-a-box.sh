@@ -201,6 +201,7 @@ current_dir="$(dirname "${BASH_SOURCE[0]}")"
 repo_dir="$(dirname "$current_dir")"
 
 # Global vars
+is_wsl=""
 db_recover=""
 
 ### CKAN INI ###
@@ -232,6 +233,23 @@ if [ "$prod" == "y" ]; then
     set_solr_creds
 else
     set_db_recovery_creds
+fi
+
+### WSL Warning ###
+
+if [ "$is_wsl" == "y" ]; then
+    pretty_echo "Running in WSL"
+    echo "If docker was installed on a fresh machine then"
+    echo "pulling the container images may fail."
+    echo ""
+    echo "To solve this, WSL may have to be restarted via powershell:"
+    echo ""
+    echo "wsl --shutdown"
+    echo ""
+    read -rp "Do you wish to continue? (y/n): " continue
+    if [ "$continue" != "y" ]; then
+        exit 1
+    fi
 fi
 
 ### Start Containers ###
