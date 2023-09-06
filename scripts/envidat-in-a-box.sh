@@ -221,6 +221,9 @@ else
     exit 1
 fi
 
+# Optional docker install
+install_docker
+
 ### Prod / Dev ###
 
 read -rp "Are you running production? (y/n): " prod
