@@ -61,17 +61,17 @@ install_docker() {
             if [ "$is_wsl" == "y" ]; then
                 # Install Docker on Ubuntu
                 pretty_echo "Installing Docker on WSL Ubuntu..."
-                bash "$repo_dir/scripts/setup/wsl-ubuntu-docker.sh"
+                source "$repo_dir/scripts/setup/wsl-ubuntu-docker.sh"
             else
                 # Install Docker on Ubuntu
                 pretty_echo "Installing Docker on Ubuntu..."
-                bash "$repo_dir/scripts/setup/ubuntu-docker.sh"
+                source "$repo_dir/scripts/setup/ubuntu-docker.sh"
             fi
 
         elif [ "$distribution" == "debian" ]; then
             # Install Docker on Debian
             pretty_echo "Installing Docker on Debian..."
-            bash "$repo_dir/scripts/setup/debian-docker.sh"
+            source "$repo_dir/scripts/setup/debian-docker.sh"
 
         else
             echo "Invalid distribution choice. Exiting."
