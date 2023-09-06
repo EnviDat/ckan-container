@@ -20,13 +20,31 @@ pretty_echo() {
     echo ""
 }
 
+update_wsl_conf() {
+    wsl_conf="/etc/wsl.conf"
+
+    # Check if the [network] section exists in wsl.conf
+    if grep -q "\[network\]" "$wsl_conf"; then
+        # Check if generateResolvConf is already set
+        if grep -q "generateResolvConf" "$wsl_conf"; then
+            # Replace the existing generateResolvConf line with the new setting
+            sed -i 's/^generateResolvConf\s*=.*/generateResolvConf = false/' "$wsl_conf"
+        else
+            # Add generateResolvConf setting under [network]
+            echo "generateResolvConf = false" >> "$wsl_conf"
+        fi
+    else
+        # [network] section does not exist, so create it
+        echo "[network]" >> "$wsl_conf"
+        echo "generateResolvConf = false" >> "$wsl_conf"
+    fi
+
+    sudo chattr +i /etc/resolv.conf
+}
+
 pretty_echo "WSL: setting resolv.conf and disable generateResolvConf"
 echo 'nameserver 1.1.1.1' | sudo tee /etc/resolv.conf > /dev/null
-sudo tee -a /etc/wsl.conf <<EOF
-[network]
-generateResolvConf = false
-EOF
-sudo chattr +i /etc/resolv.conf
+update_wsl_conf
 echo "Done"
 
 pretty_echo "Removing old versions of docker"
@@ -78,9 +96,9 @@ tee ~/.docker/config.json <<EOF
 EOF
 
 pretty_echo "Adding rootless DOCKER_HOST to bashrc"
-echo "export DOCKER_HOST=unix:///run/user/1000//docker.sock" >> ~/.bashrc
-# shellcheck disable=SC1090
-source ~/.bashrc
+user_id=$(id -u)
+export DOCKER_HOST="unix:///run/user/$user_id//docker.sock"
+echo "export DOCKER_HOST=unix:///run/user/$user_id//docker.sock" >> ~/.bashrc
 echo "Done"
 
 pretty_echo "Adding dc='docker compose' alias to bashrc"
