@@ -11,8 +11,16 @@ Use cases:
 
 The easiest way is to run using the interactive script:
 
-```bash
-bash scripts/envidat-in-a-box.sh
+Via SH
+
+```sh
+. scripts/envidat-in-a-box.sh
+```
+
+Via BASH
+
+```sh
+source scripts/envidat-in-a-box.sh
 ```
 
 Alternativly, follow the steps below.
@@ -54,8 +62,6 @@ docker run --rm --entrypoint=sh \
     registry-gitlab.wsl.ch/envidat/ckan-container/ckan:2.10.1-main \
     -c "ckan generate config ckan.ini && cat ckan.ini"
 ```
-
-> Note: this can also be set via the `envidat-in-a-box.sh` script.
 
 ### A) Replicating an existing DB
 
