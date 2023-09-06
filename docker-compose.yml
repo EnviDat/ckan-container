@@ -132,7 +132,6 @@ services:
       - ckan-internal
     depends_on:
       - solr
-    restart: unless-stopped
 
   redis:
     container_name: ckan_redis
