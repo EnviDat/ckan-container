@@ -28,6 +28,131 @@ pretty_echo() {
     echo ""
 }
 
+### Docker Install Options ###
+docker_remove_old_install() {
+    pretty_echo "Removing old versions of docker"
+    packages=(
+        docker.io
+        docker-doc
+        docker-compose
+        podman-docker
+        containerd
+        runc
+    )
+    for pkg in "${packages[@]}"; do
+        sudo apt-get remove "$pkg"
+    done
+}
+
+install_docker_rootless() {
+    pretty_echo "Installing Docker"
+    sudo apt-get update
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+    pretty_echo "Disabling docker service if running"
+    sudo systemctl disable --now docker.service docker.socket
+
+    pretty_echo "Changing to rootless docker"
+    dockerd-rootless-setuptool.sh install --skip-iptables
+
+    pretty_echo "Updating docker ps formatting"
+    tee ~/.docker/config.json <<EOF
+{
+"psFormat": "table {{.ID}}\\t{{.Image}}\\t{{.Status}}\\t{{.Names}}"
+}
+EOF
+
+    pretty_echo "Adding rootless DOCKER_HOST to bashrc"
+    user_id=$(id -u)
+    export DOCKER_HOST="unix:///run/user/$user_id//docker.sock"
+    echo "export DOCKER_HOST=unix:///run/user/$user_id//docker.sock" >> ~/.bashrc
+    echo "Done"
+
+    pretty_echo "Adding dc='docker compose' alias"
+    echo "alias dc='docker compose'" >> ~/.bashrc
+    echo "Done"
+}
+
+docker_debian_install() {
+    docker_remove_old_install
+
+    pretty_echo "Installing dependencies"
+    sudo apt-get update
+    sudo apt-get install -y ca-certificates curl gnupg \
+        uidmap dbus-user-session fuse-overlayfs slirp4netns
+
+    pretty_echo "Adding docker gpg key"
+    sudo install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+    echo "Done"
+
+    pretty_echo "Adding docker to apt source"
+    echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+        $(. /etc/os-release && echo $VERSION_CODENAME) stable" | \
+        sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    echo "Done"
+
+    install_docker_rootless
+}
+
+docker_ubuntu_install() {
+    docker_remove_old_install
+
+    pretty_echo "Installing dependencies"
+    sudo apt-get update
+    sudo apt-get install -y ca-certificates curl gnupg \
+        uidmap dbus-user-session slirp4netns
+
+    pretty_echo "Adding docker gpg key"
+    sudo install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    sudo chmod a+r /etc/apt/keyrings/docker.gpg
+    echo "Done"
+
+    pretty_echo "Adding docker to apt source"
+    echo \
+        "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+        $(. /etc/os-release && echo $VERSION_CODENAME) stable" | \
+        sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+    echo "Done"
+
+    install_docker_rootless
+}
+
+update_wsl_conf() {
+    wsl_conf="/etc/wsl.conf"
+
+    # Check if the [network] section exists in wsl.conf
+    if sudo grep -q "\[network\]" "$wsl_conf"; then
+        # Check if generateResolvConf is already set
+        if sudo grep -q "generateResolvConf" "$wsl_conf"; then
+            # Replace the existing generateResolvConf line with the new setting
+            sudo sed -i 's/^generateResolvConf\s*=.*/generateResolvConf=false/' "$wsl_conf"
+        else
+            # Add generateResolvConf setting under [network]
+            echo "generateResolvConf=false" | sudo tee -a "$wsl_conf" > /dev/null
+        fi
+    else
+        # [network] section does not exist, so create it
+        echo "[network]" | sudo tee -a "$wsl_conf" > /dev/null
+        echo "generateResolvConf=false" | sudo tee -a "$wsl_conf" > /dev/null
+    fi
+}
+
+docker_wsl_ubuntu_install() {
+    pretty_echo "WSL: setting resolv.conf and disable generateResolvConf"
+    # /etc/resolv.conf is a symbolic link, delete it to create a regular file
+    sudo rm /etc/resolv.conf
+    echo 'nameserver 1.1.1.1' | sudo tee /etc/resolv.conf > /dev/null
+    sudo chattr +i /etc/resolv.conf
+    update_wsl_conf
+    echo "Done"
+
+    docker_ubuntu_install
+}
+
 ### Write Dev .db.env ###
 write_db_env() {
     {
@@ -63,17 +188,17 @@ install_docker() {
             if [ "$is_wsl" == "y" ]; then
                 # Install Docker on Ubuntu
                 pretty_echo "Installing Docker on WSL Ubuntu"
-                source "$repo_dir/scripts/setup/wsl-ubuntu-docker.sh"
+                docker_wsl_ubuntu_install
             else
                 # Install Docker on Ubuntu
                 pretty_echo "Installing Docker on Ubuntu"
-                source "$repo_dir/scripts/setup/ubuntu-docker.sh"
+                docker_ubuntu_install
             fi
 
         elif [ "$distribution" == "debian" ]; then
             # Install Docker on Debian
             pretty_echo "Installing Docker on Debian"
-            source "$repo_dir/scripts/setup/debian-docker.sh"
+            docker_debian_install
 
         else
             echo "Invalid distribution choice. Exiting."
