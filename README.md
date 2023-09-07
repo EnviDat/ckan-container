@@ -23,6 +23,15 @@ Via BASH
 source scripts/envidat-in-a-box.sh
 ```
 
+Via statically linked binary
+
+```bash
+curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/jobs/19102/artifacts/raw/envidat
+chmod +x envidat
+sudo mv envidat /usr/local/bin/
+envidat
+```
+
 Alternativly, follow the steps below.
 
 ### Setting the Solr credentials
