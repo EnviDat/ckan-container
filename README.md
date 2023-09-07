@@ -9,28 +9,7 @@ Use cases:
 
 ## Production - Docker
 
-The easiest way is to run using the interactive script:
-
-Via SH
-
-```sh
-. scripts/envidat-in-a-box.sh
-```
-
-Via BASH
-
-```sh
-source scripts/envidat-in-a-box.sh
-```
-
-Via statically linked binary
-
-```bash
-curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/jobs/19149/artifacts/raw/envidat
-chmod +x envidat
-sudo mv envidat /usr/local/bin/
-envidat
-```
+The easiest way is to run using the [interactive script](#envidat-in-a-box).
 
 Alternativly, follow the steps below.
 
@@ -155,4 +134,37 @@ ckanext.cloudstorage.container_name = envidat-dev
 ckanext.cloudstorage.driver_options = {"key": "xxx", "secret": "xxx", "host": "https://minio.envidat.ch"}
 ckanext.cloudstorage.use_secure_urls = 0
 recaptcha.keys = xxx
+```
+
+## EnviDat In A Box
+
+The goal of this script is to start both the EnviDat backend and frontend interactively.
+
+It achieves three things:
+
+- Setting up the environment, including installing Docker.
+- Setting the configuration required to run the containers.
+- Running the containers.
+
+## Via statically linked binary
+
+```bash
+curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/jobs/19149/artifacts/raw/envidat
+chmod +x envidat
+sudo mv envidat /usr/local/bin/
+envidat
+```
+
+This will add the envidat program to your PATH for easy execution.
+
+## Via SH
+
+```sh
+. scripts/envidat-in-a-box.sh
+```
+
+## Via BASH
+
+```sh
+source scripts/envidat-in-a-box.sh
 ```
