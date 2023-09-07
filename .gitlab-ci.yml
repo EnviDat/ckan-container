@@ -317,7 +317,7 @@ create-helm-chart:
 #       --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
 #       --set proxy.image.tag="${NGINX_IMG_TAG}-${CI_COMMIT_REF_NAME}"
 
-static-binary:
+build-binary:
   stage: release
   image: docker.io/debian:bookworm
   rules:
@@ -337,11 +337,11 @@ static-binary:
     reports:
       dotenv: job.env
 
-release_job:
+release-binary:
   stage: release
   image: registry.gitlab.com/gitlab-org/release-cli:latest
   needs:
-    - job: static-binary
+    - job: build-binary
       artifacts: true
   rules:
     - if: $CI_COMMIT_TAG
