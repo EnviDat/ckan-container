@@ -161,9 +161,9 @@ write_db_env() {
         echo "DB_PASS=$DB_PASS"
         echo "DB_CKAN_NAME=$DB_CKAN_NAME"
         echo "DB_DOI_NAME=$DB_DOI_NAME"
-    } > "$repo_dir/.db.env"
+    } > "$current_dir/.db.env"
 
-    echo "Credentials saved to $repo_dir/.db.env"
+    echo "Credentials saved to $current_dir/.db.env"
 }
 
 ### Write Prod .solr.env ###
@@ -171,9 +171,9 @@ write_solr_env() {
     {
         echo "SOLR_ADMIN_PASS=$SOLR_ADMIN_PASS"
         echo "SOLR_CKAN_PASS=$SOLR_CKAN_PASS"
-    } > "$repo_dir/.solr.env"
+    } > "$current_dir/.solr.env"
 
-    echo "Credentials saved to $repo_dir/.solr.env"
+    echo "Credentials saved to $current_dir/.solr.env"
 }
 
 ### DOCKER ###
@@ -220,8 +220,8 @@ set_db_recovery_creds() {
 
     while true; do
         if [ "$db_recover" == "y" ]; then
-            if [ -f "$repo_dir/.db.env" ]; then
-                read -rp "Do you wish to overwrite existing $repo_dir/.db.env? (y/n): " overwrite_db_env
+            if [ -f "$current_dir/.db.env" ]; then
+                read -rp "Do you wish to overwrite existing $current_dir/.db.env? (y/n): " overwrite_db_env
             fi
             if [ "$overwrite_db_env" == "n" ]; then
                 echo "Continuing..."
@@ -254,11 +254,11 @@ set_db_recovery_creds() {
 
                 if [ "$overwrite_db_env" == "y" ]; then
                     # Attempt to remove the file first
-                    if rm -f "$repo_dir/.db.env"; then
+                    if rm -f "$current_dir/.db.env"; then
                         write_db_env
                         break  # Exit the loop as .db.env written
                     else
-                        echo "Failed to remove $repo_dir/.db.env and regenerate."
+                        echo "Failed to remove $current_dir/.db.env and regenerate."
                         echo "Please delete it first."
                         exit 1
                     fi
@@ -279,8 +279,8 @@ set_solr_creds() {
     pretty_echo "Solr Credentials"
 
     while true; do
-        if [ -f "$repo_dir/.solr.env" ]; then
-            read -rp "Do you wish to overwrite existing $repo_dir/.solr.env? (y/n): " overwrite_solr_env
+        if [ -f "$current_dir/.solr.env" ]; then
+            read -rp "Do you wish to overwrite existing $current_dir/.solr.env? (y/n): " overwrite_solr_env
         fi
         if [ "$overwrite_solr_env" == "n" ]; then
             echo "Continuing..."
@@ -304,11 +304,11 @@ set_solr_creds() {
 
             if [ "$overwrite_solr_env" == "y" ]; then
                 # Attempt to remove the file first
-                if rm -f "$repo_dir/.solr.env"; then
+                if rm -f "$current_dir/.solr.env"; then
                     write_solr_env
                     break  # Exit the loop as .solr.env written
                 else
-                    echo "Failed to remove $repo_dir/.solr.env and regenerate."
+                    echo "Failed to remove $current_dir/.solr.env and regenerate."
                     echo "Please delete it first."
                     exit 1
                 fi
@@ -338,12 +338,12 @@ wsl_restart_warning() {
 
 ### CKAN INI Check ###
 check_ckan_ini() {
-    ckan_ini_file="$repo_dir/config/ckan.ini"
+    ckan_ini_file="$current_dir/config/ckan.ini"
 
     if [ -f "$ckan_ini_file" ]; then
-        pretty_echo "$repo_dir/config/ckan.ini present"
+        pretty_echo "$current_dir/config/ckan.ini present"
     else
-        pretty_echo "$repo_dir/config/ckan.ini not found"
+        pretty_echo "$current_dir/config/ckan.ini not found"
         echo "Please generate a ckan.ini first."
         echo "A template can be generated with:"
         echo ""
@@ -372,7 +372,7 @@ start_ckan() {
 
 ### Create Frontend .env.development ###
 gen_frontend_dotenv() {
-    cat <<EOF > "$repo_dir/.env.development"
+    cat <<EOF > "$current_dir/.env.development"
 VITE_USE_TESTDATA=false
 VITE_ERROR_REPORTING_ENABLED=true
 VITE_CONFIG_URL=./testdata/config.json
@@ -408,30 +408,42 @@ start_frontend() {
     docker run -d \
         --name envidat_frontend \
         -p 8990:8080 \
-        -v "$repo_dir/.env.development:/app/.env.development" \
+        -v "$current_dir/.env.development:/app/.env.development" \
         "registry-gitlab.wsl.ch/envidat/envidat-frontend:$frontend_version-dev"
 }
 
 
-### Main START ###
+### Main Start ###
 
-# Get repo root dir
-current_dir="$(dirname "${BASH_SOURCE[0]}")"
-repo_dir="$(dirname "$current_dir")"
+# Get current dir
+current_dir="${PWD}"
 
 # Global vars
 prod=""
 is_wsl=""
 db_recover=""
 
-# Prerequisites
+### Prerequisites ###
+# Get CURL if doesn't exist
+if ! command -v curl &> /dev/null; then
+    sudo apt-get update
+    sudo apt-get install -y curl
+fi
+# Download docker-compose files
+if [ "$(basename "$current_dir")" != "ckan-container" ]; then
+    pretty_echo "Downloading required files"
+    curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/raw/main/.env
+    curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/raw/main/docker-compose.yml
+    curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/raw/main/docker-compose.prod.yml
+fi
+# Docker
 install_docker
 if [ "$is_wsl" == "y" ]; then
     wsl_restart_warning
 fi
 check_ckan_ini
 
-# Prod / Dev Setup
+### Prod / Dev Run ###
 read -rp "Are you running production? (y/n): " prod
 if [ "$prod" == "y" ]; then
     set_solr_creds
@@ -439,7 +451,7 @@ else
     set_db_recovery_creds
 fi
 
-# Run Containers
+# Start Containers
 start_ckan
 if [ "$prod" == "y" ]; then
     pretty_echo "Script Finished"
