@@ -149,7 +149,7 @@ It achieves three things:
 ## Via statically linked binary
 
 ```bash
-curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/jobs/21095/artifacts/raw/envidat
+curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/jobs/21147/artifacts/raw/envidat
 chmod +x envidat
 sudo mv envidat /usr/local/bin/
 envidat
