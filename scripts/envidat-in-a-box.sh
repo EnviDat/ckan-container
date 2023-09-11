@@ -405,13 +405,13 @@ start_frontend_dev() {
 
     git clone --depth 1 --single-branch -b develop \
         https://gitlabext.wsl.ch/EnviDat/EnviDat-Frontend.git
+
     update_frontend_dotenv
 
     cd "EnviDat-Frontend" || echo "Did the EnviDat-Frontend repo clone successfully?"
     docker compose pull
     docker compose up -d
     cd .. || exit
-    rm -rf EnviDat-Frontend
 }
 
 
