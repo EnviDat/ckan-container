@@ -371,45 +371,47 @@ start_ckan() {
 }
 
 ### Create Frontend .env.development ###
-gen_frontend_dotenv() {
-    cat <<EOF > "$current_dir/.env.development"
-VITE_USE_TESTDATA=false
-VITE_ERROR_REPORTING_ENABLED=true
-VITE_CONFIG_URL=./testdata/config.json
-VITE_STATIC_ROOT=https://frontend-static.s3-zh.os.switch.ch
-VITE_DOMAIN=http://localhost:8990
-VITE_API_ROOT=http://localhost:8989
-VITE_API_BASE_URL=/api/action/
-EOF
+update_frontend_dotenv() {
+    # Define the new values for the variables
+    export VITE_DOMAIN=http://localhost:8990
+    export VITE_API_ROOT=http://localhost:8989
 
-    echo "Generated .env.development with vars:"
-    echo "VITE_USE_TESTDATA=false"
-    echo "VITE_ERROR_REPORTING_ENABLED=true"
-    echo "VITE_CONFIG_URL=./testdata/config.json"
-    echo "VITE_STATIC_ROOT=https://frontend-static.s3-zh.os.switch.ch"
-    echo "VITE_DOMAIN=http://localhost:8990"
-    echo "VITE_API_ROOT=http://localhost:8989"
-    echo "VITE_API_BASE_URL=/api/action/"
+    # Loop through the variables and update their values in the file
+    for var in VITE_DOMAIN VITE_API_ROOT; do
+        sed -i "s|^$var=.*$|$var=${!var}|" "$current_dir/EnviDat-Frontend/.env.development"
+    done
+
+    echo "Updated .env.development with new values."
 }
 
 ### Start Frontend ###
 start_frontend() {
-    pretty_echo "Starting EnviDat Frontend"
+    pretty_echo "Starting EnviDat Prod Frontend"
 
-    default_frontend_version="0.8.04"
-    echo "Override frontend version? (default 0.8.04)"
+    default_frontend_version="0.8.0"
+    echo "Override frontend version? (default 0.8.0)"
     read -rp "Press Enter to continue, or input a version: " frontend_version
     if [ -z "$frontend_version" ]; then
         frontend_version="$default_frontend_version"
     fi
 
-    gen_frontend_dotenv
-
     docker run -d \
         --name envidat_frontend \
-        -p 8990:8080 \
-        -v "$current_dir/.env.development:/app/.env.development" \
-        "registry-gitlab.wsl.ch/envidat/envidat-frontend:$frontend_version-dev"
+        -p 8990:80 \
+        "registry-gitlab.wsl.ch/envidat/envidat-frontend:$frontend_version-main"
+}
+start_frontend_dev() {
+    pretty_echo "Starting EnviDat Dev Frontend"
+
+    git clone --depth 1 --single-branch -b develop \
+        https://gitlabext.wsl.ch/EnviDat/EnviDat-Frontend.git
+    update_frontend_dotenv
+
+    cd "EnviDat-Frontend" || echo "Did the EnviDat-Frontend repo clone successfully?"
+    docker compose pull
+    docker compose up -d
+    cd .. || exit
+    rm -rf EnviDat-Frontend
 }
 
 
@@ -428,6 +430,11 @@ db_recover=""
 if ! command -v curl &> /dev/null; then
     sudo apt-get update
     sudo apt-get install -y curl
+fi
+# Get GIT if doesn't exist
+if ! command -v git &> /dev/null; then
+    sudo apt-get update
+    sudo apt-get install -y git --no-install-recommends
 fi
 # Download docker-compose files
 if [ "$(basename "$current_dir")" != "ckan-container" ]; then
@@ -454,19 +461,18 @@ fi
 # Start Containers
 start_ckan
 if [ "$prod" == "y" ]; then
+    start_frontend
     pretty_echo "Script Finished"
     echo "Update proxy rules for https://envidat.ch"
     echo "and redirect envidat.ch endpoints to CKAN:"
     echo ""
     echo "<this_machine_domain>:8989"
     echo ""
-    echo "Ensure your S3-based frontend is built with:"
+    echo "Ensure the frontend image is built with var:"
     echo ""
     echo "VITE_API_ROOT=https://envidat.ch"
-    echo ""
-    echo "during build."
 else
-    start_frontend
+    start_frontend_dev
     pretty_echo "Script Finished"
     echo "Access services:"
     echo ""
