@@ -1,0 +1,87 @@
+version: "3"
+
+volumes:
+  ckan_dev_storage:
+  ckan_dev_translations:
+  pg_dev_data:
+  solr_dev_data:
+
+networks:
+  ckan-internal:
+    name: ckan-dev
+
+services:
+  ckan:
+    container_name: ckan_dev
+    image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-dev"
+    extra_hosts:
+      pgdboapp.wsl.ch: 10.30.1.156
+      mail.wsl.ch: 10.30.1.224
+    depends_on:
+      - db
+      - solr
+      - redis
+    environment:
+      CKAN_INI: "/opt/ckan/ckan.ini"
+    volumes:
+      - ckan_dev_storage:/opt/ckan/data
+      - ./config/ckan.ini:/opt/ckan/ckan.ini
+      - ckan_dev_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
+    networks:
+      - ckan-internal
+    restart: unless-stopped
+
+  proxy:
+    container_name: ckan_dev_proxy
+    image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-main"
+    depends_on:
+      - ckan
+    environment:
+      - CKAN_HOST=ckan:5000
+      - AUTH_COOKIE_NAME=envidat-dev
+    ports:
+      - "8081:80"
+    networks:
+      - ckan-internal
+    restart: unless-stopped
+
+  db:
+    container_name: ckan_dev_db
+    image: "${INTERNAL_REG}/ckan-container/db:${POSTGRES_IMG_TAG}-dev"
+    env_file:
+      - .db.env
+    volumes:
+      - pg_dev_data:/var/lib/postgresql/data
+    networks:
+      - ckan-internal
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+    restart: unless-stopped
+
+  solr:
+    container_name: ckan_dev_solr
+    image: "${INTERNAL_REG}/ckan-container/solr:${SOLR_IMG_TAG}-dev"
+    volumes:
+      - solr_dev_data:/var/solr/data
+    networks:
+      - ckan-internal
+    restart: unless-stopped
+
+  init-solr:
+    container_name: ckan_dev_init_solr
+    image: "${INTERNAL_REG}/ckan-container/init-solr:${SOLR_IMG_TAG}-dev"
+    env_file:
+      - .solr.env
+    environment:
+      SOLR_HOST: http://solr:8983
+    networks:
+      - ckan-internal
+    depends_on:
+      - solr
+
+  redis:
+    container_name: ckan_dev_redis
+    image: redis:${REDIS_IMG_TAG}
+    networks:
+      - ckan-internal
+    restart: unless-stopped

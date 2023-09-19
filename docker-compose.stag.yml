@@ -1,0 +1,87 @@
+version: "3"
+
+volumes:
+  ckan_stag_storage:
+  ckan_stag_translations:
+  pg_stag_data:
+  solr_stag_data:
+
+networks:
+  ckan-internal:
+    name: ckan-stag
+
+services:
+  ckan:
+    container_name: ckan_stag
+    image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-main"
+    extra_hosts:
+      pgdboapp.wsl.ch: 10.30.1.156
+      mail.wsl.ch: 10.30.1.224
+    depends_on:
+      - db
+      - solr
+      - redis
+    environment:
+      CKAN_INI: "/opt/ckan/ckan.ini"
+    volumes:
+      - ckan_stag_storage:/opt/ckan/data
+      - ./config/ckan.ini:/opt/ckan/ckan.ini
+      - ckan_stag_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
+    networks:
+      - ckan-internal
+    restart: unless-stopped
+
+  proxy:
+    container_name: ckan_stag_proxy
+    image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-main"
+    depends_on:
+      - ckan
+    environment:
+      - CKAN_HOST=ckan:5000
+      - AUTH_COOKIE_NAME=envidat-stag
+    ports:
+      - "8082:80"
+    networks:
+      - ckan-internal
+    restart: unless-stopped
+
+  db:
+    container_name: ckan_stag_db
+    image: "${INTERNAL_REG}/ckan-container/db:${POSTGRES_IMG_TAG}-main"
+    env_file:
+      - .db.env
+    volumes:
+      - pg_stag_data:/var/lib/postgresql/data
+    networks:
+      - ckan-internal
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres"]
+    restart: unless-stopped
+
+  solr:
+    container_name: ckan_stag_solr
+    image: "${INTERNAL_REG}/ckan-container/solr:${SOLR_IMG_TAG}-main"
+    volumes:
+      - solr_stag_data:/var/solr/data
+    networks:
+      - ckan-internal
+    restart: unless-stopped
+
+  init-solr:
+    container_name: ckan_stag_init_solr
+    image: "${INTERNAL_REG}/ckan-container/init-solr:${SOLR_IMG_TAG}-main"
+    env_file:
+      - .solr.env
+    environment:
+      SOLR_HOST: http://solr:8983
+    networks:
+      - ckan-internal
+    depends_on:
+      - solr
+
+  redis:
+    container_name: ckan_stag_redis
+    image: redis:${REDIS_IMG_TAG}
+    networks:
+      - ckan-internal
+    restart: unless-stopped
