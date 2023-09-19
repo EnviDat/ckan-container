@@ -73,7 +73,6 @@ set-vars:
       --build-arg POSTGRES_IMG_TAG="${POSTGRES_IMG_TAG}"
       --build-arg SOLR_IMG_TAG="${SOLR_IMG_TAG}"
       --build-arg NGINX_IMG_TAG="${NGINX_IMG_TAG}"
-      --build-arg NGINX_CONFIG_NAME="${NGINX_CONFIG_NAME}"
 
 ckan-build:
   extends:
@@ -88,7 +87,7 @@ proxy-build:
   cache:
     key: nginx-config
     paths:
-      - nginx/conf.d/ckan.conf
+      - nginx/conf.d/ckan.conf.template
     policy: pull
   variables:
     IMAGE_NAME: ${PROXY_IMAGE}

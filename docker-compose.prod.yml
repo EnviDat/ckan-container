@@ -57,7 +57,6 @@ services:
         - EXTERNAL_REG=${EXTERNAL_REG}
         - NGINX_IMG_TAG=${NGINX_IMG_TAG}
         - MAINTAINER=${MAINTAINER}
-        - NGINX_CONFIG_NAME=${NGINX_CONFIG_NAME}
     depends_on:
       - ckan
     environment:

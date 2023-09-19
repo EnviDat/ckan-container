@@ -30,6 +30,5 @@ WORKDIR /etc/nginx
 RUN rm -rf ./conf.d/default.conf ./nginx.conf
 COPY nginx.conf nginx.conf
 COPY --chmod=744 00-wait-for-start.sh /docker-entrypoint.d/
-ARG NGINX_CONFIG_NAME
-COPY templates/${NGINX_CONFIG_NAME}.template templates/ckan.conf.template
+COPY templates/ templates/
 EXPOSE 80
