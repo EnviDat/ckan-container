@@ -241,12 +241,8 @@ remote-docker:
     DOCKER_HOST: "tcp://$DEPLOY_HOSTNAME:2376"
     DOCKER_TLS_VERIFY: "1"
   before_script:
-    - echo "Creating ckan.ini file"
-    - mkdir config
     - echo "$CKAN_INI" > config/ckan.ini
-    - echo "Creating .db.env file"
     - echo "$DB_ENV" > .db.env
-    - echo "Creating .solr.env file"
     - echo "$SOLR_ENV" > .solr.env
     - echo "Adding SSH key to SSH agent"
     - echo "$SSH_KEY" | tr -d '\r' | ssh-add -
