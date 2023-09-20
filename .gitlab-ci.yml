@@ -233,35 +233,95 @@ solr-init-retag:
   variables:
     IMAGE_NAME: ${SOLR_INIT_IMAGE}
 
-.helm:
+remote-docker:
   stage: deploy
-  image:
-    name: docker.io/alpine/helm:3.8.0
-    entrypoint: [""]
+  environment: $CI_COMMIT_REF_NAME
+  image: docker.io/kroniak/ssh-client
+  variables:
+    DOCKER_HOST: "tcp://$DEPLOY_HOSTNAME:2376"
+    DOCKER_TLS_VERIFY: "1"
   before_script:
-    - mkdir -p /root/.config/helm/registry
-    - >
-      echo "{\"auths\":{\"${INTERNAL_REG}\":{\"auth\":\"$(printf "%s:%s"
-      "${IMAGE_REGISTRY_USER}" "${IMAGE_REGISTRY_PASS}" | base64
-      | tr -d '\n')\"}}}" > /root/.config/helm/registry/config.json
-
-create-helm-chart:
-  extends:
-    - .helm
-  stage: package
-  rules:
-    - if: $CI_COMMIT_REF_NAME != "main"
-      when: never
-    - when: always
+    - echo "Creating ckan.ini file"
+    - mkdir config
+    - echo "$CKAN_INI" > config/ckan.ini
+    - echo "Creating .db.env file"
+    - echo "$DB_ENV" > .db.env
+    - echo "Creating .solr.env file"
+    - echo "$SOLR_ENV" > .solr.env
+    - echo "Adding SSH key to SSH agent"
+    - echo "$SSH_KEY" | tr -d '\r' | ssh-add -
   script:
-    - >
-      apk add yq --no-cache
-      --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
-    - helm dependencies build chart
-    - yq -i '.appVersion = strenv(CKAN_VERSION)' chart/Chart.yaml
-    - helm package chart
-    - CHART_VER=$(yq '.version' chart/Chart.yaml)
-    - helm push "ckan-${CHART_VER}.tgz" oci://registry-gitlab.wsl.ch/envidat/ckan-container
+    - docker-compose -f "docker-compose.$CI_COMMIT_REF_NAME.yml" up -d
+
+build-binary:
+  stage: release
+  image: docker.io/debian:bookworm
+  rules:
+    - if: $CI_COMMIT_TAG
+  before_script:
+    - apt update && apt install -y curl
+    - curl -LO https://github.com/ajdiaz/bashc/releases/download/5.2.15/bashc
+    - chmod +x bashc
+  script:
+    - ./bashc scripts/envidat-in-a-box.sh envidat
+  after_script:
+    - echo "BIN_JOB_ID=$CI_JOB_ID" >> job.env
+  artifacts:
+    paths:
+      - envidat
+    expire_in: never
+    reports:
+      dotenv: job.env
+
+release-binary:
+  stage: release
+  image: registry.gitlab.com/gitlab-org/release-cli:latest
+  needs:
+    - job: build-binary
+      artifacts: true
+  rules:
+    - if: $CI_COMMIT_TAG
+  script:
+    - echo "running release_job for $CI_COMMIT_TAG"
+    - echo "Using artifact from job $BIN_JOB_ID"
+  release:
+    name: "Release $CI_COMMIT_TAG"
+    tag_name: "$CI_COMMIT_TAG"
+    description: "$CI_COMMIT_TAG"
+    ref: "$CI_COMMIT_SHA"
+    assets:
+      links:
+        - name: envidat-in-a-box
+          url: $CI_SERVER_URL/$CI_PROJECT_PATH/-/jobs/$BIN_JOB_ID/artifacts/raw/envidat
+# .helm:
+#   stage: deploy
+#   image:
+#     name: docker.io/alpine/helm:3.8.0
+#     entrypoint: [""]
+#   before_script:
+#     - mkdir -p /root/.config/helm/registry
+#     - >
+#       echo "{\"auths\":{\"${INTERNAL_REG}\":{\"auth\":\"$(printf "%s:%s"
+#       "${IMAGE_REGISTRY_USER}" "${IMAGE_REGISTRY_PASS}" | base64
+#       | tr -d '\n')\"}}}" > /root/.config/helm/registry/config.json
+
+# create-helm-chart:
+#   extends:
+#     - .helm
+#   stage: package
+#   rules:
+#     - if: $CI_COMMIT_REF_NAME != "main"
+#       when: never
+#     - when: always
+#   script:
+#     - >
+#       apk add yq --no-cache
+#       --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+#     - helm dependencies build chart
+#     - yq -i '.appVersion = strenv(CKAN_VERSION)' chart/Chart.yaml
+#     - helm package chart
+#     - CHART_VER=$(yq '.version' chart/Chart.yaml)
+#     - helm push "ckan-${CHART_VER}.tgz" oci://registry-gitlab.wsl.ch/envidat/ckan-container
 
 # helm-deploy:
 #   extends:
@@ -315,44 +375,3 @@ create-helm-chart:
 #       --version "${CHART_VERSION}"
 #       --set image.tag="${CKAN_VERSION}-${CI_COMMIT_REF_NAME}"
 #       --set proxy.image.tag="${NGINX_IMG_TAG}-${CI_COMMIT_REF_NAME}"
-
-build-binary:
-  stage: release
-  image: docker.io/debian:bookworm
-  rules:
-    - if: $CI_COMMIT_TAG
-  before_script:
-    - apt update && apt install -y curl
-    - curl -LO https://github.com/ajdiaz/bashc/releases/download/5.2.15/bashc
-    - chmod +x bashc
-  script:
-    - ./bashc scripts/envidat-in-a-box.sh envidat
-  after_script:
-    - echo "BIN_JOB_ID=$CI_JOB_ID" >> job.env
-  artifacts:
-    paths:
-      - envidat
-    expire_in: never
-    reports:
-      dotenv: job.env
-
-release-binary:
-  stage: release
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
-  needs:
-    - job: build-binary
-      artifacts: true
-  rules:
-    - if: $CI_COMMIT_TAG
-  script:
-    - echo "running release_job for $CI_COMMIT_TAG"
-    - echo "Using artifact from job $BIN_JOB_ID"
-  release:
-    name: "Release $CI_COMMIT_TAG"
-    tag_name: "$CI_COMMIT_TAG"
-    description: "$CI_COMMIT_TAG"
-    ref: "$CI_COMMIT_SHA"
-    assets:
-      links:
-        - name: envidat-in-a-box
-          url: $CI_SERVER_URL/$CI_PROJECT_PATH/-/jobs/$BIN_JOB_ID/artifacts/raw/envidat
