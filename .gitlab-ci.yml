@@ -236,7 +236,7 @@ solr-init-retag:
 remote-docker:
   stage: deploy
   environment: $CI_COMMIT_REF_NAME
-  image: docker.io/kroniak/ssh-client
+  image: docker.io/kroniak/ssh-client:3.18
   variables:
     DOCKER_HOST: "tcp://$DEPLOY_HOSTNAME:2376"
     DOCKER_TLS_VERIFY: "1"
@@ -245,6 +245,7 @@ remote-docker:
     - echo "$DB_ENV" > .db.env
     - echo "$SOLR_ENV" > .solr.env
     - echo "Adding SSH key to SSH agent"
+    - eval $(ssh-agent -s)
     - echo "$SSH_KEY" | tr -d '\r' | ssh-add -
   script:
     - docker-compose -f "docker-compose.$CI_COMMIT_REF_NAME.yml" up -d
