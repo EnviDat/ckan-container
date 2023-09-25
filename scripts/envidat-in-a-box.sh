@@ -360,7 +360,7 @@ start_ckan() {
     pretty_echo "Starting CKAN"
 
     if [ "$prod" == "y" ]; then
-        docker compose -f docker-compose.prod.yml up -d
+        docker compose -f docker-compose.main.yml up -d
     else
         if [ "$db_recover" == "y" ]; then
             docker compose up -d
@@ -403,8 +403,15 @@ start_frontend() {
 start_frontend_dev() {
     pretty_echo "Starting EnviDat Dev Frontend"
 
-    git clone --depth 1 --single-branch -b develop \
-        https://gitlabext.wsl.ch/EnviDat/EnviDat-Frontend.git
+    if [ ! -d "EnviDat-Frontend" ]; then
+        git clone --depth 1 --single-branch -b develop \
+            https://gitlabext.wsl.ch/EnviDat/EnviDat-Frontend.git envidat-frontend
+    else
+        pretty_echo "Directory 'EnviDat-Frontend' already exists, skipping clone."
+        cd "EnviDat-Frontend" || echo "Does dir EnviDat-Frontend exist?"
+        git pull
+        cd .. || exit
+    fi
 
     update_frontend_dotenv
 
@@ -441,7 +448,7 @@ if [ "$(basename "$current_dir")" != "ckan-container" ]; then
     pretty_echo "Downloading required files"
     curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/raw/main/.env
     curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/raw/main/docker-compose.yml
-    curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/raw/main/docker-compose.prod.yml
+    curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/raw/main/docker-compose.main.yml
 fi
 # Docker
 install_docker
