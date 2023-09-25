@@ -243,9 +243,12 @@ remote-docker:
     - echo "$CKAN_INI" > config/ckan.ini
     - echo "$DB_ENV" > .db.env
     - echo "$SOLR_ENV" > .solr.env
-    - echo "Adding SSH key to SSH agent"
-    - eval $(ssh-agent -s)
-    - echo "$DEPLOY_SSH_KEY" | tr -d '\r' | ssh-add -
+    - echo "Adding SSH Key"
+    - mkdir -p ~/.ssh
+    - echo "$DEPLOY_SSH_KEY" > ~/.ssh/gitlab
+    - chmod 400 ~/.ssh/gitlab
+    - echo 'IdentityFile ~/.ssh/gitlab' > ~/.ssh/config
+    - ssh-keyscan -H $DEPLOY_HOSTNAME >> ~/.ssh/known_hosts
   script:
     - |
       docker compose \
