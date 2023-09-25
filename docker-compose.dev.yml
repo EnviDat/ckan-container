@@ -25,7 +25,7 @@ services:
       CKAN_INI: "/opt/ckan/ckan.ini"
     volumes:
       - ckan_dev_storage:/opt/ckan/data
-      - ./config/ckan.ini:/opt/ckan/ckan.ini
+      - /usr/local/share/ckan/dev.ini:/opt/ckan/ckan.ini
       - ckan_dev_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
     networks:
       - ckan-internal
