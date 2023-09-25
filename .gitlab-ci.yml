@@ -240,7 +240,7 @@ remote-docker:
   variables:
     DOCKER_HOST: "ssh://$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME"
   before_script:
-    - echo "$CKAN_INI" > config/ckan.ini
+    - echo "$CKAN_INI" > ckan.ini
     - echo "$DB_ENV" > .db.env
     - echo "$SOLR_ENV" > .solr.env
     - echo "Adding SSH Key"
@@ -251,6 +251,11 @@ remote-docker:
     - ssh-keyscan -H $DEPLOY_HOSTNAME >> ~/.ssh/known_hosts
   script:
     - |
+      ssh "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME" \
+        mkdir /usr/local/share/ckan
+      scp \
+        ckan.ini \
+        "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME:/usr/local/share/ckan/$CI_COMMIT_REF_NAME.ini"
       docker compose \
         --file "docker-compose.$CI_COMMIT_REF_NAME.yml" \
         up --detach
