@@ -42,7 +42,7 @@ services:
       # OTEL_PYTHON_LOG_LEVEL:
     volumes:
       - ckan_storage:/opt/ckan/data
-      - /usr/local/share/ckan/main.ini:/opt/ckan/ckan.ini
+      - $HOME/ckan/main.ini:/opt/ckan/ckan.ini
       - ckan_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
     networks:
       - ckan-internal
