@@ -373,8 +373,18 @@ start_ckan() {
 ### Create Frontend .env.development ###
 update_frontend_dotenv() {
     # Define the new values for the variables
-    export VITE_DOMAIN=http://localhost:8990
-    export VITE_API_ROOT=http://localhost:8989
+    VITE_DOMAIN=http://localhost:8990
+    VITE_API_ROOT=http://localhost:8989
+
+    # Override with user input, if provided
+    read -rp "What domain are you running on? (default: localhost): " domain
+    if [ -n "$domain" ]; then
+        VITE_DOMAIN=http://$domain:8990
+        VITE_API_ROOT=http://$domain:8989
+    fi
+
+    export VITE_DOMAIN="${VITE_DOMAIN}"
+    export VITE_API_ROOT="${VITE_API_ROOT}"
 
     # Loop through the variables and update their values in the file
     for var in VITE_DOMAIN VITE_API_ROOT; do
@@ -386,6 +396,8 @@ update_frontend_dotenv() {
 
 ### Start Frontend ###
 start_frontend() {
+    # NOTE: this only works for envidat.ch currently
+
     pretty_echo "Starting EnviDat Prod Frontend"
 
     default_frontend_version="0.8.0"
