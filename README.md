@@ -11,8 +11,10 @@ Use cases:
 
 This file contains the config for CKAN, including connection urls.
 
-- During development it is located in the repo: `ckan-container/config/ckan.ini`.
-- In production, is it located under: `/usr/local/share/ckan/${BRANCH_NAME}.ini`.
+File location:
+
+- Development: in the repo under `ckan-container/config/ckan.ini`.
+- Production: `$HOME/ckan/${BRANCH_NAME}.ini` for the deployment user.
 
 To generate an example `ckan.ini` file via terminal:
 
