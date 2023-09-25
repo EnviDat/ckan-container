@@ -252,7 +252,7 @@ remote-docker:
   script:
     - |
       ssh "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME" \
-        mkdir /usr/local/share/ckan
+        "mkdir -p /usr/local/share/ckan"
       scp \
         ckan.ini \
         "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME:/usr/local/share/ckan/$CI_COMMIT_REF_NAME.ini"
