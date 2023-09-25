@@ -1,4 +1,5 @@
 version: "3"
+name: "ckan-main"
 
 volumes:
   ckan_storage:

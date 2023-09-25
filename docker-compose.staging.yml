@@ -1,4 +1,5 @@
 version: "3"
+name: "ckan-staging"
 
 volumes:
   ckan_stag_storage:
