@@ -49,6 +49,7 @@ services:
       # - ./ckan:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan
       # - ./ckanext/passwordless_api:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckanext/passwordless_api
       # - ./ckanext/restricted_api:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckanext/restricted_api
+      # - ./ckanext/cloudstorage_api:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckanext/cloudstorage_api
     networks:
       - ckan-internal
     restart: unless-stopped
