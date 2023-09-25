@@ -7,6 +7,21 @@ Use cases:
 - Replicating an existing database, then running a dev CKAN server.
 - Running production CKAN with an existing database.
 
+## Create ckan.ini
+
+This file contains the config for CKAN, including connection urls.
+
+- During development it is located in the repo: `ckan-container/config/ckan.ini`.
+- In production, is it located under: `/usr/local/share/ckan/${BRANCH_NAME}.ini`.
+
+To generate an example `ckan.ini` file via terminal:
+
+```bash
+docker run --rm --entrypoint=sh \
+    registry-gitlab.wsl.ch/envidat/ckan-container/ckan:2.10.1-main \
+    -c "ckan generate config ckan.ini && cat ckan.ini"
+```
+
 ## Production - Docker
 
 The easiest way is to run using the [interactive script](#envidat-in-a-box).
@@ -39,18 +54,6 @@ docker compose -f docker-compose.prod.yml up -d
 
 - Change versions, registry connections, etc.
 
-### Create config/ckan.ini
-
-This file contains the config for CKAN, including connection urls.
-
-To generate an example `ckan.ini` file via terminal:
-
-```bash
-docker run --rm --entrypoint=sh \
-    registry-gitlab.wsl.ch/envidat/ckan-container/ckan:2.10.1-main \
-    -c "ckan generate config ckan.ini && cat ckan.ini"
-```
-
 ### A) Replicating an existing DB
 
 This is the default configuration when running `docker-compose.yml`.
@@ -79,6 +82,8 @@ To do this, run with this command instead:
 ```bash
 DB_ENV_FILE=/dev/null docker compose up -d
 ```
+
+## Debugging
 
 ### Reinstalling ckanext_xxx after editing
 
