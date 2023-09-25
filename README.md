@@ -47,8 +47,11 @@ SOLR_CKAN_PASS=xxxx
 ### Run the production containers
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.main.yml up -d
 ```
+
+> Note: the `docker-compose.main.yml` is made to work with an external database,
+> and has no **db** service specified.
 
 ## Development
 
