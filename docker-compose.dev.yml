@@ -1,5 +1,4 @@
 version: "3"
-name: "ckan-dev"
 
 volumes:
   ckan_dev_storage:

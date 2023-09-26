@@ -1,5 +1,4 @@
 version: "3"
-name: "ckan-main"
 
 volumes:
   ckan_storage:
@@ -12,7 +11,7 @@ networks:
 
 services:
   ckan:
-    container_name: ckan
+    container_name: ckan_main
     image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-main"
     build:
       context: .
@@ -50,7 +49,7 @@ services:
     restart: unless-stopped
 
   proxy:
-    container_name: ckan_proxy
+    container_name: ckan_main_proxy
     image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-main"
     build:
       context: ./nginx
@@ -70,7 +69,7 @@ services:
     restart: unless-stopped
 
   solr:
-    container_name: ckan_solr
+    container_name: ckan_main_solr
     image: "${INTERNAL_REG}/ckan-container/solr:${SOLR_IMG_TAG}-main"
     build:
       context: ./solr
@@ -87,7 +86,7 @@ services:
     restart: unless-stopped
 
   init-solr:
-    container_name: ckan_init_solr
+    container_name: ckan_main_init_solr
     image: "${INTERNAL_REG}/ckan-container/init-solr:${SOLR_IMG_TAG}-main"
     build:
       context: ./init_solr
@@ -104,7 +103,7 @@ services:
       - solr
 
   redis:
-    container_name: ckan_redis
+    container_name: ckan_main_redis
     image: redis:${REDIS_IMG_TAG}
     networks:
       - ckan-internal
