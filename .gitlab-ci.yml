@@ -17,7 +17,7 @@ workflow:
       when: always
     - if: $CI_COMMIT_REF_NAME == "dev"
       when: always
-    - if: '$CI_PIPELINE_SOURCE == "web"'
+    - if: $CI_PIPELINE_SOURCE == "web"
       when: always
 
 set-vars:
@@ -25,7 +25,7 @@ set-vars:
   image: docker.io/alpine:3.15
   before_script:
     - >
-      apk add jq yq --no-cache
+      apk add yq --no-cache
       --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
   script:
     - cat .env >> build.env
