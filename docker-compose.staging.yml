@@ -3,8 +3,6 @@ version: "3"
 volumes:
   ckan_stag_storage:
   ckan_stag_translations:
-  pg_stag_data:
-  solr_stag_data:
 
 networks:
   ckan-internal:
@@ -50,8 +48,6 @@ services:
     image: "${INTERNAL_REG}/ckan-container/db:${POSTGRES_IMG_TAG}-main"
     env_file:
       - .db.env
-    volumes:
-      - pg_stag_data:/var/lib/postgresql/data
     networks:
       - ckan-internal
     healthcheck:
@@ -61,8 +57,6 @@ services:
   solr:
     container_name: ckan_stag_solr
     image: "${INTERNAL_REG}/ckan-container/solr:${SOLR_IMG_TAG}-main"
-    volumes:
-      - solr_stag_data:/var/solr/data
     networks:
       - ckan-internal
     restart: unless-stopped
