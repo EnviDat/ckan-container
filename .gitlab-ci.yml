@@ -43,6 +43,8 @@ set-vars:
       ${SOLR_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
     - "echo SOLR_INIT_IMAGE=${INTERNAL_REG}/ckan-container/init-solr:\
       ${SOLR_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
+    - echo "Printing build.env"
+    - cat build.env
   artifacts:
     reports:
       dotenv: build.env
@@ -59,6 +61,7 @@ set-vars:
       "%s:%s" "${IMAGE_REGISTRY_USER}" "${IMAGE_REGISTRY_PASS}"
       | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
   script:
+    - echo "Build image  ${IMAGE_NAME}"
     - >
       /kaniko/executor
       --force
@@ -242,6 +245,9 @@ remote-docker:
   variables:
     DOCKER_HOST: "ssh://$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME"
   before_script:
+    - echo "***The app image is   ${IMAGE_NAME}"
+    - echo "***The app version is  ${CKAN_VERSION}"
+    - echo "Going to docker compose remote with file docker-compose.$CI_COMMIT_REF_NAME.yml"
     - echo "$CKAN_INI" > ckan.ini
     - echo "$DB_ENV" > .db.env
     - echo "$SOLR_ENV" > .solr.env
@@ -256,10 +262,18 @@ remote-docker:
       USER_DIR=$(echo "/home/$DEPLOY_SSH_USER")
       ssh "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME" "mkdir -p $USER_DIR/config/ckan"
       scp ckan.ini "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME:$USER_DIR/config/ckan/$CI_COMMIT_REF_NAME.ini"
-      HOME=$USER_DIR docker compose \
-        --project-name="$APP_NAME" \
+    - HOME=$USER_DIR
+    # use docker compose create to recreate the container and force pulling the latest image
+    # to avoid using the local cache
+    - |
+      docker compose --project-name="$APP_NAME" \
         --file "docker-compose.$CI_COMMIT_REF_NAME.yml" \
-        up --detach --force-recreate
+        create --force-recreate --pull="always"
+    # use docker compose up to start the service on the remote machine
+    - |
+      docker compose --project-name="$APP_NAME" \
+        --file "docker-compose.$CI_COMMIT_REF_NAME.yml" \
+        up --detach
 
 build-binary:
   stage: release
