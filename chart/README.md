@@ -9,7 +9,7 @@ Chart for WSL EnviDat CKAN Backend.
 
 Requires secrets to be pre-populated.
 
-- Note: production secrets omit {branch}.
+- Note: production secrets omit {branch}
 
 - **db-ckan-{branch}-creds** for postgres database (required by helm chart)
 
