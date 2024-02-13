@@ -247,7 +247,7 @@ remote-docker:
   before_script:
     - echo "***The app image is   ${IMAGE_NAME}"
     - echo "***The app version is  ${CKAN_VERSION}"
-    - echo "Going to docker compose remote with file docker-compose.$CI_COMMIT_REF_NAME.yml"
+    - echo "Going to docker remote ($DEPLOY_HOSTNAME) with file docker-compose.$CI_COMMIT_REF_NAME.yml"
     - echo "$CKAN_INI" > ckan.ini
     - echo "$DB_ENV" > .db.env
     - echo "$SOLR_ENV" > .solr.env
