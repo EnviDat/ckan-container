@@ -64,6 +64,10 @@ RUN pip install --user --no-warn-script-location \
 # Install ckanext-scheming (not updated on PyPi)
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir git+https://github.com/ckan/ckanext-scheming.git
+# Install ckanext-blind_review (not on PyPi)
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir git+https://gitlabext.wsl.ch/EnviDat/ckanext-blind_review.git
+
 
 
 
