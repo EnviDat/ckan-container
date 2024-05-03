@@ -8,8 +8,6 @@ ckanext-passwordless-api==1.1.8
 ckanext-restricted-api==2.0.6
 ckanext-cloudstorage-api==0.2.0
 ckanext-envidat-validators==0.1.4
-git+https://github.com/ckan/ckanext-scheming.git
-git+https://gitlabext.wsl.ch/EnviDat/ckanext-blind_review.git
 
 # # Opentelemetry
 # opentelemetry-sdk==1.15.0
