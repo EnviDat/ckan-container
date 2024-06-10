@@ -7,8 +7,8 @@ stages:
   - scan
   - package
   - deploy
-  - manual-deploy
   - release
+  - manual-deploy
 
 variables:
   ARTIFACT_COMPRESSION_LEVEL: "fast"
@@ -54,6 +54,8 @@ set-vars:
 
 .build:
   stage: build
+  needs:
+    - set-vars
   image:
     name: gcr.io/kaniko-project/executor:v1.9.1-debug
     entrypoint: [""]
@@ -125,6 +127,13 @@ remote-docker:
   image: docker.io/docker:24.0
   only:
     - branches
+  needs:
+    - set-vars
+    - ckan-retag
+    - proxy-retag
+    - db-retag
+    - solr-retag
+    - solr-init-retag
   variables:
     DOCKER_HOST: "ssh://$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME"
   before_script:
@@ -147,10 +156,15 @@ remote-docker:
         --file "docker-compose.$CI_COMMIT_REF_NAME.yml" \
         up --detach --force-recreate
 
+# Job for manual deploying of a docker-compose file, to use it's
+# docker images, make sure before you run it that the images referenced
+# in the docker-compose.$CI_COMMIT_REF_NAME.yml exist!
 manual-remote-docker:
   stage: manual-deploy
   environment: $CI_COMMIT_REF_NAME
   image: docker.io/docker:24.0
+  needs:
+    - set-vars
   when: manual
   variables:
     DOCKER_HOST: "ssh://$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME"

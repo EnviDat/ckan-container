@@ -1,6 +1,8 @@
 
 .scan:
   stage: scan
+  needs:
+    - set-vars
   image:
     name: docker.io/aquasec/trivy:0.23.0
     entrypoint: [""]
@@ -35,6 +37,8 @@
       container_scanning: $SHORT_NAME-imgscan.json
 
 ckan-scan:
+  needs:
+    - ckan-build
   extends:
     - .scan
   variables:
@@ -43,6 +47,8 @@ ckan-scan:
   allow_failure: true
 
 proxy-scan:
+  needs:
+    - proxy-build
   extends:
     - .scan
   variables:
@@ -50,6 +56,8 @@ proxy-scan:
     SHORT_NAME: "proxy"
 
 db-scan:
+  needs:
+    - db-build
   extends:
     - .scan
   variables:
@@ -57,6 +65,8 @@ db-scan:
     SHORT_NAME: "postgresql"
 
 solr-scan:
+  needs:
+    - solr-build
   extends:
     - .scan
   variables:
@@ -65,6 +75,8 @@ solr-scan:
   allow_failure: true
 
 solr-init-scan:
+  needs:
+    - solr-init-build
   extends:
     - .scan
   variables:
