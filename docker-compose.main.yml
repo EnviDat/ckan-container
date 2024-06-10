@@ -7,53 +7,28 @@ volumes:
 
 networks:
   ckan-internal:
-    name: ckan-prod
+    name: ckan-2.9
 
 services:
   ckan:
-    container_name: ckan_main
-    image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-main"
-    build:
-      context: .
-      target: prod
-      args:
-        - EXTERNAL_REG=${EXTERNAL_REG}
-        - INTERNAL_REG=${INTERNAL_REG}
-        - PYTHON_IMG_TAG=${PYTHON_IMG_TAG}
-        - CKAN_VERSION=${CKAN_VERSION}
-        - MAINTAINER=${MAINTAINER}
+    container_name: ckan_2.9
+    image: "${INTERNAL_REG}/ckan-container/ckan:2.9-backup"
     depends_on:
       - solr
       - redis
     environment:
       CKAN_INI: "/opt/ckan/ckan.ini"
-      # OTEL_LOG_LEVEL: debug
-      # OTEL_RESOURCE_ATTRIBUTES: "service.name=ckan-docker"
-      # OTEL_TRACES_EXPORTER: "otlp_proto_http"
-      # OTEL_METRICS_EXPORTER: "otlp_proto_http"
-      # OTEL_LOGS_EXPORTER: "otlp_proto_http"
-      # OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
-      # OTEL_EXPORTER_OTLP_ENDPOINT: "https://traces.envidat.ch"
-      # OTEL_PYTHON_LOG_CORRELATION: "True"
-      # OTEL_PYTHON_LOG_FORMAT:
-      # OTEL_PYTHON_LOG_LEVEL:
     volumes:
       - ckan_storage:/opt/ckan/data
-      - $HOME/config/ckan/main.ini:/opt/ckan/ckan.ini
+      - $HOME/config/ckan/2.9-backup.ini:/opt/ckan/ckan.ini
       - ckan_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
     networks:
       - ckan-internal
     restart: unless-stopped
 
   proxy:
-    container_name: ckan_main_proxy
+    container_name: ckan_2.9_proxy
     image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-main"
-    build:
-      context: ./nginx
-      args:
-        - EXTERNAL_REG=${EXTERNAL_REG}
-        - NGINX_IMG_TAG=${NGINX_IMG_TAG}
-        - MAINTAINER=${MAINTAINER}
     depends_on:
       - ckan
     environment:
@@ -66,14 +41,8 @@ services:
     restart: unless-stopped
 
   solr:
-    container_name: ckan_main_solr
-    image: "${INTERNAL_REG}/ckan-container/solr:${SOLR_IMG_TAG}-main"
-    build:
-      context: ./solr
-      args:
-        - EXTERNAL_REG=${EXTERNAL_REG}
-        - SOLR_IMG_TAG=${SOLR_IMG_TAG}
-        - MAINTAINER=${MAINTAINER}
+    container_name: ckan_2.9_solr
+    image: "${INTERNAL_REG}/ckan-container/solr:8.11-v2.9"
     volumes:
       - solr_data:/var/solr/data
     networks:
@@ -83,13 +52,8 @@ services:
     restart: unless-stopped
 
   init-solr:
-    container_name: ckan_main_init_solr
-    image: "${INTERNAL_REG}/ckan-container/init-solr:${SOLR_IMG_TAG}-main"
-    build:
-      context: ./init_solr
-      args:
-        - EXTERNAL_REG=${EXTERNAL_REG}
-        - MAINTAINER=${MAINTAINER}
+    container_name: ckan_2.9_init_solr
+    image: "${INTERNAL_REG}/ckan-container/init-solr:8.11-v2.9"
     env_file:
       - .solr.env
     environment:
@@ -100,8 +64,9 @@ services:
       - solr
 
   redis:
-    container_name: ckan_main_redis
+    container_name: ckan_2.9_redis
     image: redis:${REDIS_IMG_TAG}
     networks:
       - ckan-internal
     restart: unless-stopped
+
