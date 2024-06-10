@@ -1,3 +1,7 @@
+include:
+  - local: '.gitlab-ci-scan.yml'
+  - local: '.gitlab-ci-package.yml'
+
 stages:
   - build
   - scan
@@ -115,125 +119,6 @@ solr-init-build:
     IMAGE_NAME: ${SOLR_INIT_IMAGE}
     CONTEXT_DIR: "${CI_PROJECT_DIR}/init_solr"
 
-.scan:
-  stage: scan
-  image:
-    name: docker.io/aquasec/trivy:0.23.0
-    entrypoint: [""]
-  variables:
-    GIT_STRATEGY: none
-  script:
-    - trivy --version
-    - time trivy image --clear-cache
-    - time trivy --cache-dir .trivycache/ image --download-db-only --no-progress
-    # Create report artifact
-    - >
-      time trivy --cache-dir .trivycache/ image --exit-code 0 --ignore-unfixed
-      --no-progress --format template --template "@/contrib/gitlab.tpl"
-      --output "$CI_PROJECT_DIR/$SHORT_NAME-imgscan.json"
-      "${IMAGE_NAME}-unverified"
-    # Print full report
-    - >
-      time trivy --cache-dir .trivycache/ image --exit-code 0 --ignore-unfixed
-      --no-progress "${IMAGE_NAME}"-unverified
-    # Fail on critical vulnerabilities
-    - >
-      time trivy --cache-dir .trivycache/ image --exit-code 1 --ignore-unfixed
-      --severity CRITICAL --no-progress "${IMAGE_NAME}"-unverified
-  cache:
-    key: trivy-cache
-    paths:
-      - .trivycache/
-    policy: pull-push
-  artifacts:
-    when: always
-    reports:
-      container_scanning: $SHORT_NAME-imgscan.json
-
-ckan-scan:
-  extends:
-    - .scan
-  variables:
-    IMAGE_NAME: ${CKAN_IMAGE}
-    SHORT_NAME: "ckan"
-  allow_failure: true
-
-proxy-scan:
-  extends:
-    - .scan
-  variables:
-    IMAGE_NAME: ${PROXY_IMAGE}
-    SHORT_NAME: "proxy"
-
-db-scan:
-  extends:
-    - .scan
-  variables:
-    IMAGE_NAME: ${DB_IMAGE}
-    SHORT_NAME: "postgresql"
-
-solr-scan:
-  extends:
-    - .scan
-  variables:
-    IMAGE_NAME: ${SOLR_IMAGE}
-    SHORT_NAME: "solr"
-  allow_failure: true
-
-solr-init-scan:
-  extends:
-    - .scan
-  variables:
-    IMAGE_NAME: ${SOLR_INIT_IMAGE}
-    SHORT_NAME: "init_solr"
-
-.retag:
-  stage: package
-  image: docker.io/regclient/regctl:v0.3-alpine
-  variables:
-    GIT_STRATEGY: none
-  before_script:
-    - export REG_HOST=${INTERNAL_REG%/*}
-    - >
-      echo "{\"hosts\":{\"${REG_HOST}\":{\"tls\":\"enabled\",\"hostname\":
-      \"${REG_HOST}\",\"user\":\"${IMAGE_REGISTRY_USER}\",\"pass\":
-      \"${IMAGE_REGISTRY_PASS}\"}}}" >> /home/appuser/.regctl/config.json
-  script:
-    - >
-      regctl --verbosity debug image copy
-      "${IMAGE_NAME}-unverified" "${IMAGE_NAME}"
-    - regctl --verbosity debug tag delete "${IMAGE_NAME}-unverified"
-
-ckan-retag:
-  extends:
-    - .retag
-  variables:
-    IMAGE_NAME: ${CKAN_IMAGE}
-
-proxy-retag:
-  extends:
-    - .retag
-  variables:
-    IMAGE_NAME: ${PROXY_IMAGE}
-
-db-retag:
-  extends:
-    - .retag
-  variables:
-    IMAGE_NAME: ${DB_IMAGE}
-
-solr-retag:
-  extends:
-    - .retag
-  variables:
-    IMAGE_NAME: ${SOLR_IMAGE}
-
-solr-init-retag:
-  extends:
-    - .retag
-  variables:
-    IMAGE_NAME: ${SOLR_INIT_IMAGE}
-
 remote-docker:
   stage: deploy
   environment: $CI_COMMIT_REF_NAME
@@ -266,6 +151,8 @@ manual-remote-docker:
   stage: manual-deploy
   environment: $CI_COMMIT_REF_NAME
   image: docker.io/docker:24.0
+  only:
+    - branches
   when: manual
   rules:
     - if: $CI_PIPELINE_SOURCE == "web"
