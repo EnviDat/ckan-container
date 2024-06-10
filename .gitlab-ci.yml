@@ -242,8 +242,8 @@ remote-docker:
 #      when: manual
     - if: $CI_PIPELINE_SOURCE == "web"
       when: manual
-  only:
-    - branches
+#  only:
+#    - branches
   variables:
     DOCKER_HOST: "ssh://$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME"
   before_script:
