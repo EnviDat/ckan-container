@@ -3,6 +3,7 @@ stages:
   - scan
   - package
   - deploy
+  - manual-deploy
   - release
 
 variables:
@@ -262,9 +263,13 @@ remote-docker:
         up --detach --force-recreate
 
 manual-remote-docker:
+  stage: manual-deploy
   environment: $CI_COMMIT_REF_NAME
   image: docker.io/docker:24.0
   when: manual
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual
   variables:
     DOCKER_HOST: "ssh://$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME"
   before_script:
