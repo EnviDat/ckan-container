@@ -31,7 +31,7 @@ set-vars:
   script:
     - cat .env >> build.env
     - source build.env
-    - echo "APP_NAME=ckan-${CI_COMMIT_REF_NAME}" >> build.env
+    - "echo APP_NAME=ckan-${CI_COMMIT_REF_NAME} >> build.env"
     # - echo "NAMESPACE=ckan" >> build.env
     # - echo CHART_VERSION=$(yq '.version' chart/Chart.yaml) >> build.env
     - "echo CKAN_IMAGE=${INTERNAL_REG}/ckan-container/ckan:\
@@ -45,6 +45,7 @@ set-vars:
     - "echo SOLR_INIT_IMAGE=${INTERNAL_REG}/ckan-container/init-solr:\
       ${SOLR_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
     - cat build.env
+    - echo "${CI_COMMIT_REF_NAME}"
   artifacts:
     reports:
       dotenv: build.env
