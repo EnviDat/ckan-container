@@ -26,6 +26,7 @@ services:
       - ckan_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
     networks:
       - ckan-internal
+      - ckan-microservices
     restart: unless-stopped
 
   proxy:
