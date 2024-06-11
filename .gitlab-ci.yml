@@ -177,10 +177,13 @@ manual-remote-docker:
     - echo "$DEPLOY_SSH_KEY" > ~/.ssh/gitlab
     - chmod 400 ~/.ssh/gitlab
     - echo 'IdentityFile ~/.ssh/gitlab' > ~/.ssh/config
+    - echo "going to keyscan on HOST ${$DEPLOY_HOSTNAME}"
     - ssh-keyscan -H $DEPLOY_HOSTNAME >> ~/.ssh/known_hosts
+    - cat ~/.ssh/known_hosts
   script:
+    - USER_DIR=$(echo "/home/$DEPLOY_SSH_USER")
+    - echo "Defined USER_DIR ${USER_DIR}"
     - |
-      USER_DIR=$(echo "/home/$DEPLOY_SSH_USER")
       ssh "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME" "mkdir -p $USER_DIR/config/ckan"
       scp ckan.ini "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME:$USER_DIR/config/ckan/$CI_COMMIT_REF_NAME.ini"
       HOME=$USER_DIR docker compose \
