@@ -177,7 +177,7 @@ manual-remote-docker:
     - echo "$DEPLOY_SSH_KEY" > ~/.ssh/gitlab
     - chmod 400 ~/.ssh/gitlab
     - echo 'IdentityFile ~/.ssh/gitlab' > ~/.ssh/config
-    - echo "going to keyscan on HOST ${$DEPLOY_HOSTNAME}"
+    - echo "going to keyscan on HOST ${DEPLOY_HOSTNAME}"
     - ssh-keyscan -H $DEPLOY_HOSTNAME >> ~/.ssh/known_hosts
     - cat ~/.ssh/known_hosts
   script:
