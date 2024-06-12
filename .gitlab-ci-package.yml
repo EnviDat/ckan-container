@@ -4,8 +4,6 @@
   image: docker.io/regclient/regctl:v0.3-alpine
   variables:
     GIT_STRATEGY: none
-  needs:
-    - set-vars
   before_script:
     - export REG_HOST=${INTERNAL_REG%/*}
     - >
@@ -20,6 +18,7 @@
 
 ckan-retag:
   needs:
+    - set-vars
     - ckan-scan
   extends:
     - .retag
@@ -28,6 +27,7 @@ ckan-retag:
 
 proxy-retag:
   needs:
+    - set-vars
     - proxy-scan
   extends:
     - .retag
@@ -36,6 +36,7 @@ proxy-retag:
 
 db-retag:
   needs:
+    - set-vars
     - db-scan
   extends:
     - .retag
@@ -44,6 +45,7 @@ db-retag:
 
 solr-retag:
   needs:
+    - set-vars
     - solr-scan
   extends:
     - .retag
@@ -52,6 +54,7 @@ solr-retag:
 
 solr-init-retag:
   needs:
+    - set-vars
     - solr-init-scan
   extends:
     - .retag
