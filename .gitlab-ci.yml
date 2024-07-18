@@ -14,15 +14,17 @@ variables:
   ARTIFACT_COMPRESSION_LEVEL: "fast"
   CACHE_COMPRESSION_LEVEL: "fast"
 
-workflow:
+.triggers:
   rules:
+    - if: '$CI_PIPELINE_SOURCE == "pipeline"'
+      when: never
     - if: $CI_COMMIT_REF_NAME == "main"
       when: always
     - if: $CI_COMMIT_REF_NAME == "staging"
       when: always
     - if: $CI_COMMIT_REF_NAME == "dev"
-      when: always
-    - if: $CI_PIPELINE_SOURCE == "web"
+      when: always      
+    - if: '$CI_PIPELINE_SOURCE == "web"'
       when: always
 
 set-vars:
@@ -86,6 +88,7 @@ set-vars:
 
 ckan-build:
   extends:
+    - .triggers
     - .build
   variables:
     IMAGE_NAME: ${CKAN_IMAGE}
@@ -93,6 +96,7 @@ ckan-build:
 
 proxy-build:
   extends:
+    - .triggers
     - .build
   cache:
     key: nginx-config
@@ -105,6 +109,7 @@ proxy-build:
 
 db-build:
   extends:
+    - .triggers
     - .build
   variables:
     IMAGE_NAME: ${DB_IMAGE}
@@ -112,6 +117,7 @@ db-build:
 
 solr-build:
   extends:
+    - .triggers
     - .build
   variables:
     IMAGE_NAME: ${SOLR_IMAGE}
@@ -119,6 +125,7 @@ solr-build:
 
 solr-init-build:
   extends:
+    - .triggers
     - .build
   variables:
     IMAGE_NAME: ${SOLR_INIT_IMAGE}
@@ -128,6 +135,8 @@ remote-docker:
   stage: deploy
   environment: $CI_COMMIT_REF_NAME
   image: docker.io/docker:24.0
+  extends:
+    - .triggers
   only:
     - branches
   needs:
@@ -181,7 +190,10 @@ manual-remote-docker:
   image: docker.io/docker:24.0
   needs:
     - set-vars
-  when: manual
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "pipeline"'
+      when: always
+    - when: manual
   variables:
     DOCKER_HOST: "ssh://$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME"
   before_script:
