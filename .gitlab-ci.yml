@@ -137,8 +137,6 @@ remote-docker:
   image: docker.io/docker:24.0
   extends:
     - .triggers
-  only:
-    - branches
   needs:
     - set-vars
     - ckan-retag
@@ -193,7 +191,7 @@ manual-remote-docker:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "pipeline"'
       when: always
-    - when: manual
+    - when: manual    
   variables:
     DOCKER_HOST: "ssh://$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME"
   before_script:
