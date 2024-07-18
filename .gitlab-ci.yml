@@ -191,7 +191,9 @@ manual-remote-docker:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "pipeline"'
       when: always
-    - when: manual    
+    - when: manual
+  # for manaul jobs add allow_failure so the whole pipeline won't show up as "blocked"
+  allow_failure: true    
   variables:
     DOCKER_HOST: "ssh://$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME"
   before_script:
