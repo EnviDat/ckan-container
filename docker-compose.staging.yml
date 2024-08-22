@@ -1,11 +1,11 @@
-version: "3"
-
 volumes:
   ckan_storage:
   ckan_translations:
   solr_data:
 
 networks:
+  ckan-microservices:
+    name: envidat
   ckan-internal:
     name: ckan-2.9
 
