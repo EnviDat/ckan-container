@@ -137,8 +137,6 @@ remote-docker:
   image: docker.io/docker:24.0
   extends:
     - .triggers
-  only:
-    - branches
   needs:
     - set-vars
     - ckan-retag
