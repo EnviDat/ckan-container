@@ -22,6 +22,7 @@ ckan-retag:
   needs:
     - ckan-scan
   extends:
+    - .triggers
     - .retag
   variables:
     IMAGE_NAME: ${CKAN_IMAGE}
@@ -30,6 +31,7 @@ proxy-retag:
   needs:
     - proxy-scan
   extends:
+    - .triggers
     - .retag
   variables:
     IMAGE_NAME: ${PROXY_IMAGE}
@@ -38,6 +40,7 @@ db-retag:
   needs:
     - db-scan
   extends:
+    - .triggers
     - .retag
   variables:
     IMAGE_NAME: ${DB_IMAGE}
@@ -46,6 +49,7 @@ solr-retag:
   needs:
     - solr-scan
   extends:
+    - .triggers
     - .retag
   variables:
     IMAGE_NAME: ${SOLR_IMAGE}
@@ -54,6 +58,7 @@ solr-init-retag:
   needs:
     - solr-init-scan
   extends:
+    - .triggers
     - .retag
   variables:
     IMAGE_NAME: ${SOLR_INIT_IMAGE}
