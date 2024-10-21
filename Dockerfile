@@ -3,13 +3,11 @@ ARG INTERNAL_REG
 ARG PYTHON_IMG_TAG
 
 
-
 FROM ${EXTERNAL_REG}/debian:bookworm AS certs
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
     && update-ca-certificates
-
 
 
 FROM ${EXTERNAL_REG}/python:${PYTHON_IMG_TAG}-slim-bookworm as base
@@ -38,7 +36,6 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 
-
 FROM base as build
 ARG CKAN_VERSION
 RUN set -ex \
@@ -52,21 +49,49 @@ RUN set -ex \
         libpq-dev \
         libssl-dev \
         libffi-dev \
+        libxml2-dev \
+        libxslt1-dev \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /opt/python
+RUN mkdir -p /opt/python
 COPY requirements-extra.txt .
 # Install CKAN, plus extra deps
+RUN pip install --no-cache-dir --upgrade setuptools==45
+RUN pip install --upgrade zope.interface
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir "ckan[requirements]==$CKAN_VERSION" \
     && pip install --user --no-warn-script-location \
     --no-cache-dir -r ./requirements-extra.txt \
     && rm requirements-extra.txt
-# Install ckanext-scheming (not updated on PyPi)
+# for spatial module
+RUN pip install --user geojson shapely xmltodict flufl.enum
+
 RUN pip install --user --no-warn-script-location \
-    --no-cache-dir git+https://github.com/ckan/ckanext-scheming.git
+    --no-cache-dir git+https://github.com/EnviDat/ckanext-datacite_publication.git
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir git+https://github.com/EnviDat/ckanext-repeating.git
+#RUN pip install --user --no-warn-script-location \
+#    --no-cache-dir git+https://github.com/ckan/ckanext-scheming.git
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir     git+https://github.com/EnviDat/ckanext-composite.git
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir     git+https://github.com/EnviDat/ckanext-cloudstorage.git
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir git+https://github.com/EnviDat/ckanext-package_converter.git
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir    git+https://github.com/EnviDat/ckanext-restricted.git
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir     git+https://github.com/EnviDat/ckanext-passwordless.git
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir     git+https://github.com/ckan/ckanext-spatial.git
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir git+https://github.com/EnviDat/ckanext-oaipmh_repository.git
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir git+https://github.com/EnviDat/ckanext-envidat_theme.git
+#RUN pip install --user --no-warn-script-location \
+#    --no-cache-dir git+https://gitlabext.wsl.ch/EnviDat/ckanext-blind_review.git
 
-
-
+    
 FROM base as runtime
 ARG PYTHON_IMG_TAG
 WORKDIR /opt/ckan
@@ -91,6 +116,7 @@ COPY --from=build \
     /root/.local \
     $CKAN_HOME/.local
 COPY ckan-entrypoint.sh /ckan-entrypoint.sh
+
 COPY wsgi.py config/*.yaml config/*.json $CKAN_CONFIG_DIR/
 # Upgrade pip & add ckan user, permissions
 RUN useradd -r -u 900 -m -c "non-priv user" -d $CKAN_HOME -s /bin/false ckanuser \
@@ -98,7 +124,6 @@ RUN useradd -r -u 900 -m -c "non-priv user" -d $CKAN_HOME -s /bin/false ckanuser
     && mkdir -p $CKAN_HOME $CKAN_STORAGE_PATH/storage/uploads/group \
     && chown -R ckanuser:ckanuser $CKAN_HOME $CKAN_CONFIG_DIR
 ENTRYPOINT ["/ckan-entrypoint.sh"]
-
 
 
 FROM runtime as debug
@@ -111,7 +136,6 @@ CMD ["python", "-m", "debugpy", "--listen", "0.0.0.0:5678", \
     "/usr/lib/ckan/.local/bin/ckan", "run", "--host", "0.0.0.0", \
     "--passthrough-errors"]
     # "--disable-debugger"]
-
 
 
 FROM runtime as prod

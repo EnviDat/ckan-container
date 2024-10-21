@@ -1,13 +1,17 @@
 # WSGI server
 gunicorn==21.2.0
+boto3==1.20.26
 
 # Plugins
 ## Latest scheming on pypi release Nov 2022
 ckanext-hierarchy==1.2.0
-ckanext-passwordless-api==1.1.8
-ckanext-restricted-api==2.0.6
-ckanext-cloudstorage-api==0.2.0
+#ckanext-passwordless-api==1.1.8
+ckanext-passwordless-api==1.1.1
+ckanext-scheming==2.1.0
+#ckanext-restricted-api==2.0.6
+#ckanext-cloudstorage-api==0.2.0
 ckanext-envidat-validators==0.1.4
+#ckanext-geoview==0.2.0
 
 # # Opentelemetry
 # opentelemetry-sdk==1.15.0
