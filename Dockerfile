@@ -3,14 +3,14 @@ ARG INTERNAL_REG
 ARG PYTHON_IMG_TAG
 
 
-FROM ${EXTERNAL_REG}/debian:bookworm AS certs
+FROM ${EXTERNAL_REG}/debian:bullseye  AS certs
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
     && update-ca-certificates
 
 
-FROM ${EXTERNAL_REG}/python:${PYTHON_IMG_TAG}-slim-bookworm as base
+FROM ${EXTERNAL_REG}/python:${PYTHON_IMG_TAG}-slim-bullseye  as base
 ARG PYTHON_IMG_TAG
 ARG CKAN_VERSION
 ARG MAINTAINER
@@ -70,8 +70,8 @@ RUN pip install --user --no-warn-script-location \
     --no-cache-dir git+https://github.com/EnviDat/ckanext-datacite_publication.git
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir git+https://github.com/EnviDat/ckanext-repeating.git
-#RUN pip install --user --no-warn-script-location \
-#    --no-cache-dir git+https://github.com/ckan/ckanext-scheming.git
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir git+https://github.com/ckan/ckanext-scheming.git
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir     git+https://github.com/EnviDat/ckanext-composite.git
 RUN pip install --user --no-warn-script-location \
@@ -86,6 +86,8 @@ RUN pip install --user --no-warn-script-location \
     --no-cache-dir     git+https://github.com/ckan/ckanext-spatial.git
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir git+https://github.com/EnviDat/ckanext-oaipmh_repository.git
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir git+https://github.com/ckan/ckanext-hierarchy.git
 RUN pip install --user --no-warn-script-location \
     --no-cache-dir git+https://github.com/EnviDat/ckanext-envidat_theme.git
 #RUN pip install --user --no-warn-script-location \

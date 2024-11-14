@@ -33,8 +33,6 @@ services:
       - ckan_storage:/opt/ckan/data
       - ./config/ckan.ini:/opt/ckan/ckan.ini
       - ./config/who.ini:/opt/ckan/who.ini
-      - ./config/envidat_schema.yaml:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckanext/scheming/schemas/envidat_schema.yaml
-      - ./config/hierarchy_org.yaml:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckanext/scheming/schemas/hierarchy_org.yaml
       - ckan_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
     networks:
       - ckan-internal
@@ -42,12 +40,21 @@ services:
 
   proxy:
     container_name: ckan_2.9_proxy
-    image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-main"
+    #image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-main"
+    build:
+      context: ./nginx
+      args:
+        - EXTERNAL_REG=${EXTERNAL_REG}
+        - NGINX_IMG_TAG=${NGINX_IMG_TAG}
+        - MAINTAINER=${MAINTAINER}
+      dockerfile: ./Dockerfile
     depends_on:
       - ckan
     environment:
       - CKAN_HOST=ckan:5000
       - AUTH_COOKIE_NAME=envidat
+      - FRONTEND=http://envidat-frontend
+      - DOI_HOST=doi_proxy_main
     ports:
       - "8080:80"
     networks:
