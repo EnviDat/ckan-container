@@ -10,20 +10,6 @@ upstream doiapi {
     server ${DOI_HOST} max_fails=1 fail_timeout=5s;
     keepalive 32;
 }
-upstream convertersapi {
-    server ${CONVERTERS_HOST} max_fails=1 fail_timeout=5s;
-    keepalive 32;
-}
-
-upstream doiapi {
-    server ${DOI_HOST} max_fails=1 fail_timeout=5s;
-    keepalive 32;
-}
-
-upstream convapi {
-    server ${CONVERTERS_HOST} max_fails=1 fail_timeout=5s;
-    keepalive 32;
-}
 
 server {
 
@@ -36,16 +22,6 @@ server {
     # rewrite ^/(.*)/$ /$1 permanent;
 
     # Response headers
-<<<<<<< HEAD
-    #add_header 'Access-Control-Allow-Origin' ${API_ROOT}:8990;
-    #add_header 'Content-Security-Policy' $upgrade_policy;
-    #add_header 'Access-Control-Allow-Credentials' 'true';
-    #add_header 'Access-Control-Allow-Methods' 'PUT,POST,GET,DELETE,PATCH,OPTIONS';
-    # For opentelemetry   
-    #add_header 'Access-Control-Allow-Headers' 'traceparent,tracestate';
-    
-    #include service_*.conf;
-=======
     # the below header is required to avoid CORS issues from the extensions
     #add_header 'Access-Control-Allow-Origin' ${FRONTEND};
     add_header 'Content-Security-Policy' $upgrade_policy;
@@ -53,7 +29,6 @@ server {
     # For opentelemetry
     add_header 'Access-Control-Allow-Headers' 'traceparent,tracestate';
 
->>>>>>> b6bb49f (commits for a local dev environment without excess proxies)
     location / {
         #add_header 'Access-Control-Allow-Origin' ${API_ROOT}:8990;
         add_header 'Content-Security-Policy' $upgrade_policy;
@@ -96,37 +71,14 @@ server {
 
         # In emergency comment out line to force caching
         #proxy_ignore_headers X-Accel-Expires Expires Cache-Control;
-<<<<<<< HEAD
-=======
+
     }
+    
     location /doi-api/ {
         add_header 'Access-Control-Allow-Origin' ${FRONTEND};
         proxy_pass http://doiapi/;
 
         # Add cookie content to Authorization request header
         proxy_set_header 'Authorization' $cookie_${AUTH_COOKIE_NAME};
-
-    }
-    location /converters-api/ {
-        add_header 'Access-Control-Allow-Origin' ${FRONTEND};
-        proxy_pass http://convapi/;
-
-    }
->>>>>>> b6bb49f (commits for a local dev environment without excess proxies)
-
-    }
-    location /doi-api/ {
-        add_header 'Access-Control-Allow-Origin' ${API_ROOT}:8990;
-        proxy_pass http://doiapi/;
-
-        # Add cookie content to Authorization request header
-        proxy_set_header 'Authorization' $cookie_${AUTH_COOKIE_NAME};
-    }
-    location /converters-api/ {
-        add_header 'Access-Control-Allow-Origin' ${API_ROOT}:8990;
-        proxy_pass http://convertersapi/;
-
-        # Add cookie content to Authorization request header
-        #proxy_set_header 'Authorization' $cookie_${AUTH_COOKIE_NAME};
     }
 }
