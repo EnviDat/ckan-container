@@ -55,15 +55,21 @@ RUN set -ex \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /opt/python
 COPY requirements-extra.txt .
-# Install CKAN, plus extra deps
-RUN pip install --user --no-warn-script-location \
-    --no-cache-dir "ckan[requirements]==$CKAN_VERSION" \
-    && pip install --user --no-warn-script-location \
-    --no-cache-dir -r ./requirements-extra.txt \
-    && rm requirements-extra.txt
+# Install CKAN Core
+RUN pip install --user --no-warn-script-location --no-cache-dir "ckan[requirements]==$CKAN_VERSION" \
+    && echo "CKAN core installation finished" \
+# Install CKAN extensions
+    && pip install --user --no-warn-script-location --no-cache-dir -r ./requirements-extra.txt \
+    && echo "CKAN extensions installation from requirements-extra.txt finished" \
+# remove extension requirements file
+    && rm requirements-extra.txt && echo "removed requirements-extra.txt"
 # Install ckanext-scheming (not updated on PyPi)
 RUN pip install --user --no-warn-script-location \
-    --no-cache-dir git+https://github.com/ckan/ckanext-scheming.git
+    --no-cache-dir git+https://github.com/ckan/ckanext-scheming.git  \
+    && echo "CKAN-scheming installation from git-repo finished"
+# Install ckanext-blind_review (not on PyPi)
+#RUN pip install --user --no-warn-script-location \
+#    --no-cache-dir git+https://gitlabext.wsl.ch/EnviDat/ckanext-blind_review.git
 
 
 

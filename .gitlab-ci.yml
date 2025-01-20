@@ -1,23 +1,30 @@
+include:
+  - local: '.gitlab-ci-scan.yml'
+  - local: '.gitlab-ci-package.yml'
+
 stages:
   - build
   - scan
   - package
   - deploy
   - release
+  - manual-deploy
 
 variables:
   ARTIFACT_COMPRESSION_LEVEL: "fast"
   CACHE_COMPRESSION_LEVEL: "fast"
 
-workflow:
+.triggers:
   rules:
+    - if: '$CI_PIPELINE_SOURCE == "pipeline"'
+      when: never
     - if: $CI_COMMIT_REF_NAME == "main"
       when: always
     - if: $CI_COMMIT_REF_NAME == "staging"
       when: always
     - if: $CI_COMMIT_REF_NAME == "dev"
-      when: always
-    - if: $CI_PIPELINE_SOURCE == "web"
+      when: always      
+    - if: '$CI_PIPELINE_SOURCE == "web"'
       when: always
 
 set-vars:
@@ -30,7 +37,7 @@ set-vars:
   script:
     - cat .env >> build.env
     - source build.env
-    - echo "APP_NAME=ckan-${CI_COMMIT_REF_NAME}" >> build.env
+    - "echo APP_NAME=ckan-${CI_COMMIT_REF_NAME} >> build.env"
     # - echo "NAMESPACE=ckan" >> build.env
     # - echo CHART_VERSION=$(yq '.version' chart/Chart.yaml) >> build.env
     - "echo CKAN_IMAGE=${INTERNAL_REG}/ckan-container/ckan:\
@@ -43,12 +50,16 @@ set-vars:
       ${SOLR_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
     - "echo SOLR_INIT_IMAGE=${INTERNAL_REG}/ckan-container/init-solr:\
       ${SOLR_IMG_TAG}-${CI_COMMIT_REF_NAME} >> build.env"
+    - echo "Printing build.env"
+    - cat build.env
   artifacts:
     reports:
       dotenv: build.env
 
 .build:
   stage: build
+  needs:
+    - set-vars
   image:
     name: gcr.io/kaniko-project/executor:v1.9.1-debug
     entrypoint: [""]
@@ -59,6 +70,7 @@ set-vars:
       "%s:%s" "${IMAGE_REGISTRY_USER}" "${IMAGE_REGISTRY_PASS}"
       | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
   script:
+    - echo "Build image  ${IMAGE_NAME}"
     - >
       /kaniko/executor
       --force
@@ -76,6 +88,7 @@ set-vars:
 
 ckan-build:
   extends:
+    - .triggers
     - .build
   variables:
     IMAGE_NAME: ${CKAN_IMAGE}
@@ -83,6 +96,7 @@ ckan-build:
 
 proxy-build:
   extends:
+    - .triggers
     - .build
   cache:
     key: nginx-config
@@ -95,6 +109,7 @@ proxy-build:
 
 db-build:
   extends:
+    - .triggers
     - .build
   variables:
     IMAGE_NAME: ${DB_IMAGE}
@@ -102,6 +117,7 @@ db-build:
 
 solr-build:
   extends:
+    - .triggers
     - .build
   variables:
     IMAGE_NAME: ${SOLR_IMAGE}
@@ -109,136 +125,75 @@ solr-build:
 
 solr-init-build:
   extends:
+    - .triggers
     - .build
   variables:
     IMAGE_NAME: ${SOLR_INIT_IMAGE}
     CONTEXT_DIR: "${CI_PROJECT_DIR}/init_solr"
 
-.scan:
-  stage: scan
-  image:
-    name: docker.io/aquasec/trivy:0.23.0
-    entrypoint: [""]
-  variables:
-    GIT_STRATEGY: none
-  script:
-    - trivy --version
-    - time trivy image --clear-cache
-    - time trivy --cache-dir .trivycache/ image --download-db-only --no-progress
-    # Create report artifact
-    - >
-      time trivy --cache-dir .trivycache/ image --exit-code 0 --ignore-unfixed
-      --no-progress --format template --template "@/contrib/gitlab.tpl"
-      --output "$CI_PROJECT_DIR/$SHORT_NAME-imgscan.json"
-      "${IMAGE_NAME}-unverified"
-    # Print full report
-    - >
-      time trivy --cache-dir .trivycache/ image --exit-code 0 --ignore-unfixed
-      --no-progress "${IMAGE_NAME}"-unverified
-    # Fail on critical vulnerabilities
-    - >
-      time trivy --cache-dir .trivycache/ image --exit-code 1 --ignore-unfixed
-      --severity CRITICAL --no-progress "${IMAGE_NAME}"-unverified
-  cache:
-    key: trivy-cache
-    paths:
-      - .trivycache/
-    policy: pull-push
-  artifacts:
-    when: always
-    reports:
-      container_scanning: $SHORT_NAME-imgscan.json
-
-ckan-scan:
-  extends:
-    - .scan
-  variables:
-    IMAGE_NAME: ${CKAN_IMAGE}
-    SHORT_NAME: "ckan"
-  allow_failure: true
-
-proxy-scan:
-  extends:
-    - .scan
-  variables:
-    IMAGE_NAME: ${PROXY_IMAGE}
-    SHORT_NAME: "proxy"
-
-db-scan:
-  extends:
-    - .scan
-  variables:
-    IMAGE_NAME: ${DB_IMAGE}
-    SHORT_NAME: "postgresql"
-
-solr-scan:
-  extends:
-    - .scan
-  variables:
-    IMAGE_NAME: ${SOLR_IMAGE}
-    SHORT_NAME: "solr"
-  allow_failure: true
-
-solr-init-scan:
-  extends:
-    - .scan
-  variables:
-    IMAGE_NAME: ${SOLR_INIT_IMAGE}
-    SHORT_NAME: "init_solr"
-
-.retag:
-  stage: package
-  image: docker.io/regclient/regctl:v0.3-alpine
-  variables:
-    GIT_STRATEGY: none
-  before_script:
-    - export REG_HOST=${INTERNAL_REG%/*}
-    - >
-      echo "{\"hosts\":{\"${REG_HOST}\":{\"tls\":\"enabled\",\"hostname\":
-      \"${REG_HOST}\",\"user\":\"${IMAGE_REGISTRY_USER}\",\"pass\":
-      \"${IMAGE_REGISTRY_PASS}\"}}}" >> /home/appuser/.regctl/config.json
-  script:
-    - >
-      regctl --verbosity debug image copy
-      "${IMAGE_NAME}-unverified" "${IMAGE_NAME}"
-    - regctl --verbosity debug tag delete "${IMAGE_NAME}-unverified"
-
-ckan-retag:
-  extends:
-    - .retag
-  variables:
-    IMAGE_NAME: ${CKAN_IMAGE}
-
-proxy-retag:
-  extends:
-    - .retag
-  variables:
-    IMAGE_NAME: ${PROXY_IMAGE}
-
-db-retag:
-  extends:
-    - .retag
-  variables:
-    IMAGE_NAME: ${DB_IMAGE}
-
-solr-retag:
-  extends:
-    - .retag
-  variables:
-    IMAGE_NAME: ${SOLR_IMAGE}
-
-solr-init-retag:
-  extends:
-    - .retag
-  variables:
-    IMAGE_NAME: ${SOLR_INIT_IMAGE}
-
 remote-docker:
   stage: deploy
   environment: $CI_COMMIT_REF_NAME
   image: docker.io/docker:24.0
-  only:
-    - branches
+  extends:
+    - .triggers
+  needs:
+    - set-vars
+    - ckan-retag
+    - proxy-retag
+    - db-retag
+    - solr-retag
+    - solr-init-retag
+  variables:
+    DOCKER_HOST: "ssh://$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME"
+  before_script:
+    - echo "***The app image is   ${IMAGE_NAME}"
+    - echo "***The app version is  ${CKAN_VERSION}"
+    - echo "Going to docker remote ($DEPLOY_HOSTNAME) with file docker-compose.$CI_COMMIT_REF_NAME.yml"
+    - echo "$CKAN_INI" > ckan.ini
+    - echo "$DB_ENV" > .db.env
+    - echo "$SOLR_ENV" > .solr.env
+    - echo "Adding SSH Key"
+    - mkdir -p ~/.ssh
+    - echo "$DEPLOY_SSH_KEY" > ~/.ssh/gitlab
+    - chmod 400 ~/.ssh/gitlab
+    - echo 'IdentityFile ~/.ssh/gitlab' > ~/.ssh/config
+    - echo "going to keyscan on HOST ${DEPLOY_HOSTNAME}"
+    - ssh-keyscan -H $DEPLOY_HOSTNAME >> ~/.ssh/known_hosts
+  #    - cat ~/.ssh/known_hosts
+  script:
+    - |
+      USER_DIR=$(echo "/home/$DEPLOY_SSH_USER")
+      ssh "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME" "mkdir -p $USER_DIR/config/ckan"
+      scp ckan.ini "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME:$USER_DIR/config/ckan/$CI_COMMIT_REF_NAME.ini"
+    - HOME=$USER_DIR
+    # use docker compose create to recreate the container and force pulling the latest image
+    # to avoid using the local cache
+    - |
+      docker compose --project-name="$APP_NAME" \
+        --file "docker-compose.$CI_COMMIT_REF_NAME.yml" \
+        create --force-recreate --pull="always"
+    # use docker compose up to start the service on the remote machine
+    - |
+      docker compose --project-name="$APP_NAME" \
+        --file "docker-compose.$CI_COMMIT_REF_NAME.yml" \
+        up --detach
+
+# Job for manual deploying of a docker-compose file, to use it's
+# docker images, make sure before you run it that the images referenced
+# in the docker-compose.$CI_COMMIT_REF_NAME.yml exist!
+manual-remote-docker:
+  stage: manual-deploy
+  environment: $CI_COMMIT_REF_NAME
+  image: docker.io/docker:24.0
+  needs:
+    - set-vars
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "pipeline"'
+      when: always
+    - when: manual
+  # for manaul jobs add allow_failure so the whole pipeline won't show up as "blocked"
+  allow_failure: true    
   variables:
     DOCKER_HOST: "ssh://$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME"
   before_script:
@@ -250,16 +205,30 @@ remote-docker:
     - echo "$DEPLOY_SSH_KEY" > ~/.ssh/gitlab
     - chmod 400 ~/.ssh/gitlab
     - echo 'IdentityFile ~/.ssh/gitlab' > ~/.ssh/config
+    - echo "going to keyscan on HOST ${DEPLOY_HOSTNAME}"
     - ssh-keyscan -H $DEPLOY_HOSTNAME >> ~/.ssh/known_hosts
+#    - cat ~/.ssh/known_hosts
   script:
+    - USER_DIR=$(echo "/home/$DEPLOY_SSH_USER")
+    - echo "Defined USER_DIR ${USER_DIR}"
+    - echo "Going to create the config/ckan directory for the ckan.ini file"
+    - ssh "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME" "mkdir -p $USER_DIR/config/ckan"
+    - ls -la
+    - echo "Going to copy the local ckan.ini file to ${USER_DIR}/config/ckan/${CI_COMMIT_REF_NAME}.ini"
+    - scp ckan.ini "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME:$USER_DIR/config/ckan/$CI_COMMIT_REF_NAME.ini"
+    - HOME=$USER_DIR
+    - echo "Going to remotely start the docker-compose.${CI_COMMIT_REF_NAME}.yml on ${DEPLOY_SSH_USER}@${DEPLOY_HOSTNAME}"
+    # use docker compose create to recreate the container and force pulling the latest image
+    # to avoid using the local cache
     - |
-      USER_DIR=$(echo "/home/$DEPLOY_SSH_USER")
-      ssh "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME" "mkdir -p $USER_DIR/config/ckan"
-      scp ckan.ini "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME:$USER_DIR/config/ckan/$CI_COMMIT_REF_NAME.ini"
-      HOME=$USER_DIR docker compose \
-        --project-name="$APP_NAME" \
+      docker compose --project-name="$APP_NAME" \
         --file "docker-compose.$CI_COMMIT_REF_NAME.yml" \
-        up --detach --force-recreate
+        create --force-recreate --pull="always"
+    # use docker compose up to start the service on the remote machine
+    - |
+      docker compose --project-name="$APP_NAME" \
+        --file "docker-compose.$CI_COMMIT_REF_NAME.yml" \
+        up --detach
 
 build-binary:
   stage: release

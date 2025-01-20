@@ -1,66 +1,62 @@
 version: "3"
 
 volumes:
-  ckan_stag_storage:
-  ckan_stag_translations:
+  ckan_storage:
+  ckan_translations:
+  solr_data:
 
 networks:
+  ckan-microservices:
+    name: envidat
   ckan-internal:
-    name: ckan-stag
+    name: ckan-2.9
 
 services:
   ckan:
-    container_name: ckan_stag
-    image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-main"
+    container_name: ckan_2.9
+    image: "${INTERNAL_REG}/ckan-container/ckan:2.9-backup"
     depends_on:
-      - db
       - solr
       - redis
     environment:
       CKAN_INI: "/opt/ckan/ckan.ini"
     volumes:
-      - ckan_stag_storage:/opt/ckan/data
+      - ckan_storage:/opt/ckan/data
       - $HOME/config/ckan/staging.ini:/opt/ckan/ckan.ini
-      - ckan_stag_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
+      - ckan_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
     networks:
       - ckan-internal
+      - ckan-microservices
     restart: unless-stopped
 
   proxy:
-    container_name: ckan_stag_proxy
+    container_name: ckan_2.9_proxy
     image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-main"
     depends_on:
       - ckan
     environment:
       - CKAN_HOST=ckan:5000
-      - AUTH_COOKIE_NAME=envidat-stag
+      - AUTH_COOKIE_NAME=envidat
     ports:
-      - "8082:80"
+      - "8080:80"
     networks:
       - ckan-internal
-    restart: unless-stopped
-
-  db:
-    container_name: ckan_stag_db
-    image: "${INTERNAL_REG}/ckan-container/db:${POSTGRES_IMG_TAG}-main"
-    env_file:
-      - .db.env
-    networks:
-      - ckan-internal
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres"]
     restart: unless-stopped
 
   solr:
-    container_name: ckan_stag_solr
-    image: "${INTERNAL_REG}/ckan-container/solr:${SOLR_IMG_TAG}-main"
+    container_name: ckan_2.9_solr
+    image: "${INTERNAL_REG}/ckan-container/solr:8.11-v2.9"
+    volumes:
+      - solr_data:/var/solr/data
     networks:
       - ckan-internal
+    ports:
+      - "8090:8983"
     restart: unless-stopped
 
   init-solr:
-    container_name: ckan_stag_init_solr
-    image: "${INTERNAL_REG}/ckan-container/init-solr:${SOLR_IMG_TAG}-main"
+    container_name: ckan_2.9_init_solr
+    image: "${INTERNAL_REG}/ckan-container/init-solr:8.11-v2.9"
     env_file:
       - .solr.env
     environment:
@@ -71,8 +67,9 @@ services:
       - solr
 
   redis:
-    container_name: ckan_stag_redis
+    container_name: ckan_2.9_redis
     image: redis:${REDIS_IMG_TAG}
     networks:
       - ckan-internal
     restart: unless-stopped
+
