@@ -32,7 +32,6 @@ services:
     volumes:
       - ckan_storage:/opt/ckan/data
       - ./config/ckan.ini:/opt/ckan/ckan.ini
-      - ./config/who.ini:/opt/ckan/who.ini
       - ckan_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
     networks:
       - ckan-internal
