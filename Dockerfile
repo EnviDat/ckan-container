@@ -3,9 +3,9 @@ ARG INTERNAL_REG
 ARG PYTHON_IMG_TAG
 
 
+FROM ${EXTERNAL_REG}/debian:bullseye AS certs
 RUN echo "**** Step 1: updating debian:bullseye certs"
 
-FROM ${EXTERNAL_REG}/debian:bullseye AS certs
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
