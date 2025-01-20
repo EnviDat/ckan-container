@@ -1,5 +1,3 @@
-version: "3"
-
 volumes:
   ckan_storage:
   ckan_translations:
@@ -8,19 +6,33 @@ volumes:
 networks:
   ckan-internal:
     name: ckan-2.9
+  envidat:
+    name: envidat
 
 services:
   ckan:
     container_name: ckan_2.9
-    image: "${INTERNAL_REG}/ckan-container/ckan:2.9-backup"
+    #image: "${INTERNAL_REG}/ckan-container/ckan:2.9-backup"
+    build:
+      context: ./
+      args:
+        - EXTERNAL_REG=${EXTERNAL_REG}
+        - INTERNAL_REG=${INTERNAL_REG}
+        - PYTHON_IMG_TAG=${PYTHON_IMG_TAG}
+        - CKAN_VERSION=${CKAN_VERSION}
+        - MAINTAINER=${MAINTAINER}
+      dockerfile: ./Dockerfile
     depends_on:
       - solr
       - redis
     environment:
       CKAN_INI: "/opt/ckan/ckan.ini"
+    #entrypoint: /bin/sh  # Override to run a shell instead of the application
+    #tty: true  # Keeps the container running for interactive shell access
     volumes:
       - ckan_storage:/opt/ckan/data
-      - $HOME/config/ckan/2.9-backup.ini:/opt/ckan/ckan.ini
+      - ./config/ckan.ini:/opt/ckan/ckan.ini
+      - ./config/who.ini:/opt/ckan/who.ini
       - ckan_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
     networks:
       - ckan-internal
@@ -28,12 +40,21 @@ services:
 
   proxy:
     container_name: ckan_2.9_proxy
-    image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-main"
+    #image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-main"
+    build:
+      context: ./nginx
+      args:
+        - EXTERNAL_REG=${EXTERNAL_REG}
+        - NGINX_IMG_TAG=${NGINX_IMG_TAG}
+        - MAINTAINER=${MAINTAINER}
+      dockerfile: ./Dockerfile
     depends_on:
       - ckan
     environment:
       - CKAN_HOST=ckan:5000
       - AUTH_COOKIE_NAME=envidat
+      - FRONTEND=http://envidat-frontend
+      - DOI_HOST=doi_proxy_main
     ports:
       - "8080:80"
     networks:

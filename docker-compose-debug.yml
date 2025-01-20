@@ -1,5 +1,3 @@
-version: "3"
-
 volumes:
   ckan_storage:
   ckan_translations:
@@ -9,22 +7,22 @@ volumes:
 networks:
   ckan-internal:
     name: ckan-local
-  micro-net:
-    external: true
+  envidat:
+    name: envidat
 
 services:
   ckan:
     container_name: ckan
     image: "${INTERNAL_REG}/ckan-container/ckan:2.9-backup"
     build:
-      context: .
-      target: debug
+      context: ./ckan-container
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
         - INTERNAL_REG=${INTERNAL_REG}
         - PYTHON_IMG_TAG=${PYTHON_IMG_TAG}
         - CKAN_VERSION=${CKAN_VERSION}
         - MAINTAINER=${MAINTAINER}
+      dockerfile: ./Dockerfile
     extra_hosts:
       mail.wsl.ch: 10.30.1.224
     depends_on:
@@ -38,19 +36,6 @@ services:
       - ckan_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
     networks:
       - ckan-internal
-    restart: unless-stopped
-   
-  doi_api:
-    container_name: doi_api_dev
-    image: "${INTERNAL_REG}/doi-publishing-api:${APP_VERSION}-dev"
-    env_file:
-      - .doi.env
-      #- .db.env
-      #- secret/runtime.env
-    environment:
-      IS_DOCKER: "True"
-    networks:
-      - micro-net
     restart: unless-stopped
 
   proxy:
@@ -70,14 +55,14 @@ services:
       - CKAN_HOST=ckan:5000
       - DOI_HOST=doi_api:8000
       - CONVERTERS_HOST=converters_api:8000
+      - FRONTEND=http://localhost:8990
     env_file:
       - .env
-      - .doi.env
     ports:
       - "8989:80"
     networks:
       - ckan-internal
-      - micro-net
+      - envidat
     restart: unless-stopped
 
   solr:
@@ -105,4 +90,3 @@ services:
     networks:
       - ckan-internal
     restart: unless-stopped
-
