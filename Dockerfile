@@ -3,14 +3,16 @@ ARG INTERNAL_REG
 ARG PYTHON_IMG_TAG
 
 
-FROM ${EXTERNAL_REG}/debian:bullseye  AS certs
+
+FROM ${EXTERNAL_REG}/debian:bullseye AS certs
 RUN apt-get update && apt-get install -y --no-install-recommends \
         ca-certificates \
     && rm -rf /var/lib/apt/lists/* \
     && update-ca-certificates
 
 
-FROM ${EXTERNAL_REG}/python:${PYTHON_IMG_TAG}-slim-bullseye  as base
+
+FROM ${EXTERNAL_REG}/python:${PYTHON_IMG_TAG}-slim-bullseye as base
 ARG PYTHON_IMG_TAG
 ARG CKAN_VERSION
 ARG MAINTAINER
@@ -36,8 +38,50 @@ ENV LANGUAGE en_US:en
 ENV LC_ALL en_US.UTF-8
 
 
-FROM base as build
+
+FROM base as extract-deps
+RUN set -ex \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive apt-get install \
+    -y --no-install-recommends \
+        git \
+    && rm -rf /var/lib/apt/lists/*
+# Clone repos
+WORKDIR /opt/repos
 ARG CKAN_VERSION
+RUN git clone -b "$CKAN_VERSION" --depth 1 \
+    https://github.com/EnviDat/ckan-forked.git
+# Merge requirements to single file
+WORKDIR /opt/requirements
+RUN cp /opt/repos/ckan-forked/requirements.txt ./requirements-ckan.txt
+# Add flask-debugtoolbar to enable debug mode
+RUN grep flask-debugtoolbar \
+      < /opt/repos/ckan-forked/dev-requirements.txt \
+      >> ./requirements-ckan.txt
+# Add extra deps
+COPY requirements-extra.txt .
+RUN cat ./requirements-extra.txt \
+      >> ./requirements-ckan.txt
+# Import to PDM
+RUN pip install --no-cache-dir --upgrade pip \
+   && pip install git+https://github.com/EnviDat/ckan-forked.git@2.9
+RUN sed -i 's/psycopg2==2.9.3/psycopg2-binary==2.9.3/' ./requirements-ckan.txt
+RUN pip install -r requirements-ckan.txt
+#    && pip install --no-cache-dir pdm==2.6.0 \
+#    && pdm config python.use_venv false
+# RUN pdm init --non-interactive \
+#    && pdm import -f requirements \
+#       ./requirements-ckan.txt
+# Add ckan-forked to requirements & lock / check conflicts
+# RUN pdm add --no-sync \
+#    "git+https://github.com/EnviDat/ckan-forked.git@$CKAN_VERSION"
+# Export to single requirements file
+# RUN pdm export --without-hashes --prod > requirements.txt
+RUN pip freeze > requirements.txt
+
+
+
+FROM base as build
 RUN set -ex \
     && apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install \
@@ -47,53 +91,28 @@ RUN set -ex \
         gcc \
         python3-dev \
         libpq-dev \
+        libxml2-dev \
+        libxslt-dev \
+        libgeos-dev \
         libssl-dev \
         libffi-dev \
-        libxml2-dev \
-        libxslt1-dev \
     && rm -rf /var/lib/apt/lists/*
 WORKDIR /opt/python
-RUN mkdir -p /opt/python
-COPY requirements-extra.txt .
-# Install CKAN, plus extra deps
-RUN pip install --no-cache-dir --upgrade setuptools==45
-RUN pip install --upgrade zope.interface
+COPY --from=extract-deps \
+    /opt/requirements/requirements.txt .
+# Install deps, including CKAN
 RUN pip install --user --no-warn-script-location \
-    --no-cache-dir "ckan[requirements]==$CKAN_VERSION" \
-    && pip install --user --no-warn-script-location \
-    --no-cache-dir -r ./requirements-extra.txt \
-    && rm requirements-extra.txt
-# for spatial module
-RUN pip install --user geojson shapely xmltodict flufl.enum
+    --no-cache-dir -r ./requirements.txt
+COPY envidat_extensions.* ./
+# Plugin sub-dependencies
+RUN chmod +x /opt/python/envidat_extensions.sh \
+    && /opt/python/envidat_extensions.sh
+# Install plugins
+RUN pip install --user --no-warn-script-location \
+    --no-cache-dir -r ./envidat_extensions.txt
 
-RUN pip install --user --no-warn-script-location \
-    --no-cache-dir git+https://github.com/EnviDat/ckanext-datacite_publication.git
-RUN pip install --user --no-warn-script-location \
-    --no-cache-dir git+https://github.com/EnviDat/ckanext-repeating.git
-RUN pip install --user --no-warn-script-location \
-    --no-cache-dir git+https://github.com/ckan/ckanext-scheming.git
-RUN pip install --user --no-warn-script-location \
-    --no-cache-dir     git+https://github.com/EnviDat/ckanext-composite.git
-RUN pip install --user --no-warn-script-location \
-    --no-cache-dir     git+https://github.com/EnviDat/ckanext-cloudstorage.git
-RUN pip install --user --no-warn-script-location \
-    --no-cache-dir git+https://github.com/EnviDat/ckanext-package_converter.git
-RUN pip install --user --no-warn-script-location \
-    --no-cache-dir    git+https://github.com/EnviDat/ckanext-restricted.git
-RUN pip install --user --no-warn-script-location \
-    --no-cache-dir     git+https://github.com/EnviDat/ckanext-passwordless.git
-RUN pip install --user --no-warn-script-location \
-    --no-cache-dir     git+https://github.com/ckan/ckanext-spatial.git
-RUN pip install --user --no-warn-script-location \
-    --no-cache-dir git+https://github.com/EnviDat/ckanext-oaipmh_repository.git
-RUN pip install --user --no-warn-script-location \
-    --no-cache-dir git+https://github.com/ckan/ckanext-hierarchy.git
-RUN pip install --user --no-warn-script-location \
-    --no-cache-dir git+https://github.com/EnviDat/ckanext-envidat_theme.git
-#RUN pip install --user --no-warn-script-location \
-#    --no-cache-dir git+https://gitlabext.wsl.ch/EnviDat/ckanext-blind_review.git
 
-    
+
 FROM base as runtime
 ARG PYTHON_IMG_TAG
 WORKDIR /opt/ckan
@@ -112,32 +131,34 @@ RUN set -ex \
         curl \
         postgresql-client \
         libpq-dev \
+        libgeos-c1v5 \
         libmagic1 \
     && rm -rf /var/lib/apt/lists/*
 COPY --from=build \
     /root/.local \
     $CKAN_HOME/.local
 COPY ckan-entrypoint.sh /ckan-entrypoint.sh
-
-COPY wsgi.py config/*.yaml config/*.json $CKAN_CONFIG_DIR/
-# Upgrade pip & add ckan user, permissions
-RUN useradd -r -u 900 -m -c "non-priv user" -d $CKAN_HOME -s /bin/false ckanuser \
+COPY wsgi.py config/who.ini config/envidat_licenses.json $CKAN_CONFIG_DIR/
+# Upgrade pip & pre-compile deps to .pyc, add ckan user, permissions
+RUN python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)" \
+    && python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)" \
+    && useradd -r -u 900 -m -c "non-priv user" -d $CKAN_HOME -s /bin/false ckanuser \
     && chmod +x /ckan-entrypoint.sh \
     && mkdir -p $CKAN_HOME $CKAN_STORAGE_PATH/storage/uploads/group \
     && chown -R ckanuser:ckanuser $CKAN_HOME $CKAN_CONFIG_DIR
+USER ckanuser
 ENTRYPOINT ["/ckan-entrypoint.sh"]
 
 
+
 FROM runtime as debug
-ARG CKAN_VERSION
-USER ckanuser
-RUN pip install --user --no-cache-dir --no-cache \
-    debugpy==1.6.4  \
-    "ckan[dev]==$CKAN_VERSION"
-CMD ["python", "-m", "debugpy", "--listen", "0.0.0.0:5678", \
-    "/usr/lib/ckan/.local/bin/ckan", "run", "--host", "0.0.0.0", \
-    "--passthrough-errors"]
+RUN pip install --no-cache-dir debugpy==1.6.4 --no-cache
+COPY debug_run.py .
+CMD ["python", "-m", "debugpy", \
+    "--listen", "0.0.0.0:5678", \
+    "debug_run.py", "--", "run", "--host", "0.0.0.0", "--passthrough-errors"]
     # "--disable-debugger"]
+
 
 
 FROM runtime as prod
@@ -146,9 +167,6 @@ FROM runtime as prod
 #         "--workers=2", "--threads=4", "--worker-class=gthread", \
 #         "--worker-tmp-dir=/dev/shm", \
 #         "--log-file=-", "--log-level=debug"]
-# Pre-compile packages to .pyc (init speed gains)
-RUN python -c "import compileall; compileall.compile_path(maxlevels=10, quiet=1)"
-USER ckanuser
 CMD ["gunicorn", "wsgi:application", \
         "--bind", "0.0.0.0:5000", \
         "--workers=2", "--threads=4", "--worker-class=gthread", \
