@@ -40,16 +40,16 @@ services:
       - ckan-internal
     restart: unless-stopped
 
-  db:
-    container_name: ckan_dev_db
-    image: "${INTERNAL_REG}/ckan-container/db:${POSTGRES_IMG_TAG}-dev"
-    env_file:
-      - .db.env
-    networks:
-      - ckan-internal
-    healthcheck:
-      test: ["CMD", "pg_isready", "-U", "postgres"]
-    restart: unless-stopped
+  #db:
+  #  container_name: ckan_dev_db
+  #  image: "${INTERNAL_REG}/ckan-container/db:${POSTGRES_IMG_TAG}-dev"
+  #  env_file:
+  #    - .db.env
+  #  networks:
+  #    - ckan-internal
+  #  healthcheck:
+  #    test: ["CMD", "pg_isready", "-U", "postgres"]
+  #  restart: unless-stopped
 
   solr:
     container_name: ckan_dev_solr
