@@ -24,6 +24,8 @@ COPY --chown=solr:solr *.txt *.xml /var/solr/data/$SOLR_CORE/conf/
 # Add security.json for BasicAuth
 COPY --chown=solr:solr security.json /var/solr/data/security.json
 # Create core.properties & give ownership to user Solr
+RUN echo "**** Check Solr user:"
+RUN echo $SOLR_USER
 RUN echo "name=$SOLR_CORE" > "/var/solr/data/$SOLR_CORE/core.properties" \
     && chown -R "$SOLR_USER:$SOLR_USER" "/var/solr/data/$SOLR_CORE"
 
