@@ -32,7 +32,7 @@ services:
       - ckan
     environment:
       - CKAN_HOST=ckan:5000
-      - AUTH_COOKIE_NAME=envidat-dev
+      - AUTH_COOKIE_NAME=envidat
     ports:
       - "8081:80"
     networks:
