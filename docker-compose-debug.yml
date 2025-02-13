@@ -1,20 +1,21 @@
 volumes:
   ckan_storage:
   ckan_translations:
+  pg_data:
   solr_data:
 
 networks:
   ckan-internal:
-    name: ckan-2.9
+    name: ckan-local
   envidat:
     name: envidat
 
 services:
   ckan:
-    container_name: ckan_2.9
-    #image: "${INTERNAL_REG}/ckan-container/ckan:2.9-backup"
+    container_name: ckan
+    image: "${INTERNAL_REG}/ckan-container/ckan:2.9-backup"
     build:
-      context: ./
+      context: ./ckan-container
       args:
         - EXTERNAL_REG=${EXTERNAL_REG}
         - INTERNAL_REG=${INTERNAL_REG}
@@ -22,23 +23,23 @@ services:
         - CKAN_VERSION=${CKAN_VERSION}
         - MAINTAINER=${MAINTAINER}
       dockerfile: ./Dockerfile
+    extra_hosts:
+      mail.wsl.ch: 10.30.1.224
     depends_on:
       - solr
       - redis
     environment:
       CKAN_INI: "/opt/ckan/ckan.ini"
-    #entrypoint: /bin/sh  # Override to run a shell instead of the application
-    #tty: true  # Keeps the container running for interactive shell access
     volumes:
       - ckan_storage:/opt/ckan/data
-      - ./config/ckan.ini:/opt/ckan/ckan.ini
+      - ./config/ckan.ini:/opt/ckan/ckan.ini 
       - ckan_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
     networks:
       - ckan-internal
     restart: unless-stopped
 
   proxy:
-    container_name: ckan_2.9_proxy
+    container_name: ckan_proxy
     #image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-main"
     build:
       context: ./nginx
@@ -50,30 +51,30 @@ services:
     depends_on:
       - ckan
     environment:
-      - CKAN_HOST=ckan:5000
       - AUTH_COOKIE_NAME=envidat
-      - FRONTEND=http://envidat-frontend
-      - DOI_HOST=doi_proxy_main
+      - CKAN_HOST=ckan:5000
+      - DOI_HOST=doi_api:8000
+      - CONVERTERS_HOST=converters_api:8000
+      - FRONTEND=http://localhost:8990
+    env_file:
+      - .env
     ports:
-      - "8080:80"
+      - "8989:80"
     networks:
       - ckan-internal
+      - envidat
     restart: unless-stopped
 
   solr:
-    container_name: ckan_2.9_solr
-    image: "${INTERNAL_REG}/ckan-container/solr:8.11-v2.9"
-    volumes:
-      - solr_data:/var/solr/data
+    container_name: ckan_dev_solr
+    image: "${INTERNAL_REG}/ckan-container/solr:${SOLR_IMG_TAG}-dev"
     networks:
       - ckan-internal
-    ports:
-      - "8090:8983"
     restart: unless-stopped
 
   init-solr:
-    container_name: ckan_2.9_init_solr
-    image: "${INTERNAL_REG}/ckan-container/init-solr:8.11-v2.9"
+    container_name: ckan_dev_init_solr
+    image: "${INTERNAL_REG}/ckan-container/init-solr:${SOLR_IMG_TAG}-dev"
     env_file:
       - .solr.env
     environment:
@@ -84,7 +85,7 @@ services:
       - solr
 
   redis:
-    container_name: ckan_2.9_redis
+    container_name: ckan_redis
     image: redis:${REDIS_IMG_TAG}
     networks:
       - ckan-internal
