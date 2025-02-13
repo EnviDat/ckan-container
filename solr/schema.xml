@@ -69,13 +69,13 @@ attribute with the form `ckan-X.Y` -->
     </fieldType>
 
     <!-- spatial search field type (ckanext-spatial) -->
-    <!--fieldType name="location_rpt"   class="solr.SpatialRecursivePrefixTreeFieldType"
+    <fieldType name="location_rpt"   class="solr.SpatialRecursivePrefixTreeFieldType"
         spatialContextFactory="JTS"
         autoIndex="true"
         validationRule="repairBuffer0"
         distErrPct="0.025"
         maxDistErr="0.001"
-        distanceUnits="kilometers" /-->
+        distanceUnits="kilometers" />
 
 
     <!-- A general unstemmed text field - good if one does not know the language of the field -->
