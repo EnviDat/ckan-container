@@ -14,7 +14,7 @@ networks:
 services:
   ckan:
     container_name: ckan_2.9
-    image: "${INTERNAL_REG}/ckan-container/ckan:2.9-backup"
+    image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-staging"
     depends_on:
       - solr
       - redis
@@ -31,7 +31,7 @@ services:
 
   proxy:
     container_name: ckan_2.9_proxy
-    image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-main"
+    image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-staging"
     depends_on:
       - ckan
     environment:
@@ -45,7 +45,7 @@ services:
 
   solr:
     container_name: ckan_2.9_solr
-    image: "${INTERNAL_REG}/ckan-container/solr:8.11-v2.9"
+    image: "${INTERNAL_REG}/ckan-container/solr:${SOLR_IMG_TAG}-staging"
     volumes:
       - solr_data:/var/solr/data
     networks:
@@ -56,7 +56,7 @@ services:
 
   init-solr:
     container_name: ckan_2.9_init_solr
-    image: "${INTERNAL_REG}/ckan-container/init-solr:8.11-v2.9"
+    image: "${INTERNAL_REG}/ckan-container/init-solr:${SOLR_IMG_TAG}-staging"
     env_file:
       - .solr.env
     environment:
