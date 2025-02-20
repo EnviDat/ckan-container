@@ -37,6 +37,8 @@ services:
     environment:
       - CKAN_HOST=ckan:5000
       - AUTH_COOKIE_NAME=envidat
+      - FRONTEND=http://envidat-frontend
+      - DOI_HOST=doi_proxy_staging
     ports:
       - "8080:80"
     networks:
