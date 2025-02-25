@@ -6,10 +6,6 @@ upstream ckan {
     keepalive 32;
 }
 
-upstream doiapi {
-    server ${DOI_HOST} max_fails=1 fail_timeout=5s;
-    keepalive 32;
-}
 
 server {
 
@@ -23,14 +19,12 @@ server {
 
     # Response headers
     # the below header is required to avoid CORS issues from the extensions
-    #add_header 'Access-Control-Allow-Origin' ${FRONTEND};
     add_header 'Content-Security-Policy' $upgrade_policy;
     add_header 'Access-Control-Allow-Credentials' 'true';
     # For opentelemetry
     add_header 'Access-Control-Allow-Headers' 'traceparent,tracestate';
 
     location / {
-        #add_header 'Access-Control-Allow-Origin' ${API_ROOT}:8990;
         add_header 'Content-Security-Policy' $upgrade_policy;
         add_header 'Access-Control-Allow-Credentials' 'true';
         # For opentelemetry 
@@ -74,11 +68,4 @@ server {
 
     }
     
-    location /doi-api/ {
-        add_header 'Access-Control-Allow-Origin' ${FRONTEND};
-        proxy_pass http://doiapi/;
-
-        # Add cookie content to Authorization request header
-        proxy_set_header 'Authorization' $cookie_${AUTH_COOKIE_NAME};
-    }
 }
