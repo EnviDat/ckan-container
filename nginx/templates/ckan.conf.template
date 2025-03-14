@@ -14,9 +14,25 @@ map $scheme$host $cors_origin {
 }
 
 server {
-
     listen 80 default_server reuseport;
     server_name _;
+
+    client_max_body_size 10G;
+
+    # Redirect all HTTP requests to HTTPS
+    return 301 https://$host$request_uri;
+}
+
+server {
+
+    listen 443 ssl;
+    server_name _;
+
+    # SSL Certificates (Change paths to actual certificate locations)
+    ssl_certificate /etc/nginx/ssl/fullchain.pem;
+    ssl_certificate_key /etc/nginx/ssl/privkey.pem;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
 
     client_max_body_size 10G;
 

@@ -37,8 +37,11 @@ services:
     environment:
       - CKAN_HOST=ckan:5000
       - AUTH_COOKIE_NAME=envidat
+    volumes:
+      - /etc/nginx/ssl:/etc/nginx/ssl:ro
     ports:
       - "8081:80"
+      - "443:443"
     networks:
       - ckan-internal
     restart: unless-stopped
