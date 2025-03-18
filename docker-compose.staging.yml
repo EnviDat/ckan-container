@@ -14,7 +14,8 @@ networks:
 services:
   ckan:
     container_name: ckan_2.9
-    image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-staging"
+    image: "${INTERNAL_REG}/ckan-container/ckan:2.9-backup"
+    #image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-staging"
     depends_on:
       - solr
       - redis
