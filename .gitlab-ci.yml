@@ -219,20 +219,20 @@ manual-remote-docker:
     - echo "Going to create the config/ckan directory for the ckan.ini file"
     - ssh "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME" "mkdir -p $USER_DIR/config/ckan"
     - ls -la
-    - echo "Going to copy the local ckan.ini file to ${USER_DIR}/config/ckan/2.9-backup.ini"
-    - scp ckan.ini "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME:$USER_DIR/config/ckan/2.9-backup.ini"
+    - echo "Going to copy the local ckan.ini file to ${USER_DIR}/config/ckan/${CI_COMMIT_REF_NAME}.ini"
+    - scp ckan.ini "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME:$USER_DIR/config/ckan/$CI_COMMIT_REF_NAME.ini"
     - HOME=$USER_DIR
-    - echo "Going to remotely start the docker-compose.2.9.yml on ${DEPLOY_SSH_USER}@${DEPLOY_HOSTNAME}"
+    - echo "Going to remotely start the docker-compose.${CI_COMMIT_REF_NAME}.yml on ${DEPLOY_SSH_USER}@${DEPLOY_HOSTNAME}"
     # use docker compose create to recreate the container and force pulling the latest image
     # to avoid using the local cache
     - |
       docker compose --project-name="$APP_NAME" \
-        --file "docker-compose.2.9.yml" \
+        --file "docker-compose.$CI_COMMIT_REF_NAME.yml" \
         create --force-recreate --pull="always"
     # use docker compose up to start the service on the remote machine
     - |
       docker compose --project-name="$APP_NAME" \
-        --file "docker-compose.2.9.yml" \
+        --file "docker-compose.$CI_COMMIT_REF_NAME.yml" \
         up --detach
 
 build-binary:

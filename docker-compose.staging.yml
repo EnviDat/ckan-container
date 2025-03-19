@@ -1,3 +1,5 @@
+version: "3"
+
 volumes:
   ckan_storage:
   ckan_translations:

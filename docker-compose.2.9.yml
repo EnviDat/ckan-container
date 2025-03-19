@@ -4,8 +4,6 @@ volumes:
   solr_data:
 
 networks:
-  ckan-microservices:
-    name: envidat
   ckan-internal:
     name: ckan-2.9
   envidat:

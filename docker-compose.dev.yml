@@ -1,10 +1,10 @@
+version: "3"
+
 volumes:
   ckan_dev_storage:
   ckan_dev_translations:
 
 networks:
-  ckan-microservices:
-    name: envidat
   ckan-internal:
     name: ckan-dev
 
