@@ -18,6 +18,8 @@ variables:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "pipeline"'
       when: never
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
     - if: $CI_COMMIT_REF_NAME == "main"
       when: always
     - if: $CI_COMMIT_REF_NAME == "staging"
@@ -191,7 +193,9 @@ manual-remote-docker:
   needs:
     - set-vars
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "pipeline"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "parent_pipeline"'
       when: always
     - when: manual
   # for manaul jobs add allow_failure so the whole pipeline won't show up as "blocked"
