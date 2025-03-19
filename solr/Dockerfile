@@ -21,9 +21,22 @@ USER root
 
 # Add config files
 COPY --chown=solr:solr *.txt *.xml /var/solr/data/$SOLR_CORE/conf/
+RUN echo "**** Check file system "
+RUN ls /var/solr/data/$SOLR_CORE/conf/
+RUN echo "**** Check Schema.xml content:"
+RUN cat /var/solr/data/$SOLR_CORE/conf/schema.xml
+
 # Add security.json for BasicAuth
 COPY --chown=solr:solr security.json /var/solr/data/security.json
+RUN echo "**** Check file system "
+RUN ls /var/solr/data/
+RUN echo "**** Check security.json content:"
+RUN cat /var/solr/data/security.json
+
+
 # Create core.properties & give ownership to user Solr
+RUN echo "**** Check Solr user:"
+RUN echo $SOLR_USER
 RUN echo "name=$SOLR_CORE" > "/var/solr/data/$SOLR_CORE/core.properties" \
     && chown -R "$SOLR_USER:$SOLR_USER" "/var/solr/data/$SOLR_CORE"
 

@@ -1,3 +1,5 @@
+version: "3"
+
 volumes:
   ckan_storage:
   ckan_translations:
@@ -12,7 +14,8 @@ networks:
 services:
   ckan:
     container_name: ckan_2.9
-    image: "${INTERNAL_REG}/ckan-container/ckan:2.9-backup"
+    #image: "${INTERNAL_REG}/ckan-container/ckan:2.9-backup"
+    image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-staging"
     depends_on:
       - solr
       - redis
@@ -21,28 +24,29 @@ services:
     volumes:
       - ckan_storage:/opt/ckan/data
       - $HOME/config/ckan/staging.ini:/opt/ckan/ckan.ini
-      - ckan_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
+      - ckan_translations:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan/public/base/i18n
     networks:
       - ckan-internal
+      - ckan-microservices
     restart: unless-stopped
 
   proxy:
     container_name: ckan_2.9_proxy
-    image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-main"
+    image: "${INTERNAL_REG}/ckan-container/proxy:${NGINX_IMG_TAG}-staging"
     depends_on:
       - ckan
     environment:
       - CKAN_HOST=ckan:5000
       - AUTH_COOKIE_NAME=envidat
     ports:
-      - "8080:80"
+      - "8081:80"
     networks:
       - ckan-internal
     restart: unless-stopped
 
   solr:
     container_name: ckan_2.9_solr
-    image: "${INTERNAL_REG}/ckan-container/solr:8.11-v2.9"
+    image: "${INTERNAL_REG}/ckan-container/solr:${SOLR_IMG_TAG}-staging"
     volumes:
       - solr_data:/var/solr/data
     networks:
@@ -53,7 +57,7 @@ services:
 
   init-solr:
     container_name: ckan_2.9_init_solr
-    image: "${INTERNAL_REG}/ckan-container/init-solr:8.11-v2.9"
+    image: "${INTERNAL_REG}/ckan-container/init-solr:${SOLR_IMG_TAG}-staging"
     env_file:
       - .solr.env
     environment:

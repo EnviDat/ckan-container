@@ -46,11 +46,13 @@ docker_remove_old_install() {
 
 install_docker_rootless() {
     pretty_echo "Installing Docker"
-    sudo apt-get update
-    sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+    sudo GNUTLS_CPUID_OVERRIDE=0x1 apt-get update
+    sudo GNUTLS_CPUID_OVERRIDE=0x1 apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
     pretty_echo "Disabling docker service if running"
     sudo systemctl disable --now docker.service docker.socket
+
+    #Reboot the server for changes to take effect
 
     pretty_echo "Changing to rootless docker"
     dockerd-rootless-setuptool.sh install --skip-iptables
@@ -64,13 +66,13 @@ EOF
 
     pretty_echo "Adding rootless DOCKER_HOST to bashrc"
     user_id=$(id -u)
-    export DOCKER_HOST="unix:///run/user/$user_id//docker.sock"
-    echo "export DOCKER_HOST=unix:///run/user/$user_id//docker.sock" >> ~/.bashrc
+    export DOCKER_HOST=`unix:///run/user/$user_id//docker.sock`
+    echo `export DOCKER_HOST=unix:///run/user/$user_id//docker.sock` >> ~/.bashrc
     echo "Done"
 
-    pretty_echo "Adding dc='docker compose' alias"
-    echo "alias dc='docker compose'" >> ~/.bashrc
-    echo "Done"
+    #pretty_echo "Adding dc='docker compose' alias"
+    #echo "alias dc='docker compose'" >> ~/.bashrc
+    #echo "Done"
 }
 
 docker_debian_install() {
@@ -101,8 +103,8 @@ docker_ubuntu_install() {
     docker_remove_old_install
 
     pretty_echo "Installing dependencies"
-    sudo apt-get update
-    sudo apt-get install -y ca-certificates curl gnupg \
+    sudo GNUTLS_CPUID_OVERRIDE=0x1 apt-get update
+    sudo GNUTLS_CPUID_OVERRIDE=0x1 apt-get install -y ca-certificates curl gnupg \
         uidmap dbus-user-session slirp4netns
 
     pretty_echo "Adding docker gpg key"
@@ -185,15 +187,15 @@ install_docker() {
 
         if [ "$distribution" == "ubuntu" ]; then
             read -rp "Are you on WSL (y/n): " is_wsl
-            if [ "$is_wsl" == "y" ]; then
+            #if [ "$is_wsl" == "y" ]; then
                 # Install Docker on Ubuntu
-                pretty_echo "Installing Docker on WSL Ubuntu"
-                docker_wsl_ubuntu_install
-            else
+            #    pretty_echo "Installing Docker on WSL Ubuntu"
+            #    docker_wsl_ubuntu_install
+            #else
                 # Install Docker on Ubuntu
-                pretty_echo "Installing Docker on Ubuntu"
-                docker_ubuntu_install
-            fi
+            pretty_echo "Installing Docker on Ubuntu"
+            docker_ubuntu_install
+            #fi
 
         elif [ "$distribution" == "debian" ]; then
             # Install Docker on Debian
@@ -365,7 +367,8 @@ start_ckan() {
         if [ "$db_recover" == "y" ]; then
             docker compose up -d
         else
-            DB_ENV_FILE=/dev/null docker compose up -d
+            docker compose up -d
+            #DB_ENV_FILE=/dev/null docker compose up -d
         fi
     fi
 }
@@ -373,15 +376,17 @@ start_ckan() {
 ### Create Frontend .env.development ###
 update_frontend_dotenv() {
     # Define the new values for the variables
-    VITE_DOMAIN=http://localhost:8990
-    VITE_API_ROOT=http://localhost:8989
+    #VITE_DOMAIN=http://localhost:8990
+    #VITE_API_ROOT=http://localhost:8989
+    VITE_DOMAIN=http://envidat-prod01.wsl.ch:8990
+    VITE_API_ROOT=http://envidat-prod01.wsl.ch:8989
 
     # Override with user input, if provided
-    read -rp "What domain are you running on? (default: localhost): " domain
-    if [ -n "$domain" ]; then
-        VITE_DOMAIN=http://$domain:8990
-        VITE_API_ROOT=http://$domain:8989
-    fi
+    #read -rp "What domain are you running on? (default: localhost): " domain
+    #if [ -n "$domain" ]; then
+    #    VITE_DOMAIN=http://$domain:8990
+    #    VITE_API_ROOT=http://$domain:8989
+    #fi
 
     export VITE_DOMAIN="${VITE_DOMAIN}"
     export VITE_API_ROOT="${VITE_API_ROOT}"
@@ -401,34 +406,51 @@ start_frontend() {
     pretty_echo "Starting EnviDat Prod Frontend"
 
     default_frontend_version="0.8.0"
-    echo "Override frontend version? (default 0.8.0)"
-    read -rp "Press Enter to continue, or input a version: " frontend_version
-    if [ -z "$frontend_version" ]; then
-        frontend_version="$default_frontend_version"
+    #echo "Override frontend version? (default 0.8.0)"
+    #read -rp "Press Enter to continue, or input a version: " frontend_version
+    #if [ -z "$frontend_version" ]; then
+    #    frontend_version="$default_frontend_version"
+    #fi
+
+    #docker run -d \
+    #    --name envidat_frontend \
+    #    -p 8990:80 \
+    #    "registry-gitlab.wsl.ch/envidat/envidat-frontend:$frontend_version-main"
+    if [ ! -d "EnviDat-Frontend" ]; then
+        GNUTLS_CPUID_OVERRIDE=0x1 git clone --depth 1 --single-branch -b main \
+            https://gitlabext.wsl.ch/EnviDat/EnviDat-Frontend.git envidat-frontend
+    else
+        pretty_echo "Directory 'EnviDat-Frontend' already exists, skipping clone."
+        cd "EnviDat-Frontend" || echo "Does dir EnviDat-Frontend exist?"
+        GNUTLS_CPUID_OVERRIDE=0x1 git pull
+        cd .. || exit
     fi
 
-    docker run -d \
-        --name envidat_frontend \
-        -p 8990:80 \
-        "registry-gitlab.wsl.ch/envidat/envidat-frontend:$frontend_version-main"
+    #update_frontend_dotenv
+
+    cd "EnviDat-Frontend" || echo "Did the EnviDat-Frontend repo clone successfully?"
+    docker compose pull
+    docker compose up -d
+    cd .. || exit
+
 }
 start_frontend_dev() {
     pretty_echo "Starting EnviDat Dev Frontend"
 
     if [ ! -d "EnviDat-Frontend" ]; then
-        git clone --depth 1 --single-branch -b develop \
+        GNUTLS_CPUID_OVERRIDE=0x1 git clone --depth 1 --single-branch -b develop \
             https://gitlabext.wsl.ch/EnviDat/EnviDat-Frontend.git envidat-frontend
     else
         pretty_echo "Directory 'EnviDat-Frontend' already exists, skipping clone."
         cd "EnviDat-Frontend" || echo "Does dir EnviDat-Frontend exist?"
-        git pull
+        GNUTLS_CPUID_OVERRIDE=0x1 git pull
         cd .. || exit
     fi
 
     update_frontend_dotenv
 
     cd "EnviDat-Frontend" || echo "Did the EnviDat-Frontend repo clone successfully?"
-    docker compose pull
+    #docker compose pull #commenting since its giving an error
     docker compose up -d
     cd .. || exit
 }
@@ -447,26 +469,39 @@ db_recover=""
 ### Prerequisites ###
 # Get CURL if doesn't exist
 if ! command -v curl &> /dev/null; then
-    sudo apt-get update
-    sudo apt-get install -y curl
+    sudo GNUTLS_CPUID_OVERRIDE=0x1 apt-get update
+    sudo GNUTLS_CPUID_OVERRIDE=0x1 apt-get install -y curl
 fi
 # Get GIT if doesn't exist
 if ! command -v git &> /dev/null; then
-    sudo apt-get update
-    sudo apt-get install -y git --no-install-recommends
+    sudo GNUTLS_CPUID_OVERRIDE=0x1 apt-get update
+    sudo GNUTLS_CPUID_OVERRIDE=0x1 apt-get install -y git --no-install-recommends
 fi
 # Download docker-compose files
-if [ "$(basename "$current_dir")" != "ckan-container" ]; then
-    pretty_echo "Downloading required files"
-    curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/raw/main/.env
-    curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/raw/main/docker-compose.yml
-    curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/raw/main/docker-compose.main.yml
-fi
+#if [ "$(basename "$current_dir")" != "ckan-container" ]; then
+#    pretty_echo "Downloading required files"
+#    curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/raw/main/.env
+#    curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/raw/main/docker-compose.yml
+#    curl -LO https://gitlabext.wsl.ch/EnviDat/ckan-container/-/raw/main/docker-compose.main.yml
+#fi
 # Docker
-install_docker
-if [ "$is_wsl" == "y" ]; then
-    wsl_restart_warning
+user_id=$(id -u) #to be removed
+#export DOCKER_HOST=`unix:///run/user/$user_id//docker.sock` #to be removed
+echo `export DOCKER_HOST=unix:///run/user/$user_id//docker.sock` >> ~/.bashrc #to be removed
+echo "Done" #to be removed
+
+#Check if docker is installed
+if ! docker info > /dev/null 2>&1; then
+    echo "This script uses docker, and it isn't running - proceeding with Docker install!"
+    #install_docker
+    if [ "$is_wsl" == "y" ]; then
+        wsl_restart_warning
+    fi
+else
+    echo "Docker is already installed, hence proceeding"
 fi
+
+
 check_ckan_ini
 
 ### Prod / Dev Run ###

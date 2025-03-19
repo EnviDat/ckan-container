@@ -1,8 +1,6 @@
 
 .scan:
   stage: scan
-  needs:
-    - set-vars
   image:
     name: docker.io/aquasec/trivy:0.23.0
     entrypoint: [""]
@@ -38,9 +36,10 @@
 
 ckan-scan:
   needs:
+    - set-vars
     - ckan-build
   extends:
-    - .triggers
+    - .triggers    
     - .scan
   variables:
     IMAGE_NAME: ${CKAN_IMAGE}
@@ -49,9 +48,10 @@ ckan-scan:
 
 proxy-scan:
   needs:
+    - set-vars
     - proxy-build
   extends:
-    - .triggers
+    - .triggers    
     - .scan
   variables:
     IMAGE_NAME: ${PROXY_IMAGE}
@@ -59,9 +59,10 @@ proxy-scan:
 
 db-scan:
   needs:
+    - set-vars
     - db-build
   extends:
-    - .triggers
+    - .triggers    
     - .scan
   variables:
     IMAGE_NAME: ${DB_IMAGE}
@@ -69,9 +70,10 @@ db-scan:
 
 solr-scan:
   needs:
+    - set-vars
     - solr-build
   extends:
-    - .triggers
+    - .triggers    
     - .scan
   variables:
     IMAGE_NAME: ${SOLR_IMAGE}
@@ -80,9 +82,10 @@ solr-scan:
 
 solr-init-scan:
   needs:
+    - set-vars
     - solr-init-build
   extends:
-    - .triggers
+    - .triggers    
     - .scan
   variables:
     IMAGE_NAME: ${SOLR_INIT_IMAGE}

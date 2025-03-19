@@ -5,6 +5,8 @@
 !ckan-entrypoint.sh
 !config/*.yaml
 !config/*.json
+!config/who.ini
 !requirements-extra.txt
+!envidat_extensions.*
 !wsgi.py
 !debug_run.py

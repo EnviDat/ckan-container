@@ -1,19 +1,18 @@
+version: "3"
+
 volumes:
   ckan_storage:
   ckan_translations:
   solr_data:
 
 networks:
-  ckan-microservices:
-    name: envidat
   ckan-internal:
     name: ckan-prod
 
 services:
   ckan:
     container_name: ckan_main
-    #image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-main"
-    image: "${INTERNAL_REG}/ckan-container/ckan:2.9-backup"
+    image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-main"
     build:
       context: .
       target: prod

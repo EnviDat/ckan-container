@@ -68,6 +68,15 @@ attribute with the form `ckan-X.Y` -->
         </analyzer>
     </fieldType>
 
+    <!-- spatial search field type (ckanext-spatial) -->
+    <fieldType name="location_rpt"   class="solr.SpatialRecursivePrefixTreeFieldType"
+        spatialContextFactory="JTS"
+        autoIndex="true"
+        validationRule="repairBuffer0"
+        distErrPct="0.025"
+        maxDistErr="0.001"
+        distanceUnits="kilometers" />
+
 
     <!-- A general unstemmed text field - good if one does not know the language of the field -->
     <fieldType name="text_general" class="solr.TextField" positionIncrementGap="100">
@@ -166,6 +175,9 @@ attribute with the form `ckan-X.Y` -->
     <field name="validated_data_dict" type="string" indexed="false" stored="true" />
 
     <field name="_version_" type="string" indexed="true" stored="true"/>
+
+    <!-- spatial search field (ckanext-spatial) -->
+    <field name="spatial_geom"  type="location_rpt" indexed="true" stored="true" multiValued="true" />
 
     <dynamicField name="*_date" type="date" indexed="true" stored="true" multiValued="false"/>
 
