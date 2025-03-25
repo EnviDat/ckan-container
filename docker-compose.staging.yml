@@ -14,6 +14,7 @@ networks:
 services:
   ckan:
     container_name: ckan_2.9
+    #image: "${INTERNAL_REG}/ckan-container/ckan:2.9-backup"
     image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-staging"
     depends_on:
       - solr
@@ -23,7 +24,7 @@ services:
     volumes:
       - ckan_storage:/opt/ckan/data
       - $HOME/config/ckan/staging.ini:/opt/ckan/ckan.ini
-      - ckan_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
+      - ckan_translations:/usr/lib/ckan/.local/lib/python3.9/site-packages/ckan/public/base/i18n
     networks:
       - ckan-internal
       - ckan-microservices
@@ -37,10 +38,8 @@ services:
     environment:
       - CKAN_HOST=ckan:5000
       - AUTH_COOKIE_NAME=envidat
-      - FRONTEND=http://envidat-frontend
-      - DOI_HOST=doi_api_proxy_staging
     ports:
-      - "8080:80"
+      - "8081:80"
     networks:
       - ckan-internal
     restart: unless-stopped
