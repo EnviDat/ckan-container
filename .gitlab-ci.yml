@@ -136,7 +136,7 @@ solr-init-build:
 remote-docker:
   stage: deploy
   environment: $CI_COMMIT_REF_NAME
-  image: docker.io/docker:24.0
+  image: docker.io/docker:28.0.2
   extends:
     - .triggers
   needs:
