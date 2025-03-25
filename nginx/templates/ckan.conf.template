@@ -25,10 +25,6 @@ server {
     add_header 'Access-Control-Allow-Headers' 'traceparent,tracestate';
 
     location / {
-        add_header 'Content-Security-Policy' $upgrade_policy;
-        add_header 'Access-Control-Allow-Credentials' 'true';
-        # For opentelemetry 
-        add_header 'Access-Control-Allow-Headers' 'traceparent,tracestate';
         proxy_read_timeout 40s;
         proxy_connect_timeout 20s;
 
