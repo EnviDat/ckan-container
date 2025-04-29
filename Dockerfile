@@ -175,7 +175,7 @@ ENTRYPOINT ["/ckan-entrypoint.sh"]
 RUN echo "**** Step 12: Run CKAN application"
 
 FROM runtime as debug
-RUN pdm add --dev debugpy==1.6.4
+RUN pip install --no-cache-dir debugpy==1.6.4 --no-cache
 COPY debug_run.py .
 CMD ["python", "-m", "debugpy", \
     "--listen", "0.0.0.0:5678", \
