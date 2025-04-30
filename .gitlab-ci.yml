@@ -67,8 +67,8 @@ set-vars:
     entrypoint: [""]
   before_script:
     # Log in to Docker Hub using the username and token stored as environment variables for pulling images to create a build
-    - echo "going to docker login with user ${DOCKERHUB_USER}"
-    - echo "${DOCKER_TOKEN}" | docker login --username "${DOCKERHUB_USER}" --password-stdin
+    - echo "going to docker login with user ${DOCKER_USERNAME}"
+    - echo "${DOCKER_TOKEN}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
     - mkdir -p /kaniko/.docker
     - >
       echo "{\"auths\":{\"${INTERNAL_REG}\":{\"auth\":\"$(printf
