@@ -11,4 +11,3 @@ git+https://gitlabext.wsl.ch/EnviDat/ckan_extensions/ckanext-oaipmh_repository.g
 git+https://gitlabext.wsl.ch/EnviDat/ckan_extensions/ckanext-hierarchy.git
 git+https://gitlabext.wsl.ch/EnviDat/ckan_extensions/ckanext-envidat_theme.git
 git+https://gitlabext.wsl.ch/EnviDat/ckanext-blind_review.git
-
