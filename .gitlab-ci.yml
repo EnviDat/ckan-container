@@ -67,10 +67,16 @@ set-vars:
     entrypoint: [""]
   before_script:
     - mkdir -p /kaniko/.docker
+    - echo "going to create kaniko config.json for auth for ${INTERNAL_REG} -> '${IMAGE_REGISTRY_USER}' and https://index.docker.io/v1/ -> '${DOCKER_USERNAME}'"
     - >
-      echo "{\"auths\":{\"${INTERNAL_REG}\":{\"auth\":\"$(printf
-      "%s:%s" "${IMAGE_REGISTRY_USER}" "${IMAGE_REGISTRY_PASS}"
-      | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+      echo "{\"auths\":{
+      \"${INTERNAL_REG}\":{
+        \"auth\":\"$(printf "%s:%s" "${IMAGE_REGISTRY_USER}" "${IMAGE_REGISTRY_PASS}" | base64 | tr -d '\n')\"
+        },
+        \"https://index.docker.io/v1/\":{
+          \"auth\":\"$(printf "%s:%s" "${DOCKER_USERNAME}" "${DOCKER_TOKEN}" | base64 | tr -d '\n')\"
+        }
+      }}" > /kaniko/.docker/config.json
   script:
     - echo "Check how the filesystem looks like for debugging"
     - ls -a
@@ -171,6 +177,8 @@ remote-docker:
       ssh "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME" "mkdir -p $USER_DIR/config/ckan"
       scp ckan.ini "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME:$USER_DIR/config/ckan/$CI_COMMIT_REF_NAME.ini"
     - HOME=$USER_DIR
+    - echo "going to docker login with user ${DOCKER_USERNAME}"
+    - echo "${DOCKER_TOKEN}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
     # use docker compose create to recreate the container and force pulling the latest image
     # to avoid using the local cache
     - |
@@ -224,6 +232,8 @@ manual-remote-docker:
     - scp ckan.ini "$DEPLOY_SSH_USER@$DEPLOY_HOSTNAME:$USER_DIR/config/ckan/$CI_COMMIT_REF_NAME.ini"
     - HOME=$USER_DIR
     - echo "Going to remotely start the docker-compose.${CI_COMMIT_REF_NAME}.yml on ${DEPLOY_SSH_USER}@${DEPLOY_HOSTNAME}"
+    - echo "going to docker login with user ${DOCKER_USERNAME}"
+    - echo "${DOCKER_TOKEN}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
     # use docker compose create to recreate the container and force pulling the latest image
     # to avoid using the local cache
     - |
