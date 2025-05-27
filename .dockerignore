@@ -10,3 +10,5 @@
 !envidat_extensions.*
 !wsgi.py
 !debug_run.py
+!pyproject.toml
+!pdm.lock

@@ -31,7 +31,7 @@ variables:
 
 set-vars:
   stage: .pre
-  image: docker.io/alpine:3.15
+  image: docker.io/alpine:3.20
   # before_script:
   #   - >
   #     apk add yq --no-cache
@@ -77,6 +77,7 @@ set-vars:
           \"auth\":\"$(printf "%s:%s" "${DOCKER_USERNAME}" "${DOCKER_TOKEN}" | base64 | tr -d '\n')\"
         }
       }}" > /kaniko/.docker/config.json
+    # - cat /kaniko/.docker/config.json
   script:
     - echo "Check how the filesystem looks like for debugging"
     - ls -a
@@ -144,7 +145,7 @@ solr-init-build:
 remote-docker:
   stage: deploy
   environment: $CI_COMMIT_REF_NAME
-  image: docker.io/docker:24.0
+  image: docker.io/docker:28.0.2
   extends:
     - .triggers
   needs:
@@ -197,7 +198,7 @@ remote-docker:
 manual-remote-docker:
   stage: manual-deploy
   environment: $CI_COMMIT_REF_NAME
-  image: docker.io/docker:24.0
+  image: docker.io/docker:28.0.2
   needs:
     - set-vars
   rules:

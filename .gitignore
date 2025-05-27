@@ -6,3 +6,4 @@ chart/Chart.lock
 ckanext
 ckan
 .pdm.toml
+.idea
