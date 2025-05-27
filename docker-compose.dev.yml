@@ -11,27 +11,16 @@ networks:
 services:
   ckan:
     container_name: ckan_dev
-    #image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-dev"
-    build:
-      context: ./
-      args:
-        - EXTERNAL_REG=${EXTERNAL_REG}
-        - INTERNAL_REG=${INTERNAL_REG}
-        - PYTHON_IMG_TAG=${PYTHON_IMG_TAG}
-        - CKAN_VERSION=${CKAN_VERSION}
-        - MAINTAINER=${MAINTAINER}
-      dockerfile: ./Dockerfile
+    image: "${INTERNAL_REG}/ckan-container/ckan:${CKAN_VERSION}-dev"
     depends_on:
       - solr
       - redis
     environment:
       CKAN_INI: "/opt/ckan/ckan.ini"
-    #entrypoint: /bin/sh  # Override to run a shell instead of the application
-    #tty: true  # Keeps the container running for interactive shell access
     volumes:
       - ckan_dev_storage:/opt/ckan/data
-      - ./config/ckan.ini:/opt/ckan/ckan.ini
-      - ckan_dev_translations:/usr/lib/ckan/.local/lib/python${PYTHON_IMG_TAG}/site-packages/ckan/public/base/i18n
+      - $HOME/config/ckan/dev.ini:/opt/ckan/ckan.ini
+      - ckan_dev_translations:/usr/lib/ckan/.local/lib/python3.10/site-packages/ckan/public/base/i18n
     networks:
       - ckan-internal
     restart: unless-stopped

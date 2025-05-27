@@ -1,16 +1,14 @@
 #!/bin/bash
 
 set -euo pipefail
-EXT_DIR=./ckanext
-echo "modifying $EXT_DIR"
 
-mkdir -p "$EXT_DIR"
 while IFS=+ read -r _ repo_url; do
-    repo_name=$(basename "$repo_url" .git)
-    repo_name="${repo_name%.git}"
-    target_dir="$EXT_DIR/$repo_name"
-
-    echo "Cloning $repo_url into $target_dir"
-    git clone --depth 1 "$repo_url" "$target_dir"
-
+    mkdir ./ckanext
+    git clone --depth 1 "$repo_url" ./ckanext
+    if [ -f ./ckanext/requirements.txt ]; then
+        echo "Installing dependencies for $repo_url"
+        pip install --user --no-warn-script-location \
+            --no-cache-dir -r ./ckanext/requirements.txt
+    fi
+    rm -rf ./ckanext
 done < ./envidat_extensions.txt
