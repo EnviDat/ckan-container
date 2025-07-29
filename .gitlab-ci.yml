@@ -32,10 +32,9 @@ variables:
 set-vars:
   stage: .pre
   image: docker.io/alpine:3.20
-  # before_script:
-  #   - >
-  #     apk add yq --no-cache
-  #     --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community
+  before_script:
+    - echo "going to docker login with user ${DOCKER_USERNAME}"
+    - echo "${DOCKER_TOKEN}" | docker login --username "${DOCKER_USERNAME}" --password-stdin
   script:
     - cat .env >> build.env
     - source build.env
