@@ -7,6 +7,14 @@ Use cases:
 - Replicating an existing database, then running a dev CKAN server.
 - Running production CKAN with an existing database.
 
+
+## Deprecated
+
+This project was used for the EnviDat customized backend compatible with **CKAN version 2.9.9b**
+
+Please refer to the [ckan-docker-envidat](https://gitlabext.wsl.ch/EnviDat/ckan-docker-envidat) project to learn more about the current EnviDat customized backend. 
+
+
 ## Create ckan.ini
 
 This file contains the config for CKAN, including connection urls.
